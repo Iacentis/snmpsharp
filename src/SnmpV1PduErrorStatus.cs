@@ -14,26 +14,32 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>Snmp V1 <see cref="Pdu.ErrorStatus" /> error values</summary>
+public enum SnmpV1PduErrorStatus
 {
-	/// <summary>Snmp V1 <see cref="Pdu.ErrorStatus" /> error values</summary>
-	public enum SnmpV1PduErrorStatus: int
-	{
-		/// <summary>Unknown error code received.</summary>
-		Unknown = -1,
-		/// <summary>No error</summary>
-		NoError = 0,
-		/// <summary>Request too big</summary>
-		TooBig = 1,
-		/// <summary>Object identifier does not exist</summary>
-		NoSuchName = 2,
-		/// <summary>Invalid value</summary>
-		BadValue = 3,
-		/// <summary>Requested invalid operation on a read only table</summary>
-		ReadOnly = 4,
-		/// <summary>Generic error</summary>
-		GenError = 5,
-		/// <summary>Enterprise specific error</summary>
-		EnterpriseSpecific = 6,
-	}
+    /// <summary>Unknown error code received.</summary>
+    Unknown = -1,
+
+    /// <summary>No error</summary>
+    NoError = 0,
+
+    /// <summary>Request too big</summary>
+    TooBig = 1,
+
+    /// <summary>Object identifier does not exist</summary>
+    NoSuchName = 2,
+
+    /// <summary>Invalid value</summary>
+    BadValue = 3,
+
+    /// <summary>Requested invalid operation on a read only table</summary>
+    ReadOnly = 4,
+
+    /// <summary>Generic error</summary>
+    GenError = 5,
+
+    /// <summary>Enterprise specific error</summary>
+    EnterpriseSpecific = 6
 }

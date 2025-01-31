@@ -14,21 +14,20 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     Exception of this type is thrown when SNMP version 3 packet containing authentication information
+///     has failed authentication check.
+/// </summary>
+public class SnmpAuthenticationException : SnmpException
 {
 	/// <summary>
-	/// Exception of this type is thrown when SNMP version 3 packet containing authentication information
-	/// has failed authentication check.
+	///     Standard constructor.
 	/// </summary>
-	public class SnmpAuthenticationException: SnmpException
-	{
-		/// <summary>
-		/// Standard constructor.
-		/// </summary>
-		/// <param name="msg">Error message</param>
-		public SnmpAuthenticationException(string msg)
-			: base(msg)
-		{
-		}
-	}
+	/// <param name="msg">Error message</param>
+	public SnmpAuthenticationException(string msg)
+        : base(msg)
+    {
+    }
 }

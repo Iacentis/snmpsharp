@@ -14,20 +14,19 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     Exception thrown when invalid SNMP version was encountered in the packet
+/// </summary>
+public class SnmpInvalidVersionException : SnmpException
 {
 	/// <summary>
-	/// Exception thrown when invalid SNMP version was encountered in the packet
+	///     Standard constructor
 	/// </summary>
-	public class SnmpInvalidVersionException: SnmpException
-	{
-		/// <summary>
-		/// Standard constructor
-		/// </summary>
-		/// <param name="msg">Exception error message</param>
-		public SnmpInvalidVersionException(string msg)
-			: base(msg)
-		{
-		}
-	}
+	/// <param name="msg">Exception error message</param>
+	public SnmpInvalidVersionException(string msg)
+        : base(msg)
+    {
+    }
 }

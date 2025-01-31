@@ -13,32 +13,30 @@
 // You should have received a copy of the GNU General Public License
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
-using System;
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>SNMP version 1 trap generic error code enumeration</summary>
+public enum SnmpV1TrapGenericErrorCode
 {
-	/// <summary>SNMP version 1 trap generic error code enumeration</summary>
-	public enum SnmpV1TrapGenericErrorCode: int
-	{
-		/// <summary>Cold start trap</summary>
-		ColdStart = 0,
+    /// <summary>Cold start trap</summary>
+    ColdStart = 0,
 
-		/// <summary>Warm start trap</summary>
-		WarmStart = 1,
+    /// <summary>Warm start trap</summary>
+    WarmStart = 1,
 
-		/// <summary>Link down trap</summary>
-		LinkDown = 2,
+    /// <summary>Link down trap</summary>
+    LinkDown = 2,
 
-		/// <summary>Link up trap</summary>
-		LinkUp = 3,
+    /// <summary>Link up trap</summary>
+    LinkUp = 3,
 
-		/// <summary>Authentication-failure trap</summary>
-		AuthenticationFailure = 4,
+    /// <summary>Authentication-failure trap</summary>
+    AuthenticationFailure = 4,
 
-		/// <summary>EGP Neighbor Loss trap</summary>
-		EgpNeighborLoss = 5,
+    /// <summary>EGP Neighbor Loss trap</summary>
+    EgpNeighborLoss = 5,
 
-		/// <summary>Enterprise Specific trap</summary>
-		EnterpriseSpecific = 6
-	}
+    /// <summary>Enterprise Specific trap</summary>
+    EnterpriseSpecific = 6
 }

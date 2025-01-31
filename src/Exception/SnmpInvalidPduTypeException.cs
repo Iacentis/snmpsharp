@@ -14,20 +14,19 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     Exception thrown when specific PDU type was expected and a different type was received.
+/// </summary>
+public class SnmpInvalidPduTypeException : SnmpException
 {
 	/// <summary>
-	/// Exception thrown when specific PDU type was expected and a different type was received.
+	///     Constructor
 	/// </summary>
-	public class SnmpInvalidPduTypeException: SnmpException
-	{
-		/// <summary>
-		/// Constructor
-		/// </summary>
-		/// <param name="msg">Error message</param>
-		public SnmpInvalidPduTypeException(string msg)
-			: base(msg)
-		{
-		}
-	}
+	/// <param name="msg">Error message</param>
+	public SnmpInvalidPduTypeException(string msg)
+        : base(msg)
+    {
+    }
 }

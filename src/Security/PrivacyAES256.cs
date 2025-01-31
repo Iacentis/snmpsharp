@@ -14,25 +14,25 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     Privacy class for AES 256-bit encryption. This is a helper class. Full functionality is implemented
+///     in <see cref="PrivacyAES" /> parent class.
+/// </summary>
+public class PrivacyAES256 : PrivacyAES
 {
 	/// <summary>
-	/// Privacy class for AES 256-bit encryption. This is a helper class. Full functionality is implemented
-	/// in <see cref="PrivacyAES"/> parent class.
-    /// </summary>
-	public class PrivacyAES256:PrivacyAES
-	{
-		/// <summary>
-		/// Standard constructor initializes encryption key size in the parent <see cref="PrivacyAES"/> class to 32 bytes (256 bit).
-		/// </summary>
-		public PrivacyAES256()
-			: base(32)
-		{
-		}
+	///     Standard constructor initializes encryption key size in the parent <see cref="PrivacyAES" /> class to 32 bytes (256
+	///     bit).
+	/// </summary>
+	public PrivacyAES256()
+        : base(32)
+    {
+    }
 
-		/// <summary>
-		/// Returns privacy protocol name "AES256".
-		/// </summary>
-		public override string Name => "AES256";
-	}
+	/// <summary>
+	///     Returns privacy protocol name "AES256".
+	/// </summary>
+	public override string Name => "AES256";
 }

@@ -14,39 +14,43 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     Privacy protocol enumeration.
+/// </summary>
+public enum PrivacyProtocols
 {
 	/// <summary>
-	/// Privacy protocol enumeration.
+	///     No privacy protocol. Data will not be encrypted
 	/// </summary>
-	public enum PrivacyProtocols
-	{
-		/// <summary>
-		/// No privacy protocol. Data will not be encrypted
-		/// </summary>
-		None = 0,
-		/// <summary>
-		/// Privacy protocol is DES (56 bit encryption)
-		/// </summary>
-		DES,
-		/// <summary>
-		/// Privacy protocol is AES-128 (128 bit key). For implementation details, see <see cref="PrivacyAES128"/> and
-		/// <see cref="PrivacyAES"/> classes.
-		/// </summary>
-		AES128,
-		/// <summary>
-		/// Privacy protocol is AES-192 (128 bit key). For implementation details, see <see cref="PrivacyAES192"/> and
-		/// <see cref="PrivacyAES"/> classes.
-		/// </summary>
-		AES192,
-		/// <summary>
-		/// Privacy protocol is AES-156 (256 bit key). For implementation details, see <see cref="PrivacyAES256"/> and
-		/// <see cref="PrivacyAES"/> classes.
-		/// </summary>
-		AES256,
-		/// <summary>
-		/// Privacy protocol is Triple-DES. For implementation details see <see cref="Privacy3DES"/>.
-		/// </summary>
-		TripleDES
-	}
+	None = 0,
+
+	/// <summary>
+	///     Privacy protocol is DES (56 bit encryption)
+	/// </summary>
+	DES,
+
+	/// <summary>
+	///     Privacy protocol is AES-128 (128 bit key). For implementation details, see <see cref="PrivacyAES128" /> and
+	///     <see cref="PrivacyAES" /> classes.
+	/// </summary>
+	AES128,
+
+	/// <summary>
+	///     Privacy protocol is AES-192 (128 bit key). For implementation details, see <see cref="PrivacyAES192" /> and
+	///     <see cref="PrivacyAES" /> classes.
+	/// </summary>
+	AES192,
+
+	/// <summary>
+	///     Privacy protocol is AES-156 (256 bit key). For implementation details, see <see cref="PrivacyAES256" /> and
+	///     <see cref="PrivacyAES" /> classes.
+	/// </summary>
+	AES256,
+
+	/// <summary>
+	///     Privacy protocol is Triple-DES. For implementation details see <see cref="Privacy3DES" />.
+	/// </summary>
+	TripleDES
 }
