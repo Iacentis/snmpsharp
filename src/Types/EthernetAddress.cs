@@ -103,7 +103,7 @@ public class EthernetAddress : OctetString, ICloneable
     /// </param>
     public override void Set(string value)
     {
-        if (value == null || value.Length <= 0)
+        if (value is not { Length: > 0 })
             throw new ArgumentException("Invalid argument. String is empty.");
         var workString = (string)value.Clone();
         for (var cnt = 0; cnt < value.Length; cnt++)

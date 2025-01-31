@@ -274,7 +274,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="data">Byte array to copy data from.</param>
     public virtual void Set(byte[] data)
     {
-        if (data == null || data.Length <= 0)
+        if (data is not { Length: > 0 })
         {
             _data = null;
         }
@@ -379,7 +379,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>String representation of the object.</returns>
     public override string ToString()
     {
-        if (_data == null || _data.Length <= 0) return "";
+        if (_data is not { Length: > 0 }) return "";
         var asHex = IsHex;
 
         string rs = null;

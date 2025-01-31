@@ -261,7 +261,7 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <param name="value">String value</param>
     public void Set(string value)
     {
-        if (value == null || value.Length <= 0)
+        if (value is not { Length: > 0 })
             _buffer = null;
         else
             Set(Encoding.UTF8.GetBytes(value));

@@ -144,7 +144,7 @@ public class Privacy3DES : IPrivacyProtocol
         if (key == null || key.Length < 32)
             throw new ArgumentOutOfRangeException("decryptionKey",
                 "Minimum acceptable length of the decryption key is 32 bytes.");
-        if (privacyParameters == null || privacyParameters.Length != 8)
+        if (privacyParameters is not { Length: 8 })
             throw new ArgumentOutOfRangeException(nameof(privacyParameters), "Privacy parameters field is not 8 bytes long.");
 
         var iv = GetIV(key, privacyParameters);

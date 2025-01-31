@@ -331,7 +331,7 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// <returns>Integer hash representing the object</returns>
     public override int GetHashCode()
     {
-        if (_data == null || _data.Length != 4)
+        if (_data is not { Length: 4 })
             return 0;
         var hash = Convert.ToInt32(_data[0]) + Convert.ToInt32(_data[1]) + Convert.ToInt32(_data[2]) +
                    Convert.ToInt32(_data[3]);

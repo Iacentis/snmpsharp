@@ -56,7 +56,7 @@ public class Sequence : AsnType, ICloneable
     /// <param name="value">Byte array containing BER encoded sequence data</param>
     public void Set(byte[] value)
     {
-        if (value == null || value.Length <= 0)
+        if (value is not { Length: > 0 })
         {
             _data = null;
         }

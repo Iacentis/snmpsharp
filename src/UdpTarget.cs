@@ -222,7 +222,7 @@ public class UdpTarget : UdpTransport, IDisposable
 
         var inBuffer = base.Request(_address, _port, outPacket, outPacket.Length, _timeout, _retry);
 
-        if (inBuffer == null || inBuffer.Length <= 0)
+        if (inBuffer is not { Length: > 0 })
             throw new SnmpException(SnmpException.NoDataReceived, "No data received on request.");
         // verify packet
         if (agentParameters.Version == SnmpVersion.Ver1)
@@ -437,7 +437,7 @@ public class UdpTarget : UdpTransport, IDisposable
         }
         else
         {
-            if (buffer == null || buffer.Length <= 0 || buflen <= 0)
+            if (buffer is not { Length: > 0 } || buflen <= 0)
             {
                 _response(AsyncRequestResult.NoDataReceived, null);
                 return;

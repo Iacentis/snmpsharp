@@ -370,7 +370,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>Integer array representing the oid or null if invalid object id was passed</returns>
     private static uint[] Parse(string oidStr)
     {
-        if (oidStr == null || oidStr.Length <= 0) return null;
+        if (oidStr is not { Length: > 0 }) return null;
         // verify correct values are the only ones present in the string
         foreach (var c in oidStr)
             if (!char.IsNumber(c) && c != '.')
