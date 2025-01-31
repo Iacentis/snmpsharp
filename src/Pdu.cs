@@ -708,17 +708,17 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
 
         str.Append("\n");
-        str.AppendFormat("RequestId: {0}\n", RequestId);
+        str.Append($"RequestId: {RequestId}\n");
         if (Type != PduType.GetBulk)
-            str.AppendFormat("ErrorStatus: {0}\nError Index: {1}\n", ErrorStatus, ErrorIndex);
+            str.Append($"ErrorStatus: {ErrorStatus}\nError Index: {ErrorIndex}\n");
         else
-            str.AppendFormat("MaxRepeaters: {0}\nNonRepeaters: {1}\n", MaxRepetitions, NonRepeaters);
+            str.Append($"MaxRepeaters: {MaxRepetitions}\nNonRepeaters: {NonRepeaters}\n");
         if (Type == PduType.V2Trap || Type == PduType.Inform)
-            str.AppendFormat("TimeStamp: {0}\nTrapOID: {1}\n", TrapSysUpTime, TrapObjectID);
-        str.AppendFormat("VbList entries: {0}\n", VbCount);
+            str.Append($"TimeStamp: {TrapSysUpTime}\nTrapOID: {TrapObjectID}\n");
+        str.Append($"VbList entries: {VbCount}\n");
         if (VbCount > 0)
             foreach (var v in VbList)
-                str.AppendFormat("Vb: {0}\n", v);
+                str.Append($"Vb: {v}\n");
 
         return str.ToString();
     }

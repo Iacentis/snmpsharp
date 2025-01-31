@@ -196,7 +196,7 @@ public class Vb : AsnType, ICloneable
         _value = SnmpConstants.GetSyntaxObject(asnType);
         if (_value == null)
             throw new SnmpDecodingException(
-                string.Format("Invalid ASN.1 type encountered 0x{0:x2}. Unable to continue decoding.", asnType));
+                $"Invalid ASN.1 type encountered 0x{asnType:x2}. Unable to continue decoding.");
         offset = _value.decode(buffer, offset);
         return offset;
     }

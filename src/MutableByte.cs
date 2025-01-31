@@ -670,10 +670,10 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         var str = new StringBuilder();
         for (var i = 0; i < _buffer.Length; i++)
         {
-            str.Append(string.Format("{0:x02} ", _buffer[i]));
+            str.Append($"{_buffer[i]:x02} ");
             if (i > 0 && i < _buffer.Length - 1 && i % 16 == 0)
-                str.Append("\n");
-            else if (i < _buffer.Length - 1) str.Append(" ");
+                str.Append('\n');
+            else if (i < _buffer.Length - 1) str.Append(' ');
         }
 
         return str.ToString();
@@ -697,24 +697,24 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         var output = new StringBuilder();
         var dec = new StringBuilder();
         var pcnt = 0;
-        output.AppendFormat("{0:d03}  ", start);
+        output.Append($"{start:d03}  ");
         for (var i = start; i < start + length; i++)
         {
-            output.AppendFormat("{0:x2}", _buffer[i]);
+            output.Append($"{_buffer[i]:x2}");
             if (_buffer[i] > 31 && _buffer[i] < 128) dec.Append(Convert.ToChar(_buffer[i]));
             ++pcnt;
             if (pcnt == 16)
             {
                 output.Append("    ");
                 output.Append(dec);
-                output.Append("\n");
-                output.AppendFormat("{0:d03}  ", i + 1);
+                output.Append('\n');
+                output.Append($"{i + 1:d03}  ");
                 dec.Remove(0, dec.Length);
                 pcnt = 0;
             }
             else
             {
-                output.Append(" ");
+                output.Append(' ');
             }
         }
 

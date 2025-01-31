@@ -79,6 +79,6 @@ public sealed class SnmpError
             return "notWritable";
         if (errorCode == SnmpConstants.ErrInconsistentName)
             return "inconsistentName";
-        return string.Format("Unknown error ({0})", errorCode);
+        return $"Unknown error ({errorCode})";
     }
 }

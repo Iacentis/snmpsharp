@@ -114,7 +114,7 @@ public class SnmpV1TrapPacket : SnmpPacket
         int headerLen;
         var tmpAsnType = AsnType.ParseHeader(buffer, ref tmpOffset, out headerLen);
         if (tmpAsnType != (byte)PduType.Trap)
-            throw new SnmpException(string.Format("Invalid SNMP ASN.1 type. Received: {0:x2}", tmpAsnType));
+            throw new SnmpException($"Invalid SNMP ASN.1 type. Received: {tmpAsnType:x2}");
         // decode protocol data unit
         offset = Pdu.decode(buf, offset);
         return offset;

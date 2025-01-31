@@ -36,31 +36,31 @@ public sealed class SNMPV3ReportError
         foreach (var v in packet.Pdu.VbList)
         {
             if (v.Oid.Compare(SnmpConstants.usmStatsUnsupportedSecLevels) == 0)
-                return string.Format("usmStatsUnsupportedSecLevels: {0}", v.Value);
+                return $"usmStatsUnsupportedSecLevels: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.usmStatsNotInTimeWindows) == 0)
-                return string.Format("usmStatsNotInTimeWindows: {0}", v.Value);
+                return $"usmStatsNotInTimeWindows: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.usmStatsUnknownSecurityNames) == 0)
-                return string.Format("usmStatsUnknownSecurityNames: {0}", v.Value);
+                return $"usmStatsUnknownSecurityNames: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.usmStatsUnknownEngineIDs) == 0)
-                return string.Format("usmStatsUnknownEngineIDs: {0}", v.Value);
+                return $"usmStatsUnknownEngineIDs: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.usmStatsWrongDigests) == 0)
-                return string.Format("usmStatsWrongDigests: {0}", v.Value);
+                return $"usmStatsWrongDigests: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.usmStatsDecryptionErrors) == 0)
-                return string.Format("usmStatsDecryptionErrors: {0}", v.Value);
+                return $"usmStatsDecryptionErrors: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.snmpUnknownSecurityModels) == 0)
-                return string.Format("snmpUnknownSecurityModels: {0}", v.Value);
+                return $"snmpUnknownSecurityModels: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.snmpInvalidMsgs) == 0)
-                return string.Format("snmpInvalidMsgs: {0}", v.Value);
+                return $"snmpInvalidMsgs: {v.Value}";
 
             if (v.Oid.Compare(SnmpConstants.snmpUnknownPDUHandlers) == 0)
-                return string.Format("snmpUnknownPDUHandlers: {0}", v.Value);
+                return $"snmpUnknownPDUHandlers: {v.Value}";
         }
 
         return "";

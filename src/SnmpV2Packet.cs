@@ -117,7 +117,7 @@ public class SnmpV2Packet : SnmpPacket
     public override string ToString()
     {
         var str = new StringBuilder();
-        str.AppendFormat("SnmpV2Packet:\nCommunity: {0}\n{1}\n", Community, Pdu);
+        str.Append($"SnmpV2Packet:\nCommunity: {Community}\n{Pdu}\n");
         return str.ToString();
     }
 
@@ -157,7 +157,7 @@ public class SnmpV2Packet : SnmpPacket
             asnType != (byte)PduType.GetBulk && asnType != (byte)PduType.Response && asnType != (byte)PduType.V2Trap &&
             asnType != (byte)PduType.Inform)
             throw new SnmpInvalidPduTypeException("Invalid SNMP operation received: " +
-                                                  string.Format("0x{0:x2}", asnType));
+                                                  $"0x{asnType:x2}");
 
         // Now process the Protocol Data Unit
         offset = Pdu.decode(buf, offset);
@@ -177,7 +177,7 @@ public class SnmpV2Packet : SnmpPacket
             Pdu.Type != PduType.Response && Pdu.Type != PduType.GetBulk &&
             Pdu.Type != PduType.Inform)
             throw new SnmpInvalidPduTypeException("Invalid SNMP PDU type while attempting to encode PDU: " +
-                                                  string.Format("0x{0:x2}", Pdu.Type));
+                                                  $"0x{Pdu.Type:x2}");
 
         // snmp version
         _protocolVersion.encode(buf);
