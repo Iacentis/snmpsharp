@@ -94,8 +94,8 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// </summary>
     /// <param name="other">Int32 value to compare class value with.</param>
     /// <returns>
-    ///     less then 0 if if parameter is less then, 0 if parameter is equal and greater then 0 if parameter is greater
-    ///     then the class value
+    ///     less than 0 if is parameter is less then, 0 if parameter is equal and greater than 0 if parameter is greater
+    ///     than the class value
     /// </returns>
     public int CompareTo(int other)
     {
@@ -107,13 +107,12 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// </summary>
     /// <param name="other">Integer32 value to compare class value with.</param>
     /// <returns>
-    ///     less then 0 if if parameter is less then, 0 if parameter is equal and greater then 0 if parameter is greater
-    ///     then the class value
+    ///     less than 0 if is parameter is less then, 0 if parameter is equal and greater than 0 if parameter is greater
+    ///     than the class value
     /// </returns>
-    public int CompareTo(Integer32 other)
+    public int CompareTo(Integer32? other)
     {
-        if ((object)other == null) return 1;
-        return _value.CompareTo(other.Value);
+        return other is null ? 1 : _value.CompareTo(other.Value);
     }
 
     /// <summary>
@@ -121,10 +120,9 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// </summary>
     /// <param name="value">Integer32 class cast as <see cref="AsnType" /></param>
     /// <exception cref="ArgumentException">Argument is not Integer32 type.</exception>
-    public void Set(AsnType value)
+    public void Set(AsnType? value)
     {
-        var val = value as Integer32;
-        if (val != null)
+        if (value is Integer32 val)
             _value = val.Value;
         else
             throw new ArgumentException("Invalid argument type.");
@@ -163,9 +161,9 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// </summary>
     /// <param name="value">Integer32 class whose value is cast as Int32 value</param>
     /// <returns>Int32 value of the Integer32 class.</returns>
-    public static implicit operator int(Integer32 value)
+    public static implicit operator int(Integer32? value)
     {
-        if (value == null)
+        if (value is null)
             return 0;
         return value.Value;
     }
@@ -176,7 +174,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <returns>Int32 hash of the class stored value</returns>
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return Value.GetHashCode();
     }
 
     /// <summary>
@@ -194,17 +192,15 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// </summary>
     /// <param name="obj">Object to compare values with</param>
     /// <returns>True if object value is the same as this class, otherwise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj is Integer32)
+        if (obj is Integer32 integer32)
         {
-            var i32 = (Integer32)obj;
-            return _value.Equals(i32.Value);
+            return _value.Equals(integer32.Value);
         }
 
-        if (obj is int)
+        if (obj is int i32)
         {
-            var i32 = (int)obj;
             return _value.Equals(i32);
         }
 
@@ -217,10 +213,11 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <param name="first">First <see cref="Integer32" /> class value to compare</param>
     /// <param name="second">Second <see cref="Integer32" /> class value to compare</param>
     /// <returns>True if class values match, otherwise false</returns>
-    public static bool operator ==(Integer32 first, Integer32 second)
+    public static bool operator ==(Integer32? first, Integer32? second)
     {
-        if ((object)first == null && (object)second == null) return true;
-        if ((object)first == null && (object)second != null) return false;
+        if (ReferenceEquals(first, second)) return true;
+        if (first is null && second is null) return true;
+        if (first is null || second is null) return false;
         return first.Equals(second);
     }
 
@@ -250,13 +247,11 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static Integer32 operator +(Integer32 first, Integer32 second)
+    public static Integer32? operator +(Integer32? first, Integer32? second)
     {
-        if (first == null && second == null) return null;
-        if (first == null) return new Integer32(second);
-        if (second == null) return new Integer32(first);
-
-        return new Integer32(first.Value + second.Value);
+        if (first is null && second is null) return null;
+        if (first is null) return second;
+        return second is null ? first : new Integer32(first.Value + second.Value);
     }
 
     /// <summary>
@@ -274,11 +269,11 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static Integer32 operator -(Integer32 first, Integer32 second)
+    public static Integer32? operator -(Integer32? first, Integer32? second)
     {
-        if (first == null && second == null) return null;
-        if (first == null) return new Integer32(second);
-        if (second == null) return new Integer32(first);
+        if (first is null && second is null) return null;
+        if (first is null) return second;
+        if (second is null) return first;
 
         return new Integer32(first.Value - second.Value);
     }
@@ -323,7 +318,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
             for (var i = 3; i >= 0; i--)
                 if (b[i] != 0 || tmp.Length > 0)
                     tmp.Append(b[i]);
-            // if buffer length is 0 then value is 0 and we have to add it to the buffer
+            // if buffer length is 0 then value is 0, and we have to add it to the buffer
             if (tmp.Length == 0)
             {
                 tmp.Append(0);
@@ -356,8 +351,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
         //
         // parse the header first
         //
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type");

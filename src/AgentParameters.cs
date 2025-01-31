@@ -30,7 +30,7 @@ public class AgentParameters : IAgentParameters
     /// <summary>
     ///     SNMP community name for SNMP v1 and v2 protocol versions
     /// </summary>
-    protected OctetString _community;
+    protected OctetString? _community;
 
     /// <summary>
     ///     Flag that disables checking of host IP address and port number from which reply is received. If not disabled, only

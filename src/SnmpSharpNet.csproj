@@ -17,6 +17,7 @@
         <PackageProjectUrl>https://github.com/westermo/snmpsharp</PackageProjectUrl>
         <RepositoryUrl>https://github.com/westermo/snmpsharp</RepositoryUrl>
         <Version>$(AssemblyVersion)-wmo1</Version>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
 </Project>
