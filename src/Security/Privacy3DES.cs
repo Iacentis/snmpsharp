@@ -84,7 +84,7 @@ public class Privacy3DES : IPrivacyProtocol
         byte[] encryptedData = null;
         try
         {
-            TripleDES tdes = new TripleDESCryptoServiceProvider();
+            var tdes = TripleDES.Create();
             tdes.Mode = CipherMode.CBC;
             tdes.Padding = PaddingMode.None;
             // normalize key - generated key is 32 bytes long, we need 24 bytes to encrypt
@@ -152,7 +152,7 @@ public class Privacy3DES : IPrivacyProtocol
         byte[] decryptedData = null;
         try
         {
-            TripleDES tdes = new TripleDESCryptoServiceProvider();
+            var tdes = TripleDES.Create();
             tdes.Mode = CipherMode.CBC;
             tdes.Padding = PaddingMode.None;
 

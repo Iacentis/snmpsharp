@@ -120,7 +120,7 @@ public class AuthenticationMD5 : IAuthenticationDigest
 
         var password_index = 0;
         var count = 0;
-        MD5 md5 = new MD5CryptoServiceProvider();
+        var md5 = MD5.Create();
 
         var sourceBuffer = new byte[1048576];
         var buf = new byte[64];
@@ -166,7 +166,7 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <returns>Hash value</returns>
     public byte[] ComputeHash(byte[] data, int offset, int count)
     {
-        MD5 md5 = new MD5CryptoServiceProvider();
+        var md5 = MD5.Create();
         var res = md5.ComputeHash(data, offset, count);
         md5.Clear();
         return res;

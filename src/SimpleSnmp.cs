@@ -337,10 +337,10 @@ public class SimpleSnmp
         {
             _target = new UdpTarget(_peerIP, _peerPort, _timeout, _retry);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _target = null;
-            if (!_suppressExceptions) throw ex;
+            if (!_suppressExceptions) throw;
         }
 
         if (_target == null) return null;
@@ -410,13 +410,13 @@ public class SimpleSnmp
                         result.Pdu.ErrorIndex);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (!_suppressExceptions)
             {
                 _target.Close();
                 _target = null;
-                throw ex;
+                throw;
             }
         }
 
@@ -580,13 +580,13 @@ public class SimpleSnmp
                         result.Pdu.ErrorIndex);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (!_suppressExceptions)
             {
                 _target.Close();
                 _target = null;
-                throw ex;
+                throw;
             }
         }
 
@@ -709,10 +709,10 @@ public class SimpleSnmp
             pdu.MaxRepetitions = _maxRepetitions;
             _target = new UdpTarget(_peerIP, _peerPort, _timeout, _retry);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _target = null;
-            if (!_suppressExceptions) throw ex;
+            if (!_suppressExceptions) throw;
         }
 
         if (_target == null) return null;
@@ -778,13 +778,13 @@ public class SimpleSnmp
                         result.Pdu.ErrorIndex);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (!_suppressExceptions)
             {
                 _target.Close();
                 _target = null;
-                throw ex;
+                throw;
             }
         }
 
@@ -878,10 +878,10 @@ public class SimpleSnmp
         {
             _target = new UdpTarget(_peerIP, _peerPort, _timeout, _retry);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _target = null;
-            if (!_suppressExceptions) throw ex;
+            if (!_suppressExceptions) throw;
         }
 
         if (_target == null) return null;
@@ -938,13 +938,13 @@ public class SimpleSnmp
                         result.Pdu.ErrorIndex);
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             if (!_suppressExceptions)
             {
                 _target.Close();
                 _target = null;
-                throw ex;
+                throw;
             }
         }
 
@@ -1212,9 +1212,9 @@ public class SimpleSnmp
             {
                 he = Dns.GetHostEntry(_peerName);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                if (!_suppressExceptions) throw ex;
+                if (!_suppressExceptions) throw;
 
                 he = null;
             }

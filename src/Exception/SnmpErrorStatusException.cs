@@ -79,5 +79,5 @@ public class SnmpErrorStatusException : Exception
     ///     Get exception message
     /// </summary>
     public override string Message =>
-        string.Format("{0}> ErrorStatus {1} ErrorIndex {2}", base.Message, _errorStatus, _errorIndex);
+        $"{base.Message}> ErrorStatus {_errorStatus} ErrorIndex {_errorIndex}";
 }

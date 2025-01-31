@@ -96,7 +96,7 @@ public class PrivacyDES : IPrivacyProtocol
         var posResult = 0;
         Buffer.BlockCopy(unencryptedData, offset, buffer, 0, length);
 
-        DES des = new DESCryptoServiceProvider();
+        var des = DES.Create();
         des.Mode = CipherMode.ECB;
         des.Padding = PaddingMode.None;
 
@@ -154,7 +154,7 @@ public class PrivacyDES : IPrivacyProtocol
 
         var iv = new byte[8];
         for (var i = 0; i < 8; ++i) iv[i] = (byte)(key[8 + i] ^ privacyParameters[i]);
-        DES des = new DESCryptoServiceProvider();
+        var des = DES.Create();
         des.Mode = CipherMode.CBC;
         des.Padding = PaddingMode.Zeros;
 

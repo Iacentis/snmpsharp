@@ -99,7 +99,7 @@ public class PrivacyAES : IPrivacyProtocol
         // Copy salt value to the iv array
         Buffer.BlockCopy(privacyParameters, 0, iv, 8, 8);
 
-        Rijndael rm = new RijndaelManaged();
+        var rm = Aes.Create();
         rm.KeySize = _keyBytes * 8;
         rm.FeedbackSize = 128;
         rm.BlockSize = 128;
@@ -161,7 +161,7 @@ public class PrivacyAES : IPrivacyProtocol
         byte[] decryptedData = null;
 
         // now do CFB decryption of the encrypted data
-        var rm = Rijndael.Create();
+        var rm = Aes.Create();
         rm.KeySize = _keyBytes * 8;
         rm.FeedbackSize = 128;
         rm.BlockSize = 128;

@@ -126,7 +126,7 @@ public class AuthenticationSHA512 : IAuthenticationDigest
 
         var password_index = 0;
         var count = 0;
-        SHA512 sha = new SHA512CryptoServiceProvider();
+        var sha = SHA512.Create();
 
         /* Use while loop until we've done 1 Megabyte */
         var sourceBuffer = new byte[1048576];
@@ -176,7 +176,7 @@ public class AuthenticationSHA512 : IAuthenticationDigest
     /// <returns>Hash value</returns>
     public byte[] ComputeHash(byte[] data, int offset, int count)
     {
-        SHA512 sha = new SHA512CryptoServiceProvider();
+        var sha = SHA512.Create();
         var res = sha.ComputeHash(data, offset, count);
         sha.Clear();
         return res;
