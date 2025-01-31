@@ -23,10 +23,10 @@ namespace SnmpSharpNet;
 /// </summary>
 public sealed class SnmpConstants
 {
-	/// <summary>
-	///     Private constructor to prevent the class with all static members from being instantiated.
-	/// </summary>
-	private SnmpConstants()
+    /// <summary>
+    ///     Private constructor to prevent the class with all static members from being instantiated.
+    /// </summary>
+    private SnmpConstants()
     {
         // nothing
     }

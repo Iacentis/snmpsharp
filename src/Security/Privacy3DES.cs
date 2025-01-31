@@ -38,41 +38,41 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class Privacy3DES : IPrivacyProtocol
 {
-	/// <summary>
-	///     Internal salt value
-	/// </summary>
-	protected int _salt;
+    /// <summary>
+    ///     Internal salt value
+    /// </summary>
+    protected int _salt;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public Privacy3DES()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public Privacy3DES()
     {
         var rand = new Random();
         _salt = rand.Next();
     }
 
-	/// <summary>
-	///     Encrypt ScopedPdu using TripleDES encryption protocol
-	/// </summary>
-	/// <param name="unencryptedData">Unencrypted ScopedPdu byte array</param>
-	/// <param name="offset">Offset to start encryption</param>
-	/// <param name="length">Length of data to encrypt</param>
-	/// <param name="key">Encryption key. Key has to be at least 32 bytes is length</param>
-	/// <param name="engineBoots">Authoritative engine boots value</param>
-	/// <param name="engineTime">Authoritative engine time value.</param>
-	/// <param name="privacyParameters">
-	///     Privacy parameters out buffer. This field will be filled in with information
-	///     required to decrypt the information. Output length of this field is 8 bytes and space has to be reserved
-	///     in the USM header to store this information
-	/// </param>
-	/// <param name="authDigest">Authentication digest class reference. Used by TripleDES.</param>
-	/// <returns>Encrypted byte array</returns>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown when encryption key is null or length of the encryption key is too
-	///     short.
-	/// </exception>
-	public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Encrypt ScopedPdu using TripleDES encryption protocol
+    /// </summary>
+    /// <param name="unencryptedData">Unencrypted ScopedPdu byte array</param>
+    /// <param name="offset">Offset to start encryption</param>
+    /// <param name="length">Length of data to encrypt</param>
+    /// <param name="key">Encryption key. Key has to be at least 32 bytes is length</param>
+    /// <param name="engineBoots">Authoritative engine boots value</param>
+    /// <param name="engineTime">Authoritative engine time value.</param>
+    /// <param name="privacyParameters">
+    ///     Privacy parameters out buffer. This field will be filled in with information
+    ///     required to decrypt the information. Output length of this field is 8 bytes and space has to be reserved
+    ///     in the USM header to store this information
+    /// </param>
+    /// <param name="authDigest">Authentication digest class reference. Used by TripleDES.</param>
+    /// <returns>Encrypted byte array</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when encryption key is null or length of the encryption key is too
+    ///     short.
+    /// </exception>
+    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         privacyParameters = GetSalt(engineBoots);
@@ -111,26 +111,26 @@ public class Privacy3DES : IPrivacyProtocol
         return encryptedData;
     }
 
-	/// <summary>
-	///     Decrypt TripleDES encrypted ScopedPdu
-	/// </summary>
-	/// <param name="encryptedData">Source data buffer</param>
-	/// <param name="offset">Offset within the buffer to start decryption process</param>
-	/// <param name="length">Length of data to decrypt</param>
-	/// <param name="key">
-	///     Decryption key. Key length has to be 32 bytes in length or longer (bytes beyond 32 bytes are
-	///     ignored).
-	/// </param>
-	/// <param name="engineBoots">Authoritative engine boots value</param>
-	/// <param name="engineTime">Authoritative engine time value</param>
-	/// <param name="privacyParameters">Privacy parameters extracted from USM header</param>
-	/// <returns>Decrypted byte array</returns>
-	/// <exception cref="ArgumentNullException">Thrown when encrypted data is null or length == 0</exception>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown when encryption key length is less then 32 byte or if privacy parameters
-	///     argument is null or length other then 8 bytes
-	/// </exception>
-	public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Decrypt TripleDES encrypted ScopedPdu
+    /// </summary>
+    /// <param name="encryptedData">Source data buffer</param>
+    /// <param name="offset">Offset within the buffer to start decryption process</param>
+    /// <param name="length">Length of data to decrypt</param>
+    /// <param name="key">
+    ///     Decryption key. Key length has to be 32 bytes in length or longer (bytes beyond 32 bytes are
+    ///     ignored).
+    /// </param>
+    /// <param name="engineBoots">Authoritative engine boots value</param>
+    /// <param name="engineTime">Authoritative engine time value</param>
+    /// <param name="privacyParameters">Privacy parameters extracted from USM header</param>
+    /// <returns>Decrypted byte array</returns>
+    /// <exception cref="ArgumentNullException">Thrown when encrypted data is null or length == 0</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when encryption key length is less then 32 byte or if privacy parameters
+    ///     argument is null or length other then 8 bytes
+    /// </exception>
+    public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
@@ -172,63 +172,63 @@ public class Privacy3DES : IPrivacyProtocol
         return decryptedData;
     }
 
-	/// <summary>
-	///     Returns minimum encryption/decryption key length. For TripleDES, returned value is 32.
-	/// </summary>
-	/// <remarks>
-	///     TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
-	///     encryption IV.
-	/// </remarks>
-	public int MinimumKeyLength => 32;
+    /// <summary>
+    ///     Returns minimum encryption/decryption key length. For TripleDES, returned value is 32.
+    /// </summary>
+    /// <remarks>
+    ///     TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
+    ///     encryption IV.
+    /// </remarks>
+    public int MinimumKeyLength => 32;
 
-	/// <summary>
-	///     Return maximum encryption/decryption key length. For TripleDES, returned value is 32
-	/// </summary>
-	/// <remarks>
-	///     TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
-	///     encryption IV.
-	/// </remarks>
-	public int MaximumKeyLength => 32;
+    /// <summary>
+    ///     Return maximum encryption/decryption key length. For TripleDES, returned value is 32
+    /// </summary>
+    /// <remarks>
+    ///     TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
+    ///     encryption IV.
+    /// </remarks>
+    public int MaximumKeyLength => 32;
 
-	/// <summary>
-	///     Returns the length of privacyParameters USM header field. For TripleDES, field length is 8.
-	/// </summary>
-	public int PrivacyParametersLength => 8;
+    /// <summary>
+    ///     Returns the length of privacyParameters USM header field. For TripleDES, field length is 8.
+    /// </summary>
+    public int PrivacyParametersLength => 8;
 
-	/// <summary>
-	///     Get final encrypted length
-	/// </summary>
-	/// <remarks>
-	///     TripleDES performs encryption on 8 byte blocks so the final encrypted size will be a
-	///     mulitiple of 8 with padding added to the end of the ScopedPdu if required.
-	/// </remarks>
-	/// <param name="scopedPduLength">BER encoded ScopedPdu data length</param>
-	/// <returns>Length of encrypted byte array</returns>
-	public int GetEncryptedLength(int scopedPduLength)
+    /// <summary>
+    ///     Get final encrypted length
+    /// </summary>
+    /// <remarks>
+    ///     TripleDES performs encryption on 8 byte blocks so the final encrypted size will be a
+    ///     mulitiple of 8 with padding added to the end of the ScopedPdu if required.
+    /// </remarks>
+    /// <param name="scopedPduLength">BER encoded ScopedPdu data length</param>
+    /// <returns>Length of encrypted byte array</returns>
+    public int GetEncryptedLength(int scopedPduLength)
     {
         if (scopedPduLength % 8 == 0) return scopedPduLength;
         return 8 * (scopedPduLength / 8 + 1);
     }
 
-	/// <summary>
-	///     Privacy protocol name
-	/// </summary>
-	public string Name => "TripleDES";
+    /// <summary>
+    ///     Privacy protocol name
+    /// </summary>
+    public string Name => "TripleDES";
 
-	/// <summary>
-	///     Extends the encryption key if key size returned by PasswordToKey is less then minimum
-	///     required by the encryption protocol.
-	/// </summary>
-	/// <remarks>
-	///     There is no need to call this method in a user application becuase PasswordToKey() method will
-	///     make the call if password it generates is too short.
-	/// </remarks>
-	/// <param name="shortKey">Encryption key</param>
-	/// <param name="password">Privacy password</param>
-	/// <param name="engineID">Authoritative engine id</param>
-	/// <param name="authProtocol">Authentication protocol class instance</param>
-	/// <returns>unaltered shortKey value</returns>
-	public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Extends the encryption key if key size returned by PasswordToKey is less then minimum
+    ///     required by the encryption protocol.
+    /// </summary>
+    /// <remarks>
+    ///     There is no need to call this method in a user application becuase PasswordToKey() method will
+    ///     make the call if password it generates is too short.
+    /// </remarks>
+    /// <param name="shortKey">Encryption key</param>
+    /// <param name="password">Privacy password</param>
+    /// <param name="engineID">Authoritative engine id</param>
+    /// <param name="authProtocol">Authentication protocol class instance</param>
+    /// <returns>unaltered shortKey value</returns>
+    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
     {
         var length = shortKey.Length;
         var extendedKey = new byte[MinimumKeyLength];
@@ -248,20 +248,20 @@ public class Privacy3DES : IPrivacyProtocol
         return extendedKey;
     }
 
-	/// <summary>
-	///     TripleDES implementation supports extending of a short encryption key. Always returns true.
-	/// </summary>
-	public bool CanExtendShortKey => true;
+    /// <summary>
+    ///     TripleDES implementation supports extending of a short encryption key. Always returns true.
+    /// </summary>
+    public bool CanExtendShortKey => true;
 
-	/// <summary>
-	///     Convert privacy password into encryption key using packet authentication hash.
-	/// </summary>
-	/// <param name="secret">Privacy user secret/password</param>
-	/// <param name="engineId">Authoritative engine id of the SNMP agent</param>
-	/// <param name="authProtocol">Authentication protocol</param>
-	/// <returns>Encryption key</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when user secret/password is shorter then MinimumKeyLength</exception>
-	public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Convert privacy password into encryption key using packet authentication hash.
+    /// </summary>
+    /// <param name="secret">Privacy user secret/password</param>
+    /// <param name="engineId">Authoritative engine id of the SNMP agent</param>
+    /// <param name="authProtocol">Authentication protocol</param>
+    /// <returns>Encryption key</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when user secret/password is shorter then MinimumKeyLength</exception>
+    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
     {
         // RFC 3414 - password length is minimum of 8 bytes long
         if (secret == null || secret.Length < 8)
@@ -272,11 +272,11 @@ public class Privacy3DES : IPrivacyProtocol
         return encryptionKey;
     }
 
-	/// <summary>
-	///     Returns next salt value.
-	/// </summary>
-	/// <returns>32-bit integer salt value in network byte order (big endian)</returns>
-	public int NextSalt()
+    /// <summary>
+    ///     Returns next salt value.
+    /// </summary>
+    /// <returns>32-bit integer salt value in network byte order (big endian)</returns>
+    public int NextSalt()
     {
         if (_salt == int.MaxValue)
             _salt = 1;
@@ -285,17 +285,17 @@ public class Privacy3DES : IPrivacyProtocol
         return _salt;
     }
 
-	/// <summary>
-	///     Get TripleDES encryption salt value.
-	/// </summary>
-	/// <remarks>
-	///     Salt value is generated by concatenating engineBoots value with
-	///     the random integer value.
-	/// </remarks>
-	/// s
-	/// <param name="engineBoots">SNMP engine boots value</param>
-	/// <returns>Salt byte array 8 byte in length</returns>
-	private byte[] GetSalt(int engineBoots)
+    /// <summary>
+    ///     Get TripleDES encryption salt value.
+    /// </summary>
+    /// <remarks>
+    ///     Salt value is generated by concatenating engineBoots value with
+    ///     the random integer value.
+    /// </remarks>
+    /// s
+    /// <param name="engineBoots">SNMP engine boots value</param>
+    /// <returns>Salt byte array 8 byte in length</returns>
+    private byte[] GetSalt(int engineBoots)
     {
         var salt = new byte[8]; // salt is 8 bytes
         var s = NextSalt();
@@ -313,14 +313,14 @@ public class Privacy3DES : IPrivacyProtocol
         return salt;
     }
 
-	/// <summary>
-	///     Generate IV from the privacy key and salt value returned by GetSalt method.
-	/// </summary>
-	/// <param name="privacyKey">16 byte privacy key</param>
-	/// <param name="salt">Salt value returned by GetSalt method</param>
-	/// <returns>IV value used in the encryption process</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
-	private byte[] GetIV(byte[] privacyKey, byte[] salt)
+    /// <summary>
+    ///     Generate IV from the privacy key and salt value returned by GetSalt method.
+    /// </summary>
+    /// <param name="privacyKey">16 byte privacy key</param>
+    /// <param name="salt">Salt value returned by GetSalt method</param>
+    /// <returns>IV value used in the encryption process</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
+    private byte[] GetIV(byte[] privacyKey, byte[] salt)
     {
         if (privacyKey.Length < 32)
             throw new SnmpPrivacyException("Invalid privacy key length");

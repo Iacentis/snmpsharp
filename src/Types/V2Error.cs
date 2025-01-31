@@ -24,50 +24,50 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class V2Error : AsnType, ICloneable
 {
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	public V2Error()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public V2Error()
     {
         // do nothing
     }
 
-	/// <summary>Constructor.</summary>
-	/// <remarks>
-	///     Since this class doesn't hold any meaningful information, constructor
-	///     does nothing with the argument.
-	/// </remarks>
-	/// <param name="second">Second object</param>
-	public V2Error(V2Error second)
+    /// <summary>Constructor.</summary>
+    /// <remarks>
+    ///     Since this class doesn't hold any meaningful information, constructor
+    ///     does nothing with the argument.
+    /// </remarks>
+    /// <param name="second">Second object</param>
+    public V2Error(V2Error second)
     {
     }
 
-	/// <summary>
-	///     Returns a duplicate of the object.
-	/// </summary>
-	/// <returns>
-	///     A new copy of the current object cast as System.Object.
-	/// </returns>
-	public override object Clone()
+    /// <summary>
+    ///     Returns a duplicate of the object.
+    /// </summary>
+    /// <returns>
+    ///     A new copy of the current object cast as System.Object.
+    /// </returns>
+    public override object Clone()
     {
         return new V2Error(this);
     }
 
-	/// <summary>BER encode SNMP version 2 error.</summary>
-	/// <param name="buffer">Buffer to append encoded value to the end of</param>
-	public override void encode(MutableByte buffer)
+    /// <summary>BER encode SNMP version 2 error.</summary>
+    /// <param name="buffer">Buffer to append encoded value to the end of</param>
+    public override void encode(MutableByte buffer)
     {
         BuildHeader(buffer, Type, 0);
     }
 
-	/// <summary>Decode BER encoded SNMP version 2 error.</summary>
-	/// <param name="buffer">BER encoded buffer</param>
-	/// <param name="offset">
-	///     Offset within the buffer to start decoding the value from. This argument will
-	///     receive the new offset to the byte immediately following the decoded value.
-	/// </param>
-	/// <returns>Buffer position after the decoded value</returns>
-	public override int decode(byte[] buffer, int offset)
+    /// <summary>Decode BER encoded SNMP version 2 error.</summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">
+    ///     Offset within the buffer to start decoding the value from. This argument will
+    ///     receive the new offset to the byte immediately following the decoded value.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public override int decode(byte[] buffer, int offset)
     {
         int headerLength;
         var asnType = ParseHeader(buffer, ref offset, out headerLength);

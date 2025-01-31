@@ -26,20 +26,20 @@ namespace SnmpSharpNet;
 /// </remarks>
 public sealed class SnmpError
 {
-	/// <summary>
-	///     Private constructor.
-	/// </summary>
-	private SnmpError()
+    /// <summary>
+    ///     Private constructor.
+    /// </summary>
+    private SnmpError()
     {
     }
 
-	/// <summary>
-	///     Return SNMP version 1 and 2 error code (errorCode field in the <see cref="Pdu" /> class) as
-	///     a short, descriptive string.
-	/// </summary>
-	/// <param name="errorCode">Error code sent by the agent</param>
-	/// <returns>Short error message for the error code</returns>
-	public static string ErrorMessage(int errorCode)
+    /// <summary>
+    ///     Return SNMP version 1 and 2 error code (errorCode field in the <see cref="Pdu" /> class) as
+    ///     a short, descriptive string.
+    /// </summary>
+    /// <param name="errorCode">Error code sent by the agent</param>
+    /// <returns>Short error message for the error code</returns>
+    public static string ErrorMessage(int errorCode)
     {
         if (errorCode == SnmpConstants.ErrNoError)
             return "No error";

@@ -22,24 +22,24 @@ namespace SnmpSharpNet;
 /// <summary>AES privacy protocol implementation class.</summary>
 public class PrivacyAES : IPrivacyProtocol
 {
-	/// <summary>
-	///     AES protocol key bytes. Valid values are 16 (for AES128), 24 (AES192) or 32 (AES256).
-	/// </summary>
-	protected int _keyBytes = 16; // Default is 128bit AES protocol
+    /// <summary>
+    ///     AES protocol key bytes. Valid values are 16 (for AES128), 24 (AES192) or 32 (AES256).
+    /// </summary>
+    protected int _keyBytes = 16; // Default is 128bit AES protocol
 
-	/// <summary>
-	///     Salt value
-	/// </summary>
-	protected long _salt;
+    /// <summary>
+    ///     Salt value
+    /// </summary>
+    protected long _salt;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	/// <param name="keyBytes">
-	///     Key size in bytes. Acceptable values are
-	///     16 = 128-bit key size, 24 = 192-bit key size, or 32 = 256-bit key size.
-	/// </param>
-	public PrivacyAES(int keyBytes)
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    /// <param name="keyBytes">
+    ///     Key size in bytes. Acceptable values are
+    ///     16 = 128-bit key size, 24 = 192-bit key size, or 32 = 256-bit key size.
+    /// </param>
+    public PrivacyAES(int keyBytes)
     {
         if (keyBytes != 16 && keyBytes != 24 && keyBytes != 32)
             throw new ArgumentOutOfRangeException("keyBytes", "Valid key sizes are 16, 24 and 32 bytes.");
@@ -49,22 +49,22 @@ public class PrivacyAES : IPrivacyProtocol
         _salt = Convert.ToInt64(rand.Next(1, int.MaxValue));
     }
 
-	/// <summary>
-	///     Encrypt <see cref="ScopedPdu" /> data BER encoded in a byte array.
-	/// </summary>
-	/// <param name="unencryptedData">BER encoded <see cref="ScopedPdu" /> byte array that needs to be encrypted</param>
-	/// <param name="offset">Offset within the BER encoded byte array to start encryption operation from.</param>
-	/// <param name="length">Length of data to encrypt</param>
-	/// <param name="key">Encryption key</param>
-	/// <param name="engineBoots">Authoritative engine boots value. Retrieved as part of SNMP v3 discovery process.</param>
-	/// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery process.</param>
-	/// <param name="privacyParameters">
-	///     Byte array that will receive privacy parameters information that is the result of the
-	///     encryption procedure.
-	/// </param>
-	/// <param name="authDigest">Authentication digest reference. Not used by AES protocol and can be null</param>
-	/// <returns>Byte array containing encrypted <see cref="ScopedPdu" /> BER encoded data</returns>
-	public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Encrypt <see cref="ScopedPdu" /> data BER encoded in a byte array.
+    /// </summary>
+    /// <param name="unencryptedData">BER encoded <see cref="ScopedPdu" /> byte array that needs to be encrypted</param>
+    /// <param name="offset">Offset within the BER encoded byte array to start encryption operation from.</param>
+    /// <param name="length">Length of data to encrypt</param>
+    /// <param name="key">Encryption key</param>
+    /// <param name="engineBoots">Authoritative engine boots value. Retrieved as part of SNMP v3 discovery process.</param>
+    /// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery process.</param>
+    /// <param name="privacyParameters">
+    ///     Byte array that will receive privacy parameters information that is the result of the
+    ///     encryption procedure.
+    /// </param>
+    /// <param name="authDigest">Authentication digest reference. Not used by AES protocol and can be null</param>
+    /// <returns>Byte array containing encrypted <see cref="ScopedPdu" /> BER encoded data</returns>
+    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         // check the key before doing anything else
@@ -125,18 +125,18 @@ public class PrivacyAES : IPrivacyProtocol
         return encryptedData;
     }
 
-	/// <summary>
-	///     Decrypt <see cref="ScopedPdu" /> BER encoded byte array.
-	/// </summary>
-	/// <param name="cryptedData">Encrypted data byte array</param>
-	/// <param name="offset">Offset within the buffer to start decryption process from</param>
-	/// <param name="length">Length of data to decrypt</param>
-	/// <param name="key">Decryption key</param>
-	/// <param name="engineBoots">Authoritative engine boots value. Retrieved as part of SNMP v3 discovery procedure</param>
-	/// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery procedure</param>
-	/// <param name="privacyParameters">Privacy parameters parsed from the incoming packet.</param>
-	/// <returns>Byte array containing decrypted <see cref="ScopedPdu" /> in BER encoded format.</returns>
-	public byte[] Decrypt(byte[] cryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Decrypt <see cref="ScopedPdu" /> BER encoded byte array.
+    /// </summary>
+    /// <param name="cryptedData">Encrypted data byte array</param>
+    /// <param name="offset">Offset within the buffer to start decryption process from</param>
+    /// <param name="length">Length of data to decrypt</param>
+    /// <param name="key">Decryption key</param>
+    /// <param name="engineBoots">Authoritative engine boots value. Retrieved as part of SNMP v3 discovery procedure</param>
+    /// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery procedure</param>
+    /// <param name="privacyParameters">Privacy parameters parsed from the incoming packet.</param>
+    /// <returns>Byte array containing decrypted <see cref="ScopedPdu" /> in BER encoded format.</returns>
+    public byte[] Decrypt(byte[] cryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         byte[] privacyParameters)
     {
         if (key == null || key.Length < _keyBytes)
@@ -202,42 +202,42 @@ public class PrivacyAES : IPrivacyProtocol
         return decryptedData;
     }
 
-	/// <summary>
-	///     Get minimum encryption/decryption key length required by the protocol.
-	/// </summary>
-	public int MinimumKeyLength => _keyBytes;
+    /// <summary>
+    ///     Get minimum encryption/decryption key length required by the protocol.
+    /// </summary>
+    public int MinimumKeyLength => _keyBytes;
 
-	/// <summary>
-	///     Get maximum encryption/decryption key length required by the protocol.
-	/// </summary>
-	public int MaximumKeyLength => _keyBytes;
+    /// <summary>
+    ///     Get maximum encryption/decryption key length required by the protocol.
+    /// </summary>
+    public int MaximumKeyLength => _keyBytes;
 
-	/// <summary>
-	///     Get length of the privacy parameters byte array that is generated by the encryption method and used by the
-	///     decryption method.
-	/// </summary>
-	public int PrivacyParametersLength => 8;
+    /// <summary>
+    ///     Get length of the privacy parameters byte array that is generated by the encryption method and used by the
+    ///     decryption method.
+    /// </summary>
+    public int PrivacyParametersLength => 8;
 
-	/// <summary>
-	///     Calculates and returns length of the buffer that is the result of the encryption method.
-	/// </summary>
-	/// <param name="scopedPduLength">Length of the buffer that is needs to be encrypted.</param>
-	/// <returns>Length of the encrypted byte array after the call to Encrypt method.</returns>
-	public int GetEncryptedLength(int scopedPduLength)
+    /// <summary>
+    ///     Calculates and returns length of the buffer that is the result of the encryption method.
+    /// </summary>
+    /// <param name="scopedPduLength">Length of the buffer that is needs to be encrypted.</param>
+    /// <returns>Length of the encrypted byte array after the call to Encrypt method.</returns>
+    public int GetEncryptedLength(int scopedPduLength)
     {
         return scopedPduLength;
     }
 
-	/// <summary>
-	///     Some protocols support a method to extend the encryption or decryption key when supplied key
-	///     is too short.
-	/// </summary>
-	/// <param name="shortKey">Key that needs to be extended</param>
-	/// <param name="password">Privacy password as configured on the SNMP agent.</param>
-	/// <param name="engineID">Authoritative engine id. Value is retrieved as part of SNMP v3 discovery procedure</param>
-	/// <param name="authProtocol">Authentication protocol class instance cast as <see cref="IAuthenticationDigest" /></param>
-	/// <returns>Extended key value</returns>
-	public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Some protocols support a method to extend the encryption or decryption key when supplied key
+    ///     is too short.
+    /// </summary>
+    /// <param name="shortKey">Key that needs to be extended</param>
+    /// <param name="password">Privacy password as configured on the SNMP agent.</param>
+    /// <param name="engineID">Authoritative engine id. Value is retrieved as part of SNMP v3 discovery procedure</param>
+    /// <param name="authProtocol">Authentication protocol class instance cast as <see cref="IAuthenticationDigest" /></param>
+    /// <returns>Extended key value</returns>
+    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
     {
         var extKey = new byte[MinimumKeyLength];
         var lastKeyBuf = new byte[shortKey.Length];
@@ -266,25 +266,25 @@ public class PrivacyAES : IPrivacyProtocol
         return extKey;
     }
 
-	/// <summary>
-	///     Privacy protocol name. Returns string "AES"
-	/// </summary>
-	public virtual string Name => "AES";
+    /// <summary>
+    ///     Privacy protocol name. Returns string "AES"
+    /// </summary>
+    public virtual string Name => "AES";
 
-	/// <summary>
-	///     AES implementation supports extending of a short encryption key. Always returns true.
-	/// </summary>
-	public bool CanExtendShortKey => true;
+    /// <summary>
+    ///     AES implementation supports extending of a short encryption key. Always returns true.
+    /// </summary>
+    public bool CanExtendShortKey => true;
 
-	/// <summary>
-	///     Convert privacy password into encryption key using packet authentication hash.
-	/// </summary>
-	/// <param name="secret">Privacy user secret</param>
-	/// <param name="engineId">Authoritative engine id of the snmp agent</param>
-	/// <param name="authProtocol">Authentication protocol</param>
-	/// <returns>Encryption key</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
-	public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Convert privacy password into encryption key using packet authentication hash.
+    /// </summary>
+    /// <param name="secret">Privacy user secret</param>
+    /// <param name="engineId">Authoritative engine id of the snmp agent</param>
+    /// <param name="authProtocol">Authentication protocol</param>
+    /// <returns>Encryption key</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
+    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
     {
         if (secret == null || secret.Length < 8)
             throw new SnmpPrivacyException("Invalid privacy secret length.");
@@ -293,11 +293,11 @@ public class PrivacyAES : IPrivacyProtocol
         return key;
     }
 
-	/// <summary>
-	///     Get next salt Int64 value. Used internally to encrypt data.
-	/// </summary>
-	/// <returns>Random Int64 value</returns>
-	protected long NextSalt()
+    /// <summary>
+    ///     Get next salt Int64 value. Used internally to encrypt data.
+    /// </summary>
+    /// <returns>Random Int64 value</returns>
+    protected long NextSalt()
     {
         if (_salt == long.MaxValue)
             _salt = 1;

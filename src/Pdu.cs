@@ -51,13 +51,13 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
 {
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Initializes all values to NULL and PDU type to GET
-	/// </remarks>
-	public Pdu()
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Initializes all values to NULL and PDU type to GET
+    /// </remarks>
+    public Pdu()
     {
         _vbs = null;
         _errorIndex = new Integer32();
@@ -70,14 +70,14 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         _trapObjectID = new Oid();
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Create Pdu of specific type.
-	/// </remarks>
-	/// <param name="pduType">Pdu type. For available values see <see cref="PduType" /></param>
-	public Pdu(PduType pduType)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Create Pdu of specific type.
+    /// </remarks>
+    /// <param name="pduType">Pdu type. For available values see <see cref="PduType" /></param>
+    public Pdu(PduType pduType)
         : this()
     {
         _asnType = (byte)pduType;
@@ -88,43 +88,43 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Sets the VarBind list to the Clone copy of the supplied list.
-	/// </remarks>
-	/// <param name="vbs">VarBind list to initialize the internal VbList to.</param>
-	public Pdu(VbCollection vbs)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Sets the VarBind list to the Clone copy of the supplied list.
+    /// </remarks>
+    /// <param name="vbs">VarBind list to initialize the internal VbList to.</param>
+    public Pdu(VbCollection vbs)
         : this()
     {
         _vbs = (VbCollection)vbs.Clone();
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Initializes PDU class with supplied values.
-	/// </remarks>
-	/// <param name="vbs">VarBind list</param>
-	/// <param name="type">PDU type</param>
-	/// <param name="requestId">Request id</param>
-	public Pdu(VbCollection vbs, PduType type, int requestId)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Initializes PDU class with supplied values.
+    /// </remarks>
+    /// <param name="vbs">VarBind list</param>
+    /// <param name="type">PDU type</param>
+    /// <param name="requestId">Request id</param>
+    public Pdu(VbCollection vbs, PduType type, int requestId)
         : this(vbs)
     {
         _requestId.Value = requestId;
         _asnType = (byte)type;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <remarks>
-	///     Initialize class from the passed pdu class.
-	/// </remarks>
-	/// <param name="pdu">Pdu class to use as source of information to initilize this class.</param>
-	public Pdu(Pdu pdu)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <remarks>
+    ///     Initialize class from the passed pdu class.
+    /// </remarks>
+    /// <param name="pdu">Pdu class to use as source of information to initilize this class.</param>
+    public Pdu(Pdu pdu)
         : this(pdu.VbList, pdu.Type, pdu.RequestId)
     {
         if (pdu.Type == PduType.GetBulk)
@@ -139,15 +139,15 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
     }
 
-	/// <summary>
-	///     ErrorStatus Pdu value
-	/// </summary>
-	/// <remarks>
-	///     Stores error status returned by the SNMP agent. Value 0 represents no error. Valid for all
-	///     Pdu types except GetBulk requests.
-	/// </remarks>
-	/// <exception cref="SnmpInvalidPduTypeException">Thrown when property is access for GetBulk Pdu</exception>
-	public int ErrorStatus
+    /// <summary>
+    ///     ErrorStatus Pdu value
+    /// </summary>
+    /// <remarks>
+    ///     Stores error status returned by the SNMP agent. Value 0 represents no error. Valid for all
+    ///     Pdu types except GetBulk requests.
+    /// </remarks>
+    /// <exception cref="SnmpInvalidPduTypeException">Thrown when property is access for GetBulk Pdu</exception>
+    public int ErrorStatus
     {
         get
         {
@@ -158,16 +158,16 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         set => _errorStatus.Value = value;
     }
 
-	/// <summary>
-	///     ErrorIndex Pdu value
-	/// </summary>
-	/// <remarks>
-	///     Error index points to the VbList entry that ErrorStatus error code refers to. Valid for all Pdu types
-	///     except GetBulk requests.
-	/// </remarks>
-	/// <see cref="ErrorStatus" />
-	/// <exception cref="SnmpInvalidPduTypeException">Thrown when property is access for GetBulk Pdu</exception>
-	public int ErrorIndex
+    /// <summary>
+    ///     ErrorIndex Pdu value
+    /// </summary>
+    /// <remarks>
+    ///     Error index points to the VbList entry that ErrorStatus error code refers to. Valid for all Pdu types
+    ///     except GetBulk requests.
+    /// </remarks>
+    /// <see cref="ErrorStatus" />
+    /// <exception cref="SnmpInvalidPduTypeException">Thrown when property is access for GetBulk Pdu</exception>
+    public int ErrorIndex
     {
         get
         {
@@ -178,26 +178,26 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         set => _errorIndex.Value = value;
     }
 
-	/// <summary>
-	///     SNMP packet request id that is sent to the SNMP agent. SET this value before making SNMP requests.
-	/// </summary>
-	public int RequestId
+    /// <summary>
+    ///     SNMP packet request id that is sent to the SNMP agent. SET this value before making SNMP requests.
+    /// </summary>
+    public int RequestId
     {
         set => _requestId.Value = value;
         get => _requestId.Value;
     }
 
-	/// <summary>
-	///     Get or SET the PDU type. Available types are GET, GETNEXT, SET, GETBULK. PDU types are defined in Pdu class.
-	/// </summary>
-	/// <seealso cref="PduType.Get" />
-	/// <seealso cref="PduType.GetNext" />
-	/// <seealso cref="PduType.Set" />
-	/// <seealso cref="PduType.Response" />
-	/// "/>
-	/// * version 2 specific:
-	/// <seealso cref="PduType.GetBulk" />
-	public new PduType Type
+    /// <summary>
+    ///     Get or SET the PDU type. Available types are GET, GETNEXT, SET, GETBULK. PDU types are defined in Pdu class.
+    /// </summary>
+    /// <seealso cref="PduType.Get" />
+    /// <seealso cref="PduType.GetNext" />
+    /// <seealso cref="PduType.Set" />
+    /// <seealso cref="PduType.Response" />
+    /// "/>
+    /// * version 2 specific:
+    /// <seealso cref="PduType.GetBulk" />
+    public new PduType Type
     {
         set
         {
@@ -221,11 +221,11 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         get => (PduType)_asnType;
     }
 
-	/// <summary>
-	///     Tells SNMP Agent how many VBs to include in a single request. Only valid on GETBULK requests.
-	/// </summary>
-	/// <exception cref="SnmpInvalidPduTypeException">Thrown when PDU type is not GET-BULK</exception>
-	public int MaxRepetitions
+    /// <summary>
+    ///     Tells SNMP Agent how many VBs to include in a single request. Only valid on GETBULK requests.
+    /// </summary>
+    /// <exception cref="SnmpInvalidPduTypeException">Thrown when PDU type is not GET-BULK</exception>
+    public int MaxRepetitions
     {
         set
         {
@@ -241,16 +241,16 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
     }
 
-	/// <summary>
-	///     Get/Set GET-BULK NonRepeaters value
-	/// </summary>
-	/// <remarks>
-	///     Non repeaters variable tells the SNMP Agent how many GETNEXT like variables to retrieve (single Vb returned
-	///     per request) before MaxRepetitions value takes affect. If you wish to retrieve as many values as you can
-	///     in a single request, set this value to 0.
-	/// </remarks>
-	/// <exception cref="SnmpInvalidPduTypeException">Thrown when PDU type is not GET-BULK</exception>
-	public int NonRepeaters
+    /// <summary>
+    ///     Get/Set GET-BULK NonRepeaters value
+    /// </summary>
+    /// <remarks>
+    ///     Non repeaters variable tells the SNMP Agent how many GETNEXT like variables to retrieve (single Vb returned
+    ///     per request) before MaxRepetitions value takes affect. If you wish to retrieve as many values as you can
+    ///     in a single request, set this value to 0.
+    /// </remarks>
+    /// <exception cref="SnmpInvalidPduTypeException">Thrown when PDU type is not GET-BULK</exception>
+    public int NonRepeaters
     {
         set
         {
@@ -267,24 +267,24 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
     }
 
-	/// <summary>
-	///     VarBind list
-	/// </summary>
-	public VbCollection VbList => _vbs;
+    /// <summary>
+    ///     VarBind list
+    /// </summary>
+    public VbCollection VbList => _vbs;
 
-	/// <summary>
-	///     Get TRAP TimeStamp class from SNMPv2 TRAP and INFORM PDUs
-	/// </summary>
-	public TimeTicks TrapSysUpTime => _trapTimeStamp;
+    /// <summary>
+    ///     Get TRAP TimeStamp class from SNMPv2 TRAP and INFORM PDUs
+    /// </summary>
+    public TimeTicks TrapSysUpTime => _trapTimeStamp;
 
-	/// <summary>
-	///     Get TRAP ObjectID class from SNMPv2 TRAP and INFORM PDUs
-	/// </summary>
-	/// <exception cref="SnmpInvalidPduTypeException">
-	///     Thrown when property is access for a Pdu of a type other then V2TRAP,
-	///     INFORM or RESPONSE
-	/// </exception>
-	public Oid TrapObjectID
+    /// <summary>
+    ///     Get TRAP ObjectID class from SNMPv2 TRAP and INFORM PDUs
+    /// </summary>
+    /// <exception cref="SnmpInvalidPduTypeException">
+    ///     Thrown when property is access for a Pdu of a type other then V2TRAP,
+    ///     INFORM or RESPONSE
+    /// </exception>
+    public Oid TrapObjectID
     {
         get
         {
@@ -297,17 +297,17 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         set => _trapObjectID.Set(value);
     }
 
-	/// <summary>
-	///     Return the number of VB entries in the VarBind list
-	/// </summary>
-	public int VbCount => _vbs.Count;
+    /// <summary>
+    ///     Return the number of VB entries in the VarBind list
+    /// </summary>
+    public int VbCount => _vbs.Count;
 
-	/// <summary>
-	///     Copy values from another Pdu class.
-	/// </summary>
-	/// <param name="value"><see cref="Pdu" /> cast as AsnType</param>
-	/// <exception cref="ArgumentNullException">Thrown when received argument is null</exception>
-	public void Set(AsnType value)
+    /// <summary>
+    ///     Copy values from another Pdu class.
+    /// </summary>
+    /// <param name="value"><see cref="Pdu" /> cast as AsnType</param>
+    /// <exception cref="ArgumentNullException">Thrown when received argument is null</exception>
+    public void Set(AsnType value)
     {
         if (value == null) throw new ArgumentNullException("value");
         var pdu = value as Pdu;
@@ -335,27 +335,27 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
     }
 
-	/// <summary>
-	///     Set VbList
-	/// </summary>
-	/// <remarks>
-	///     Copy variable bindings from argument <see cref="VbCollection" /> into this classes variable
-	///     binding collection
-	/// </remarks>
-	/// <param name="value"><see cref="VbCollection" /> to copy variable bindings from</param>
-	public void SetVbList(VbCollection value)
+    /// <summary>
+    ///     Set VbList
+    /// </summary>
+    /// <remarks>
+    ///     Copy variable bindings from argument <see cref="VbCollection" /> into this classes variable
+    ///     binding collection
+    /// </remarks>
+    /// <param name="value"><see cref="VbCollection" /> to copy variable bindings from</param>
+    public void SetVbList(VbCollection value)
     {
         _vbs.Clear();
         foreach (var v in value) _vbs.Add(v);
     }
 
-	/// <summary>
-	///     Reset VbList.
-	/// </summary>
-	/// <remarks>
-	///     Remove all entries in the VbList collections.
-	/// </remarks>
-	public void Reset()
+    /// <summary>
+    ///     Reset VbList.
+    /// </summary>
+    /// <remarks>
+    ///     Remove all entries in the VbList collections.
+    /// </remarks>
+    public void Reset()
     {
         _vbs.Clear();
         _errorStatus.Value = 0;
@@ -368,16 +368,16 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         _trapTimeStamp.Value = 0;
     }
 
-	/// <summary>
-	///     Create SNMP-GET Pdu from VbList
-	/// </summary>
-	/// <remarks>
-	///     Helper static function to create GET PDU from the supplied VarBind list. Don't forget to set
-	///     request id for the PDU.
-	/// </remarks>
-	/// <param name="vbs">VarBind list</param>
-	/// <returns>Newly constructed GET PDU</returns>
-	public static Pdu GetPdu(VbCollection vbs)
+    /// <summary>
+    ///     Create SNMP-GET Pdu from VbList
+    /// </summary>
+    /// <remarks>
+    ///     Helper static function to create GET PDU from the supplied VarBind list. Don't forget to set
+    ///     request id for the PDU.
+    /// </remarks>
+    /// <param name="vbs">VarBind list</param>
+    /// <returns>Newly constructed GET PDU</returns>
+    public static Pdu GetPdu(VbCollection vbs)
     {
         var p = new Pdu(vbs);
         p.Type = PduType.Get;
@@ -386,25 +386,25 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         return p;
     }
 
-	/// <summary>
-	///     Create Get Pdu with empty VarBind array
-	/// </summary>
-	/// <returns>Instance of Get Pdu</returns>
-	public static Pdu GetPdu()
+    /// <summary>
+    ///     Create Get Pdu with empty VarBind array
+    /// </summary>
+    /// <returns>Instance of Get Pdu</returns>
+    public static Pdu GetPdu()
     {
         return new Pdu(PduType.Get);
     }
 
-	/// <summary>
-	///     Create SNMP-SET Pdu
-	/// </summary>
-	/// <remarks>
-	///     Helper static function to create SET PDU from the supplied VarBind list. Don't forget to set
-	///     request id for the PDU.
-	/// </remarks>
-	/// <param name="vbs">VarBind list</param>
-	/// <returns>Newly constructed SET PDU</returns>
-	public static Pdu SetPdu(VbCollection vbs)
+    /// <summary>
+    ///     Create SNMP-SET Pdu
+    /// </summary>
+    /// <remarks>
+    ///     Helper static function to create SET PDU from the supplied VarBind list. Don't forget to set
+    ///     request id for the PDU.
+    /// </remarks>
+    /// <param name="vbs">VarBind list</param>
+    /// <returns>Newly constructed SET PDU</returns>
+    public static Pdu SetPdu(VbCollection vbs)
     {
         var p = new Pdu(vbs);
         p.Type = PduType.Set;
@@ -413,25 +413,25 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         return p;
     }
 
-	/// <summary>
-	///     Create Set Pdu with empty VarBind array
-	/// </summary>
-	/// <returns>Instance of Set Pdu</returns>
-	public static Pdu SetPdu()
+    /// <summary>
+    ///     Create Set Pdu with empty VarBind array
+    /// </summary>
+    /// <returns>Instance of Set Pdu</returns>
+    public static Pdu SetPdu()
     {
         return new Pdu(PduType.Set);
     }
 
-	/// <summary>
-	///     Create SNMP-GetNext Pdu
-	/// </summary>
-	/// <remarks>
-	///     Helper static function to create GETNEXT PDU from the supplied VarBind list. Don't forget to set
-	///     request id for the PDU.
-	/// </remarks>
-	/// <param name="vbs">VarBind list</param>
-	/// <returns>Newly constructed GETNEXT PDU</returns>
-	public static Pdu GetNextPdu(VbCollection vbs)
+    /// <summary>
+    ///     Create SNMP-GetNext Pdu
+    /// </summary>
+    /// <remarks>
+    ///     Helper static function to create GETNEXT PDU from the supplied VarBind list. Don't forget to set
+    ///     request id for the PDU.
+    /// </remarks>
+    /// <param name="vbs">VarBind list</param>
+    /// <returns>Newly constructed GETNEXT PDU</returns>
+    public static Pdu GetNextPdu(VbCollection vbs)
     {
         var p = new Pdu(vbs);
         p.Type = PduType.GetNext;
@@ -440,25 +440,25 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         return p;
     }
 
-	/// <summary>
-	///     Create GetNext Pdu with empty VarBind array
-	/// </summary>
-	/// <returns>Instance of GetNext Pdu</returns>
-	public static Pdu GetNextPdu()
+    /// <summary>
+    ///     Create GetNext Pdu with empty VarBind array
+    /// </summary>
+    /// <returns>Instance of GetNext Pdu</returns>
+    public static Pdu GetNextPdu()
     {
         return new Pdu(PduType.GetNext);
     }
 
-	/// <summary>
-	///     Create SNMP-GetBulk Pdu
-	/// </summary>
-	/// <remarks>
-	///     Helper static function to create GETBULK PDU from the supplied VarBind list. MaxRepetitions are set to
-	///     256 and nonRepeaters are set to 0.
-	/// </remarks>
-	/// <param name="vbs">VarBind list</param>
-	/// <returns>Newly constructed GETBULK PDU</returns>
-	public static Pdu GetBulkPdu(VbCollection vbs)
+    /// <summary>
+    ///     Create SNMP-GetBulk Pdu
+    /// </summary>
+    /// <remarks>
+    ///     Helper static function to create GETBULK PDU from the supplied VarBind list. MaxRepetitions are set to
+    ///     256 and nonRepeaters are set to 0.
+    /// </remarks>
+    /// <param name="vbs">VarBind list</param>
+    /// <returns>Newly constructed GETBULK PDU</returns>
+    public static Pdu GetBulkPdu(VbCollection vbs)
     {
         var p = new Pdu(vbs);
         p.Type = PduType.GetBulk;
@@ -467,30 +467,30 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         return p;
     }
 
-	/// <summary>
-	///     Create GetBulk Pdu with empty VarBind array. By default initializes NonRepeaters to 0 and MaxRepetitions to 100
-	/// </summary>
-	/// <returns>Instance of GetBulk Pdu</returns>
-	public static Pdu GetBulkPdu()
+    /// <summary>
+    ///     Create GetBulk Pdu with empty VarBind array. By default initializes NonRepeaters to 0 and MaxRepetitions to 100
+    /// </summary>
+    /// <returns>Instance of GetBulk Pdu</returns>
+    public static Pdu GetBulkPdu()
     {
         return new Pdu(PduType.GetBulk);
     }
 
-	/// <summary>
-	///     Get VB from VarBind list at the specified index
-	/// </summary>
-	/// <param name="index">Index position of the Vb in the array. Zero based.</param>
-	/// <returns>Vb at the specified location in the array</returns>
-	public Vb GetVb(int index)
+    /// <summary>
+    ///     Get VB from VarBind list at the specified index
+    /// </summary>
+    /// <param name="index">Index position of the Vb in the array. Zero based.</param>
+    /// <returns>Vb at the specified location in the array</returns>
+    public Vb GetVb(int index)
     {
         return _vbs[index];
     }
 
-	/// <summary>
-	///     Delete VB from the specified location in the VarBind list
-	/// </summary>
-	/// <param name="pos">0 based VB location</param>
-	public void DeleteVb(int pos)
+    /// <summary>
+    ///     Delete VB from the specified location in the VarBind list
+    /// </summary>
+    /// <param name="pos">0 based VB location</param>
+    public void DeleteVb(int pos)
     {
         if (pos >= 0 && pos <= _vbs.Count) _vbs.RemoveAt(pos);
     }

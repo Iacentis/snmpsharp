@@ -8,10 +8,10 @@ namespace SnmpSharpNet;
 /// </summary>
 public class UTarget : ITarget
 {
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	public UTarget()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public UTarget()
     {
         Reset();
     }

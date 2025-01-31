@@ -70,57 +70,57 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SnmpV1Packet : SnmpPacket
 {
-	/// <summary>
-	///     SNMP Protocol Data Unit
-	/// </summary>
-	public Pdu _pdu;
+    /// <summary>
+    ///     SNMP Protocol Data Unit
+    /// </summary>
+    public Pdu _pdu;
 
-	/// <summary>
-	///     SNMP community name
-	/// </summary>
-	protected OctetString _snmpCommunity;
+    /// <summary>
+    ///     SNMP community name
+    /// </summary>
+    protected OctetString _snmpCommunity;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public SnmpV1Packet()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public SnmpV1Packet()
         : base(SnmpVersion.Ver1)
     {
         _snmpCommunity = new OctetString();
         _pdu = new Pdu();
     }
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	/// <param name="snmpCommunity">SNMP community name for the packet</param>
-	public SnmpV1Packet(string snmpCommunity)
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    /// <param name="snmpCommunity">SNMP community name for the packet</param>
+    public SnmpV1Packet(string snmpCommunity)
         : this()
     {
         _snmpCommunity.Set(snmpCommunity);
     }
 
-	/// <summary>
-	///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
-	/// </summary>
-	public OctetString Community => _snmpCommunity;
+    /// <summary>
+    ///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
+    /// </summary>
+    public OctetString Community => _snmpCommunity;
 
-	/// <summary>
-	///     Access to the packet <see cref="Pdu" />.
-	/// </summary>
-	public override Pdu Pdu => _pdu;
+    /// <summary>
+    ///     Access to the packet <see cref="Pdu" />.
+    /// </summary>
+    public override Pdu Pdu => _pdu;
 
-	/// <summary>
-	///     Decode received SNMP packet.
-	/// </summary>
-	/// <param name="buffer">BER encoded packet buffer</param>
-	/// <param name="length">BER encoded packet buffer length</param>
-	/// <returns>Buffer position after the decoded packet.</returns>
-	/// <exception cref="SnmpException">Thrown when invalid encoding has been found in the packet</exception>
-	/// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
-	/// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
-	/// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
-	public override int decode(byte[] buffer, int length)
+    /// <summary>
+    ///     Decode received SNMP packet.
+    /// </summary>
+    /// <param name="buffer">BER encoded packet buffer</param>
+    /// <param name="length">BER encoded packet buffer length</param>
+    /// <returns>Buffer position after the decoded packet.</returns>
+    /// <exception cref="SnmpException">Thrown when invalid encoding has been found in the packet</exception>
+    /// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
+    /// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
+    /// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
+    public override int decode(byte[] buffer, int length)
     {
         var buf = new MutableByte(buffer, length);
 
@@ -150,24 +150,24 @@ public class SnmpV1Packet : SnmpPacket
         return length;
     }
 
-	/// <summary>
-	///     Replacement for the base class encode method.
-	/// </summary>
-	/// <param name="buffer">Buffer</param>
-	private new void encode(MutableByte buffer)
+    /// <summary>
+    ///     Replacement for the base class encode method.
+    /// </summary>
+    /// <param name="buffer">Buffer</param>
+    private new void encode(MutableByte buffer)
     {
         throw new NotImplementedException();
     }
 
-	/// <summary>
-	///     Encode SNMP packet for sending.
-	/// </summary>
-	/// <returns>BER encoded SNMP packet.</returns>
-	/// <exception cref="SnmpInvalidPduTypeException">
-	///     Thrown when PDU being encoded is not a valid SNMP version 1 PDU. Acceptable
-	///     protocol version 1 operations are GET, GET-NEXT, SET and RESPONSE.
-	/// </exception>
-	public override byte[] encode()
+    /// <summary>
+    ///     Encode SNMP packet for sending.
+    /// </summary>
+    /// <returns>BER encoded SNMP packet.</returns>
+    /// <exception cref="SnmpInvalidPduTypeException">
+    ///     Thrown when PDU being encoded is not a valid SNMP version 1 PDU. Acceptable
+    ///     protocol version 1 operations are GET, GET-NEXT, SET and RESPONSE.
+    /// </exception>
+    public override byte[] encode()
     {
         if (Pdu.Type != PduType.Get && Pdu.Type != PduType.GetNext &&
             Pdu.Type != PduType.Set && Pdu.Type != PduType.Response)
@@ -198,11 +198,11 @@ public class SnmpV1Packet : SnmpPacket
         return buf;
     }
 
-	/// <summary>
-	///     String representation of the SNMP v1 Packet contents.
-	/// </summary>
-	/// <returns>String representation of the class.</returns>
-	public override string ToString()
+    /// <summary>
+    ///     String representation of the SNMP v1 Packet contents.
+    /// </summary>
+    /// <returns>String representation of the class.</returns>
+    public override string ToString()
     {
         var str = new StringBuilder();
         str.AppendFormat("SnmpV1Packet:\nCommunity: {0}\n{1}\n", Community, Pdu);

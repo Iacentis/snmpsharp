@@ -30,21 +30,21 @@ namespace SnmpSharpNet;
 [Serializable]
 public class EthernetAddress : OctetString, ICloneable
 {
-	/// <summary>
-	///     Constructor. Initialize the class to 0000.0000.0000
-	/// </summary>
-	public EthernetAddress()
+    /// <summary>
+    ///     Constructor. Initialize the class to 0000.0000.0000
+    /// </summary>
+    public EthernetAddress()
         : base(new byte[] { 0, 0, 0, 0, 0, 0 })
     {
     }
 
-	/// <summary>
-	///     Constructor. Initialize the class with the value of the byte array.
-	/// </summary>
-	/// <param name="data">
-	///     Byte array whose value is used to initialize the class.
-	/// </param>
-	public EthernetAddress(byte[] data)
+    /// <summary>
+    ///     Constructor. Initialize the class with the value of the byte array.
+    /// </summary>
+    /// <param name="data">
+    ///     Byte array whose value is used to initialize the class.
+    /// </param>
+    public EthernetAddress(byte[] data)
         : base(data)
     {
         if (data.Length < 6)
@@ -54,24 +54,24 @@ public class EthernetAddress : OctetString, ICloneable
         base.Set(data);
     }
 
-	/// <summary>
-	///     Constructor. Initialize the class with the value from the argument class.
-	/// </summary>
-	/// <param name="second">
-	///     Class whose value is copied to initialize this class.
-	/// </param>
-	public EthernetAddress(EthernetAddress second)
+    /// <summary>
+    ///     Constructor. Initialize the class with the value from the argument class.
+    /// </summary>
+    /// <param name="second">
+    ///     Class whose value is copied to initialize this class.
+    /// </param>
+    public EthernetAddress(EthernetAddress second)
     {
         base.Set(second.ToArray());
     }
 
-	/// <summary>
-	///     Constructor. Initialize the class with the value from the <see cref="OctetString" /> argument.
-	/// </summary>
-	/// <param name="second">
-	///     Class whose value is used to initialize this class.
-	/// </param>
-	public EthernetAddress(OctetString second)
+    /// <summary>
+    ///     Constructor. Initialize the class with the value from the <see cref="OctetString" /> argument.
+    /// </summary>
+    /// <param name="second">
+    ///     Class whose value is used to initialize this class.
+    /// </param>
+    public EthernetAddress(OctetString second)
         : this()
     {
         if (second.Length < 6)
@@ -81,27 +81,27 @@ public class EthernetAddress : OctetString, ICloneable
         base.Set(second);
     }
 
-	/// <summary>
-	///     Create a new object that is a duplicate of the
-	///     current object.
-	/// </summary>
-	/// <returns>
-	///     A newly created duplicate object.
-	/// </returns>
-	public override object Clone()
+    /// <summary>
+    ///     Create a new object that is a duplicate of the
+    ///     current object.
+    /// </summary>
+    /// <returns>
+    ///     A newly created duplicate object.
+    /// </returns>
+    public override object Clone()
     {
         return new EthernetAddress(this);
     }
 
-	/// <summary>
-	///     Parses hex string representing an Ethernet MAC address to the enternal format. Ethernet
-	///     address has to contain 12 hex characters (1-9 or A-F) to be parsed correctly. Special formatting is
-	///     ignored so both 0000.0010.0000 and 00-00-00-10-00-00 will be parsed ok.
-	/// </summary>
-	/// <param name="value">
-	///     Ethernet address represented as a string.
-	/// </param>
-	public override void Set(string value)
+    /// <summary>
+    ///     Parses hex string representing an Ethernet MAC address to the enternal format. Ethernet
+    ///     address has to contain 12 hex characters (1-9 or A-F) to be parsed correctly. Special formatting is
+    ///     ignored so both 0000.0010.0000 and 00-00-00-10-00-00 will be parsed ok.
+    /// </summary>
+    /// <param name="value">
+    ///     Ethernet address represented as a string.
+    /// </param>
+    public override void Set(string value)
     {
         if (value == null || value.Length <= 0)
             throw new ArgumentException("Invalid argument. String is empty.");
@@ -128,11 +128,11 @@ public class EthernetAddress : OctetString, ICloneable
         }
     }
 
-	/// <summary>
-	///     Return Ethernet MAC address as a string formatted as: xxxx.xxxx.xxxx
-	/// </summary>
-	/// <returns>String representation of the object value.</returns>
-	public override string ToString()
+    /// <summary>
+    ///     Return Ethernet MAC address as a string formatted as: xxxx.xxxx.xxxx
+    /// </summary>
+    /// <returns>String representation of the object value.</returns>
+    public override string ToString()
     {
         return string.Format(CultureInfo.CurrentCulture, "{0:x2}{1:x2}.{2:x2}{3:x2}.{4:x2}{5:x2}", _data[0], _data[1],
             _data[2], _data[3], _data[4], _data[5]);

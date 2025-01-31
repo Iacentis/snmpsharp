@@ -22,17 +22,17 @@ namespace SnmpSharpNet;
 /// </summary>
 public class PrivacyAES256 : PrivacyAES
 {
-	/// <summary>
-	///     Standard constructor initializes encryption key size in the parent <see cref="PrivacyAES" /> class to 32 bytes (256
-	///     bit).
-	/// </summary>
-	public PrivacyAES256()
+    /// <summary>
+    ///     Standard constructor initializes encryption key size in the parent <see cref="PrivacyAES" /> class to 32 bytes (256
+    ///     bit).
+    /// </summary>
+    public PrivacyAES256()
         : base(32)
     {
     }
 
-	/// <summary>
-	///     Returns privacy protocol name "AES256".
-	/// </summary>
-	public override string Name => "AES256";
+    /// <summary>
+    ///     Returns privacy protocol name "AES256".
+    /// </summary>
+    public override string Name => "AES256";
 }

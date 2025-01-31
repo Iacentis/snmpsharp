@@ -24,50 +24,50 @@ namespace SnmpSharpNet;
 /// </summary>
 internal class AsyncRequestState
 {
-	/// <summary>
-	///     Current retry count. Value represents the number of retries that have been sent
-	///     excluding the original request.
-	/// </summary>
-	protected int _currentRetry;
+    /// <summary>
+    ///     Current retry count. Value represents the number of retries that have been sent
+    ///     excluding the original request.
+    /// </summary>
+    protected int _currentRetry;
 
-	/// <summary>
-	///     Peer end point
-	/// </summary>
-	protected IPEndPoint _endPoint;
+    /// <summary>
+    ///     Peer end point
+    /// </summary>
+    protected IPEndPoint _endPoint;
 
-	/// <summary>
-	///     Maximum number of retries (0 = single request, no retries)
-	/// </summary>
-	protected int _maxRetries;
+    /// <summary>
+    ///     Maximum number of retries (0 = single request, no retries)
+    /// </summary>
+    protected int _maxRetries;
 
-	/// <summary>
-	///     Packet
-	/// </summary>
-	protected byte[] _packet;
+    /// <summary>
+    ///     Packet
+    /// </summary>
+    protected byte[] _packet;
 
-	/// <summary>
-	///     Packet length
-	/// </summary>
-	protected int _packetLength;
+    /// <summary>
+    ///     Packet length
+    /// </summary>
+    protected int _packetLength;
 
-	/// <summary>
-	///     Request timeout in milliseconds
-	/// </summary>
-	protected int _timeout;
+    /// <summary>
+    ///     Request timeout in milliseconds
+    /// </summary>
+    protected int _timeout;
 
-	/// <summary>
-	///     Timer class
-	/// </summary>
-	protected Timer _timer;
+    /// <summary>
+    ///     Timer class
+    /// </summary>
+    protected Timer _timer;
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerIP">Peer IP address</param>
-	/// <param name="peerPort">Peer UDP port number</param>
-	/// <param name="maxretries">Maximum number of retries</param>
-	/// <param name="timeout">Timeout value in milliseconds</param>
-	public AsyncRequestState(IPAddress peerIP, int peerPort, int maxretries, int timeout)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerIP">Peer IP address</param>
+    /// <param name="peerPort">Peer UDP port number</param>
+    /// <param name="maxretries">Maximum number of retries</param>
+    /// <param name="timeout">Timeout value in milliseconds</param>
+    public AsyncRequestState(IPAddress peerIP, int peerPort, int maxretries, int timeout)
     {
         _endPoint = new IPEndPoint(peerIP, peerPort);
         _maxRetries = maxretries;
@@ -77,64 +77,64 @@ internal class AsyncRequestState
         _timer = null;
     }
 
-	/// <summary>
-	///     Get/Set end point
-	/// </summary>
-	public IPEndPoint EndPoint
+    /// <summary>
+    ///     Get/Set end point
+    /// </summary>
+    public IPEndPoint EndPoint
     {
         get => _endPoint;
         set => _endPoint = value;
     }
 
-	/// <summary>
-	///     Get/Set packet buffer
-	/// </summary>
-	public byte[] Packet
+    /// <summary>
+    ///     Get/Set packet buffer
+    /// </summary>
+    public byte[] Packet
     {
         get => _packet;
         set => _packet = value;
     }
 
-	/// <summary>
-	///     Get/Set packet length value
-	/// </summary>
-	public int PacketLength
+    /// <summary>
+    ///     Get/Set packet length value
+    /// </summary>
+    public int PacketLength
     {
         get => _packetLength;
         set => _packetLength = value;
     }
 
-	/// <summary>
-	///     Get/Set maximum retry value
-	/// </summary>
-	public int MaxRetries
+    /// <summary>
+    ///     Get/Set maximum retry value
+    /// </summary>
+    public int MaxRetries
     {
         get => _maxRetries;
         set => _maxRetries = value;
     }
 
-	/// <summary>
-	///     Get/Set timeout value
-	/// </summary>
-	public int Timeout
+    /// <summary>
+    ///     Get/Set timeout value
+    /// </summary>
+    public int Timeout
     {
         get => _timeout;
         set => _timeout = value;
     }
 
-	/// <summary>
-	///     Get/Set timer class
-	/// </summary>
-	public Timer Timer
+    /// <summary>
+    ///     Get/Set timer class
+    /// </summary>
+    public Timer Timer
     {
         get => _timer;
         set => _timer = value;
     }
 
-	/// <summary>
-	///     Get/Set current retry count
-	/// </summary>
-	public int CurrentRetry
+    /// <summary>
+    ///     Get/Set current retry count
+    /// </summary>
+    public int CurrentRetry
     {
         get => _currentRetry;
         set => _currentRetry = value;

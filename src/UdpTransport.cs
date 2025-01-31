@@ -35,80 +35,80 @@ internal delegate void SnmpAsyncCallback(AsyncRequestResult status, IPEndPoint p
 /// </summary>
 public class UdpTransport : IDisposable
 {
-	/// <summary>
-	///     Internal flag used to mark the class busy or available. Any request made when this
-	///     flag is set to true will fail with OperationInProgress error.
-	/// </summary>
-	internal bool _busy;
+    /// <summary>
+    ///     Internal flag used to mark the class busy or available. Any request made when this
+    ///     flag is set to true will fail with OperationInProgress error.
+    /// </summary>
+    internal bool _busy;
 
-	/// <summary>
-	///     Incoming data buffer
-	/// </summary>
-	internal byte[] _inBuffer;
+    /// <summary>
+    ///     Incoming data buffer
+    /// </summary>
+    internal byte[] _inBuffer;
 
-	/// <summary>
-	///     Flag showing if class is using IPv6 or IPv4
-	/// </summary>
-	protected bool _isIPv6;
+    /// <summary>
+    ///     Flag showing if class is using IPv6 or IPv4
+    /// </summary>
+    protected bool _isIPv6;
 
-	/// <summary>
-	///     Internal variable used to disable host IP address/port number check on received SNMP reply packets. If this option
-	///     is disabled (default)
-	///     only replies from the IP address/port number combination to which the request was sent will be accepted as valid
-	///     packets.
-	///     This value is set in the AgentParameters class and is only valid for SNMP v1 and v2c requests.
-	/// </summary>
-	protected bool _noSourceCheck;
+    /// <summary>
+    ///     Internal variable used to disable host IP address/port number check on received SNMP reply packets. If this option
+    ///     is disabled (default)
+    ///     only replies from the IP address/port number combination to which the request was sent will be accepted as valid
+    ///     packets.
+    ///     This value is set in the AgentParameters class and is only valid for SNMP v1 and v2c requests.
+    /// </summary>
+    protected bool _noSourceCheck;
 
-	/// <summary>
-	///     Receiver IP end point
-	/// </summary>
-	internal IPEndPoint _receivePeer;
+    /// <summary>
+    ///     Receiver IP end point
+    /// </summary>
+    internal IPEndPoint _receivePeer;
 
-	/// <summary>
-	///     Async request state information.
-	/// </summary>
-	internal AsyncRequestState _requestState;
+    /// <summary>
+    ///     Async request state information.
+    /// </summary>
+    internal AsyncRequestState _requestState;
 
-	/// <summary>
-	///     Socket
-	/// </summary>
-	protected Socket _socket;
+    /// <summary>
+    ///     Socket
+    /// </summary>
+    protected Socket _socket;
 
-	/// <summary>
-	///     Constructor. Initializes and binds the Socket class
-	/// </summary>
-	/// <param name="useV6">Set to true if you wish to initialize the transport for IPv6</param>
-	public UdpTransport(bool useV6)
+    /// <summary>
+    ///     Constructor. Initializes and binds the Socket class
+    /// </summary>
+    /// <param name="useV6">Set to true if you wish to initialize the transport for IPv6</param>
+    public UdpTransport(bool useV6)
     {
         _isIPv6 = useV6;
         _socket = null;
         initSocket(_isIPv6);
     }
 
-	/// <summary>
-	///     Flag used to determine if class is using IP version 6 (true) or IP version 4 (false)
-	/// </summary>
-	public bool IsIPv6 => _isIPv6;
+    /// <summary>
+    ///     Flag used to determine if class is using IP version 6 (true) or IP version 4 (false)
+    /// </summary>
+    public bool IsIPv6 => _isIPv6;
 
-	/// <summary>
-	///     Is class busy. This property is true when class is servicing another request, false if
-	///     ready to process a new request.
-	/// </summary>
-	public bool IsBusy => _busy;
+    /// <summary>
+    ///     Is class busy. This property is true when class is servicing another request, false if
+    ///     ready to process a new request.
+    /// </summary>
+    public bool IsBusy => _busy;
 
-	/// <summary>
-	///     Dispose of the class.
-	/// </summary>
-	public void Dispose()
+    /// <summary>
+    ///     Dispose of the class.
+    /// </summary>
+    public void Dispose()
     {
         Close();
     }
 
-	/// <summary>
-	///     Destructor
-	/// </summary>
-	~UdpTransport()
+    /// <summary>
+    ///     Destructor
+    /// </summary>
+    ~UdpTransport()
     {
         if (_socket != null)
         {
@@ -117,11 +117,11 @@ public class UdpTransport : IDisposable
         }
     }
 
-	/// <summary>
-	///     Initialize class socket
-	/// </summary>
-	/// <param name="useV6">Should socket be initialized for IPv6 (true) of IPv4 (false)</param>
-	protected void initSocket(bool useV6)
+    /// <summary>
+    ///     Initialize class socket
+    /// </summary>
+    /// <param name="useV6">Should socket be initialized for IPv6 (true) of IPv4 (false)</param>
+    protected void initSocket(bool useV6)
     {
         if (_socket != null) Close();
         if (useV6)
@@ -134,22 +134,22 @@ public class UdpTransport : IDisposable
         _socket.Bind(ep);
     }
 
-	/// <summary>
-	///     Make sync request using IP/UDP with request timeouts and retries.
-	/// </summary>
-	/// <param name="peer">SNMP agent IP address</param>
-	/// <param name="port">SNMP agent port number</param>
-	/// <param name="buffer">Data to send to the agent</param>
-	/// <param name="bufferLength">Data length in the buffer</param>
-	/// <param name="timeout">Timeout in milliseconds</param>
-	/// <param name="retries">Maximum number of retries. 0 = make a single request with no retry attempts</param>
-	/// <returns>Byte array returned by the agent. Null on error</returns>
-	/// <exception cref="SnmpException">
-	///     Thrown on request timed out. SnmpException.ErrorCode is set to
-	///     SnmpException.RequestTimedOut constant.
-	/// </exception>
-	/// <exception cref="SnmpException">Thrown when IPv4 address is passed to the v6 socket or vice versa</exception>
-	public byte[] Request(IPAddress peer, int port, byte[] buffer, int bufferLength, int timeout, int retries)
+    /// <summary>
+    ///     Make sync request using IP/UDP with request timeouts and retries.
+    /// </summary>
+    /// <param name="peer">SNMP agent IP address</param>
+    /// <param name="port">SNMP agent port number</param>
+    /// <param name="buffer">Data to send to the agent</param>
+    /// <param name="bufferLength">Data length in the buffer</param>
+    /// <param name="timeout">Timeout in milliseconds</param>
+    /// <param name="retries">Maximum number of retries. 0 = make a single request with no retry attempts</param>
+    /// <returns>Byte array returned by the agent. Null on error</returns>
+    /// <exception cref="SnmpException">
+    ///     Thrown on request timed out. SnmpException.ErrorCode is set to
+    ///     SnmpException.RequestTimedOut constant.
+    /// </exception>
+    /// <exception cref="SnmpException">Thrown when IPv4 address is passed to the v6 socket or vice versa</exception>
+    public byte[] Request(IPAddress peer, int port, byte[] buffer, int bufferLength, int timeout, int retries)
     {
         if (_socket == null) return null; // socket has been closed. no new operations are possible.
         if (_socket.AddressFamily != peer.AddressFamily)
@@ -221,27 +221,27 @@ public class UdpTransport : IDisposable
         }
     }
 
-	/// <summary>
-	///     SNMP request internal callback
-	/// </summary>
-	internal event SnmpAsyncCallback _asyncCallback;
+    /// <summary>
+    ///     SNMP request internal callback
+    /// </summary>
+    internal event SnmpAsyncCallback _asyncCallback;
 
-	/// <summary>
-	///     Begin an async SNMP request
-	/// </summary>
-	/// <param name="peer">Pdu to send to the agent</param>
-	/// <param name="port">Callback to receive response from the agent</param>
-	/// <param name="buffer">Buffer containing data to send to the peer</param>
-	/// <param name="bufferLength">Length of data in the buffer</param>
-	/// <param name="timeout">Request timeout in milliseconds</param>
-	/// <param name="retries">Maximum retry count. 0 = single request no further retries.</param>
-	/// <param name="asyncCallback">Callback that will receive the status and result of the operation</param>
-	/// <returns>
-	///     Returns false if another request is already in progress or if socket used by the class
-	///     has been closed using Dispose() member, otherwise true
-	/// </returns>
-	/// <exception cref="SnmpException">Thrown when IPv4 address is passed to the v6 socket or vice versa</exception>
-	internal bool RequestAsync(IPAddress peer, int port, byte[] buffer, int bufferLength, int timeout, int retries,
+    /// <summary>
+    ///     Begin an async SNMP request
+    /// </summary>
+    /// <param name="peer">Pdu to send to the agent</param>
+    /// <param name="port">Callback to receive response from the agent</param>
+    /// <param name="buffer">Buffer containing data to send to the peer</param>
+    /// <param name="bufferLength">Length of data in the buffer</param>
+    /// <param name="timeout">Request timeout in milliseconds</param>
+    /// <param name="retries">Maximum retry count. 0 = single request no further retries.</param>
+    /// <param name="asyncCallback">Callback that will receive the status and result of the operation</param>
+    /// <returns>
+    ///     Returns false if another request is already in progress or if socket used by the class
+    ///     has been closed using Dispose() member, otherwise true
+    /// </returns>
+    /// <exception cref="SnmpException">Thrown when IPv4 address is passed to the v6 socket or vice versa</exception>
+    internal bool RequestAsync(IPAddress peer, int port, byte[] buffer, int bufferLength, int timeout, int retries,
         SnmpAsyncCallback asyncCallback)
     {
         if (_busy) return false;
@@ -265,10 +265,10 @@ public class UdpTransport : IDisposable
         return true;
     }
 
-	/// <summary>
-	///     Calls async version of the SendTo socket function.
-	/// </summary>
-	internal void SendToBegin()
+    /// <summary>
+    ///     Calls async version of the SendTo socket function.
+    /// </summary>
+    internal void SendToBegin()
     {
         if (_requestState == null)
         {
@@ -306,11 +306,11 @@ public class UdpTransport : IDisposable
         }
     }
 
-	/// <summary>
-	///     Callback member called on completion of BeginSendTo send data operation.
-	/// </summary>
-	/// <param name="ar">Async result</param>
-	internal void SendToCallback(IAsyncResult ar)
+    /// <summary>
+    ///     Callback member called on completion of BeginSendTo send data operation.
+    /// </summary>
+    /// <param name="ar">Async result</param>
+    internal void SendToCallback(IAsyncResult ar)
     {
         if (_socket == null || !_busy || _requestState == null)
         {
@@ -354,10 +354,10 @@ public class UdpTransport : IDisposable
         ReceiveBegin(); // Initialize a receive call
     }
 
-	/// <summary>
-	///     Begin async version of ReceiveFrom member of the socket class.
-	/// </summary>
-	internal void ReceiveBegin()
+    /// <summary>
+    ///     Begin async version of ReceiveFrom member of the socket class.
+    /// </summary>
+    internal void ReceiveBegin()
     {
         // kill the timeout timer
         if (_requestState.Timer != null)
@@ -401,13 +401,13 @@ public class UdpTransport : IDisposable
         _requestState.Timer = new Timer(AsyncRequestTimerCallback, null, _requestState.Timeout, Timeout.Infinite);
     }
 
-	/// <summary>
-	///     Internal retry function. Checks if request has reached maximum number of retries and either resends the request if
-	///     not reached,
-	///     or sends request timed-out notification to the caller if maximum retry count has been reached and request has
-	///     failed.
-	/// </summary>
-	internal void RetryAsyncRequest()
+    /// <summary>
+    ///     Internal retry function. Checks if request has reached maximum number of retries and either resends the request if
+    ///     not reached,
+    ///     or sends request timed-out notification to the caller if maximum retry count has been reached and request has
+    ///     failed.
+    /// </summary>
+    internal void RetryAsyncRequest()
     {
         // kill the timer if one is active
         if (_requestState.Timer != null)
@@ -447,12 +447,12 @@ public class UdpTransport : IDisposable
         }
     }
 
-	/// <summary>
-	///     Internal callback called as part of Socket.BeginReceiveFrom. Process incoming packets and notify caller
-	///     of results.
-	/// </summary>
-	/// <param name="ar">Async call result used by <seealso cref="Socket.EndReceiveFrom" /></param>
-	internal void ReceiveFromCallback(IAsyncResult ar)
+    /// <summary>
+    ///     Internal callback called as part of Socket.BeginReceiveFrom. Process incoming packets and notify caller
+    ///     of results.
+    /// </summary>
+    /// <param name="ar">Async call result used by <seealso cref="Socket.EndReceiveFrom" /></param>
+    internal void ReceiveFromCallback(IAsyncResult ar)
     {
         // kill the timer if one is active
         if (_requestState.Timer != null)
@@ -569,21 +569,21 @@ public class UdpTransport : IDisposable
         }
     }
 
-	/// <summary>
-	///     Internal timer callback. Called by _asyncTimer when SNMP request timeout has expired
-	/// </summary>
-	/// <param name="stateInfo">State info. Always null</param>
-	internal void AsyncRequestTimerCallback(object stateInfo)
+    /// <summary>
+    ///     Internal timer callback. Called by _asyncTimer when SNMP request timeout has expired
+    /// </summary>
+    /// <param name="stateInfo">State info. Always null</param>
+    internal void AsyncRequestTimerCallback(object stateInfo)
     {
         if (_socket != null || (_requestState != null && _busy))
             // Call retry function
             RetryAsyncRequest();
     }
 
-	/// <summary>
-	///     Close network socket
-	/// </summary>
-	public void Close()
+    /// <summary>
+    ///     Close network socket
+    /// </summary>
+    public void Close()
     {
         if (_socket != null)
         {

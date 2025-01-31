@@ -28,64 +28,64 @@ namespace SnmpSharpNet;
 [Serializable]
 public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, ICloneable
 {
-	/// <summary>
-	///     Internal 64-bit unsigned integer value.
-	/// </summary>
-	protected ulong _value;
+    /// <summary>
+    ///     Internal 64-bit unsigned integer value.
+    /// </summary>
+    protected ulong _value;
 
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	public Counter64()
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    public Counter64()
     {
         _asnType = SnmpConstants.SMI_COUNTER64;
     }
 
-	/// <summary>Constructor.</summary>
-	/// <param name="value">
-	///     Value to set class value.
-	/// </param>
-	public Counter64(long value) : this()
+    /// <summary>Constructor.</summary>
+    /// <param name="value">
+    ///     Value to set class value.
+    /// </param>
+    public Counter64(long value) : this()
     {
         _value = Convert.ToUInt64(value);
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="value">Copy value</param>
-	public Counter64(Counter64 value) : this()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="value">Copy value</param>
+    public Counter64(Counter64 value) : this()
     {
         _value = value.Value;
     }
 
-	/// <summary>Constructor.</summary>
-	/// <param name="value">
-	///     Value to initialize the class with.
-	/// </param>
-	public Counter64(ulong value) : this()
+    /// <summary>Constructor.</summary>
+    /// <param name="value">
+    ///     Value to initialize the class with.
+    /// </param>
+    public Counter64(ulong value) : this()
     {
         _value = value;
     }
 
-	/// <summary>Constructor.</summary>
-	/// <remarks>
-	///     Initialize the class by parsing a 64-bit unsigned integer value
-	///     from the supplied string value.
-	/// </remarks>
-	/// <param name="value">
-	///     64-bit unsigned integer value encoded as a string.
-	/// </param>
-	public Counter64(string value) : this()
+    /// <summary>Constructor.</summary>
+    /// <remarks>
+    ///     Initialize the class by parsing a 64-bit unsigned integer value
+    ///     from the supplied string value.
+    /// </remarks>
+    /// <param name="value">
+    ///     64-bit unsigned integer value encoded as a string.
+    /// </param>
+    public Counter64(string value) : this()
     {
         Set(value);
     }
 
-	/// <summary>
-	///     Get/Set class 64-bit unsigned value
-	/// </summary>
-	public virtual ulong Value
+    /// <summary>
+    ///     Get/Set class 64-bit unsigned value
+    /// </summary>
+    public virtual ulong Value
     {
         get => _value;
 
@@ -93,22 +93,22 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     }
 
 
-	/// <summary>Duplicate current object.</summary>
-	/// <returns>Duplicate of the current object.</returns>
-	public override object Clone()
+    /// <summary>Duplicate current object.</summary>
+    /// <returns>Duplicate of the current object.</returns>
+    public override object Clone()
     {
         return new Counter64(this);
     }
 
-	/// <summary>
-	///     Compare class value with the value of the second class
-	/// </summary>
-	/// <param name="other">Class whose value we are comparing with</param>
-	/// <returns>
-	///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
-	///     then the class value
-	/// </returns>
-	public int CompareTo(Counter64 other)
+    /// <summary>
+    ///     Compare class value with the value of the second class
+    /// </summary>
+    /// <param name="other">Class whose value we are comparing with</param>
+    /// <returns>
+    ///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
+    ///     then the class value
+    /// </returns>
+    public int CompareTo(Counter64 other)
     {
         if (other == null)
             return -1;
@@ -116,25 +116,25 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     }
 
 
-	/// <summary>
-	///     Compare class value with the UInt64 variable
-	/// </summary>
-	/// <param name="other">Variable to compare with</param>
-	/// <returns>
-	///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
-	///     then the class value
-	/// </returns>
-	public int CompareTo(ulong other)
+    /// <summary>
+    ///     Compare class value with the UInt64 variable
+    /// </summary>
+    /// <param name="other">Variable to compare with</param>
+    /// <returns>
+    ///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
+    ///     then the class value
+    /// </returns>
+    public int CompareTo(ulong other)
     {
         return _value.CompareTo(other);
     }
 
-	/// <summary>
-	///     SET class value from another Counter64 class cast as <seealso cref="AsnType" />.
-	/// </summary>
-	/// <param name="value">Counter64 class cast as <seealso cref="AsnType" /></param>
-	/// <exception cref="ArgumentException">Argument is not Counter64 type.</exception>
-	public void Set(AsnType value)
+    /// <summary>
+    ///     SET class value from another Counter64 class cast as <seealso cref="AsnType" />.
+    /// </summary>
+    /// <param name="value">Counter64 class cast as <seealso cref="AsnType" /></param>
+    /// <exception cref="ArgumentException">Argument is not Counter64 type.</exception>
+    public void Set(AsnType value)
     {
         var val = value as Counter64;
         if (val != null)
@@ -143,13 +143,13 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
             throw new ArgumentException("Invalid argument type.");
     }
 
-	/// <summary>
-	///     Parse an Counter64 value from a string.
-	/// </summary>
-	/// <param name="value">String containing an Counter64 value</param>
-	/// <exception cref="ArgumentOutOfRangeException">Argument length is 0 (zero)</exception>
-	/// <exception cref="ArgumentException">Unable to parse Counter64 value from the argument.</exception>
-	public void Set(string value)
+    /// <summary>
+    ///     Parse an Counter64 value from a string.
+    /// </summary>
+    /// <param name="value">String containing an Counter64 value</param>
+    /// <exception cref="ArgumentOutOfRangeException">Argument length is 0 (zero)</exception>
+    /// <exception cref="ArgumentException">Unable to parse Counter64 value from the argument.</exception>
+    public void Set(string value)
     {
         if (value.Length <= 0)
             throw new ArgumentOutOfRangeException(value, "String has to be length greater then 0");
@@ -164,22 +164,22 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         }
     }
 
-	/// <summary>
-	///     Return class value hash code
-	/// </summary>
-	/// <returns>Int32 hash of the class stored value</returns>
-	public override int GetHashCode()
+    /// <summary>
+    ///     Return class value hash code
+    /// </summary>
+    /// <returns>Int32 hash of the class stored value</returns>
+    public override int GetHashCode()
     {
         return _value.GetHashCode();
     }
 
-	/// <summary>
-	///     Compare class value against the object argument. Supported argument types are
-	///     <see cref="Counter64" /> and UInt64.
-	/// </summary>
-	/// <param name="obj">Object to compare values with</param>
-	/// <returns>True if object value is the same as this class, otherwise false.</returns>
-	public override bool Equals(object obj)
+    /// <summary>
+    ///     Compare class value against the object argument. Supported argument types are
+    ///     <see cref="Counter64" /> and UInt64.
+    /// </summary>
+    /// <param name="obj">Object to compare values with</param>
+    /// <returns>True if object value is the same as this class, otherwise false.</returns>
+    public override bool Equals(object obj)
     {
         if (obj == null)
             return false;
@@ -190,32 +190,32 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return false;
     }
 
-	/// <summary>
-	///     Returns the string representation of the object.
-	/// </summary>
-	/// <returns>String representation of the object value</returns>
-	public override string ToString()
+    /// <summary>
+    ///     Returns the string representation of the object.
+    /// </summary>
+    /// <returns>String representation of the object value</returns>
+    public override string ToString()
     {
         return Value.ToString(CultureInfo.CurrentCulture);
     }
 
-	/// <summary>
-	///     Implicit casting of Counter64 value as UInt64 value
-	/// </summary>
-	/// <param name="value">Counter64 class whose value is cast as UInt64 value</param>
-	/// <returns>UInt64 value of the Counter64 class.</returns>
-	public static implicit operator ulong(Counter64 value)
+    /// <summary>
+    ///     Implicit casting of Counter64 value as UInt64 value
+    /// </summary>
+    /// <param name="value">Counter64 class whose value is cast as UInt64 value</param>
+    /// <returns>UInt64 value of the Counter64 class.</returns>
+    public static implicit operator ulong(Counter64 value)
     {
         return value.Value;
     }
 
-	/// <summary>
-	///     Check for equality of class values
-	/// </summary>
-	/// <param name="first">First class value to compare</param>
-	/// <param name="second">Second class value to compare</param>
-	/// <returns>True if values are the same, otherwise false</returns>
-	public static bool operator ==(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Check for equality of class values
+    /// </summary>
+    /// <param name="first">First class value to compare</param>
+    /// <param name="second">Second class value to compare</param>
+    /// <returns>True if values are the same, otherwise false</returns>
+    public static bool operator ==(Counter64 first, Counter64 second)
     {
         if ((object)first == null && (object)second == null)
             return true;
@@ -224,13 +224,13 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return first.Equals(second);
     }
 
-	/// <summary>
-	///     Negative comparison
-	/// </summary>
-	/// <param name="first">First class value to compare</param>
-	/// <param name="second">Second class value to compare</param>
-	/// <returns>False if values are the same, otherwise true</returns>
-	public static bool operator !=(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Negative comparison
+    /// </summary>
+    /// <param name="first">First class value to compare</param>
+    /// <param name="second">Second class value to compare</param>
+    /// <returns>False if values are the same, otherwise true</returns>
+    public static bool operator !=(Counter64 first, Counter64 second)
     {
         if ((object)first == null && (object)second == null)
             return false;
@@ -239,14 +239,14 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return !first.Equals(second);
     }
 
-	/// <summary>
-	///     Greater then operator
-	/// </summary>
-	/// <remarks>Compare two Counter64 class values and return true if first class value is greater then second.</remarks>
-	/// <param name="first">First class</param>
-	/// <param name="second">Second class</param>
-	/// <returns>True if first class value is greater then second class value, otherwise false</returns>
-	public static bool operator >(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Greater then operator
+    /// </summary>
+    /// <remarks>Compare two Counter64 class values and return true if first class value is greater then second.</remarks>
+    /// <param name="first">First class</param>
+    /// <param name="second">Second class</param>
+    /// <returns>True if first class value is greater then second class value, otherwise false</returns>
+    public static bool operator >(Counter64 first, Counter64 second)
     {
         if ((object)first == null && (object)second == null)
             return false;
@@ -259,14 +259,14 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return false;
     }
 
-	/// <summary>
-	///     Less then operator
-	/// </summary>
-	/// <remarks>Compare two Counter64 class values and return true if first class value is less then second.</remarks>
-	/// <param name="first">First class</param>
-	/// <param name="second">Second class</param>
-	/// <returns>True if first class value is less then second class value, otherwise false</returns>
-	public static bool operator <(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Less then operator
+    /// </summary>
+    /// <remarks>Compare two Counter64 class values and return true if first class value is less then second.</remarks>
+    /// <param name="first">First class</param>
+    /// <param name="second">Second class</param>
+    /// <returns>True if first class value is less then second class value, otherwise false</returns>
+    public static bool operator <(Counter64 first, Counter64 second)
     {
         if ((object)first == null && (object)second == null)
             return false;
@@ -279,22 +279,22 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return false;
     }
 
-	/// <summary>
-	///     Addition operator.
-	/// </summary>
-	/// <remarks>
-	///     Add two Counter64 object values. Values of the two objects are added and
-	///     a new class is instantiated with the result. Original values of the two parameter classes
-	///     are preserved.
-	/// </remarks>
-	/// <param name="first">First Counter64 object</param>
-	/// <param name="second">Second Counter64 object</param>
-	/// <returns>
-	///     New object with values of the 2 parameter objects added. If both parameters are null
-	///     references then null is returned. If either of the two parameters is null, the non-null objects
-	///     value is set as the value of the new object and returned.
-	/// </returns>
-	public static Counter64 operator +(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Addition operator.
+    /// </summary>
+    /// <remarks>
+    ///     Add two Counter64 object values. Values of the two objects are added and
+    ///     a new class is instantiated with the result. Original values of the two parameter classes
+    ///     are preserved.
+    /// </remarks>
+    /// <param name="first">First Counter64 object</param>
+    /// <param name="second">Second Counter64 object</param>
+    /// <returns>
+    ///     New object with values of the 2 parameter objects added. If both parameters are null
+    ///     references then null is returned. If either of the two parameters is null, the non-null objects
+    ///     value is set as the value of the new object and returned.
+    /// </returns>
+    public static Counter64 operator +(Counter64 first, Counter64 second)
     {
         if (first == null && second == null)
             return null;
@@ -305,22 +305,22 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return new Counter64(first.Value + second.Value);
     }
 
-	/// <summary>
-	///     Subtraction operator
-	/// </summary>
-	/// <remarks>
-	///     Subtract the value of the second Counter64 class value from the first Counter64 class value.
-	///     Values of the two objects are subtracted and a new class is instantiated with the result.
-	///     Original values of the two parameter classes are preserved.
-	/// </remarks>
-	/// <param name="first">First Counter64 object</param>
-	/// <param name="second">Second Counter64 object</param>
-	/// <returns>
-	///     New object with subtracted values of the 2 parameter objects. If both parameters are null
-	///     references then null is returned. If either of the two parameters is null, the non-null objects
-	///     value is set as the value of the new object and returned.
-	/// </returns>
-	public static Counter64 operator -(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Subtraction operator
+    /// </summary>
+    /// <remarks>
+    ///     Subtract the value of the second Counter64 class value from the first Counter64 class value.
+    ///     Values of the two objects are subtracted and a new class is instantiated with the result.
+    ///     Original values of the two parameter classes are preserved.
+    /// </remarks>
+    /// <param name="first">First Counter64 object</param>
+    /// <param name="second">Second Counter64 object</param>
+    /// <returns>
+    ///     New object with subtracted values of the 2 parameter objects. If both parameters are null
+    ///     references then null is returned. If either of the two parameters is null, the non-null objects
+    ///     value is set as the value of the new object and returned.
+    /// </returns>
+    public static Counter64 operator -(Counter64 first, Counter64 second)
     {
         if (first == null && second == null)
             return null;
@@ -331,13 +331,13 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         return new Counter64(first.Value - second.Value);
     }
 
-	/// <summary>
-	///     Return difference between two Counter64 values taking counter roll-over into account.
-	/// </summary>
-	/// <param name="first">First or older value</param>
-	/// <param name="second">Second or newer value</param>
-	/// <returns>Difference between the two values</returns>
-	public static ulong Diff(Counter64 first, Counter64 second)
+    /// <summary>
+    ///     Return difference between two Counter64 values taking counter roll-over into account.
+    /// </summary>
+    /// <param name="first">First or older value</param>
+    /// <param name="second">Second or newer value</param>
+    /// <returns>Difference between the two values</returns>
+    public static ulong Diff(Counter64 first, Counter64 second)
     {
         var f = first.Value;
         var s = second.Value;

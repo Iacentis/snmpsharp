@@ -25,59 +25,59 @@ namespace SnmpSharpNet;
 /// </summary>
 public class SnmpErrorStatusException : Exception
 {
-	/// <summary>
-	///     SNMP reply ErrorIndex value
-	/// </summary>
-	protected int _errorIndex;
+    /// <summary>
+    ///     SNMP reply ErrorIndex value
+    /// </summary>
+    protected int _errorIndex;
 
-	/// <summary>
-	///     SNMP reply ErrorStatus value
-	/// </summary>
-	protected int _errorStatus;
+    /// <summary>
+    ///     SNMP reply ErrorStatus value
+    /// </summary>
+    protected int _errorStatus;
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	public SnmpErrorStatusException()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public SnmpErrorStatusException()
     {
         _errorStatus = 0;
         _errorIndex = 0;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="msg">Exception message</param>
-	/// <param name="status">ErrorStatus value</param>
-	/// <param name="index">ErrorIndex value</param>
-	public SnmpErrorStatusException(string msg, int status, int index)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="msg">Exception message</param>
+    /// <param name="status">ErrorStatus value</param>
+    /// <param name="index">ErrorIndex value</param>
+    public SnmpErrorStatusException(string msg, int status, int index)
         : base(msg)
     {
         _errorStatus = status;
         _errorIndex = index;
     }
 
-	/// <summary>
-	///     Get/Set SNMP ErrorStatus value
-	/// </summary>
-	public int ErrorStatus
+    /// <summary>
+    ///     Get/Set SNMP ErrorStatus value
+    /// </summary>
+    public int ErrorStatus
     {
         get => _errorStatus;
         set => _errorStatus = value;
     }
 
-	/// <summary>
-	///     Get/Set SNMP ErrorIndex value
-	/// </summary>
-	public int ErrorIndex
+    /// <summary>
+    ///     Get/Set SNMP ErrorIndex value
+    /// </summary>
+    public int ErrorIndex
     {
         get => _errorIndex;
         set => _errorIndex = value;
     }
 
-	/// <summary>
-	///     Get exception message
-	/// </summary>
-	public override string Message =>
+    /// <summary>
+    ///     Get exception message
+    /// </summary>
+    public override string Message =>
         string.Format("{0}> ErrorStatus {1} ErrorIndex {2}", base.Message, _errorStatus, _errorIndex);
 }

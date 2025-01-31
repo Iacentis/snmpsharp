@@ -27,115 +27,115 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class AgentParameters : IAgentParameters
 {
-	/// <summary>
-	///     SNMP community name for SNMP v1 and v2 protocol versions
-	/// </summary>
-	protected OctetString _community;
+    /// <summary>
+    ///     SNMP community name for SNMP v1 and v2 protocol versions
+    /// </summary>
+    protected OctetString _community;
 
-	/// <summary>
-	///     Flag that disables checking of host IP address and port number from which reply is received. If not disabled, only
-	///     replies from the host IP/port to which request was sent will be considered valid and all others will be ignored.
-	///     Default value is: false (reply source check is enabled)
-	///     Set to true if you wish to disable this check.
-	/// </summary>
-	protected bool _disableReplySourceCheck;
+    /// <summary>
+    ///     Flag that disables checking of host IP address and port number from which reply is received. If not disabled, only
+    ///     replies from the host IP/port to which request was sent will be considered valid and all others will be ignored.
+    ///     Default value is: false (reply source check is enabled)
+    ///     Set to true if you wish to disable this check.
+    /// </summary>
+    protected bool _disableReplySourceCheck;
 
-	/// <summary>
-	///     Agent protocol version
-	/// </summary>
-	protected Integer32 _version;
+    /// <summary>
+    ///     Agent protocol version
+    /// </summary>
+    protected Integer32 _version;
 
-	/// <summary>
-	///     Standard constructor
-	/// </summary>
-	public AgentParameters()
+    /// <summary>
+    ///     Standard constructor
+    /// </summary>
+    public AgentParameters()
     {
         _version = new Integer32((int)SnmpVersion.Ver1);
         _community = new OctetString("public");
         _disableReplySourceCheck = false;
     }
 
-	/// <summary>
-	///     Copy constructor. Initialize the class with the values of the parameter class values.
-	/// </summary>
-	/// <param name="second">Parameter class.</param>
-	public AgentParameters(AgentParameters second)
+    /// <summary>
+    ///     Copy constructor. Initialize the class with the values of the parameter class values.
+    /// </summary>
+    /// <param name="second">Parameter class.</param>
+    public AgentParameters(AgentParameters second)
     {
         _version.Value = (int)second.Version;
         _community.Set(second.Community);
         _disableReplySourceCheck = second.DisableReplySourceCheck;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="version">
-	///     SNMP protocol version. Acceptable values are SnmpConstants.SNMPV1 and
-	///     SnmpConstants.SNMPV2
-	/// </param>
-	public AgentParameters(SnmpVersion version)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="version">
+    ///     SNMP protocol version. Acceptable values are SnmpConstants.SNMPV1 and
+    ///     SnmpConstants.SNMPV2
+    /// </param>
+    public AgentParameters(SnmpVersion version)
         : this()
     {
         _version.Value = (int)version;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="community">Agent SNMP community name</param>
-	public AgentParameters(OctetString community)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="community">Agent SNMP community name</param>
+    public AgentParameters(OctetString community)
         : this()
     {
         _community.Set(community);
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="version">SNMP Protocol version</param>
-	/// <param name="community">SNMP community name</param>
-	public AgentParameters(SnmpVersion version, OctetString community)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="version">SNMP Protocol version</param>
+    /// <param name="community">SNMP community name</param>
+    public AgentParameters(SnmpVersion version, OctetString community)
         : this(version)
     {
         _community.Set(community);
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="version">SNMP Protocol version</param>
-	/// <param name="community">SNMP community name</param>
-	/// <param name="disableReplySourceCheck">Should reply source IP address/port number be checked on reply reception</param>
-	public AgentParameters(SnmpVersion version, OctetString community, bool disableReplySourceCheck)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="version">SNMP Protocol version</param>
+    /// <param name="community">SNMP community name</param>
+    /// <param name="disableReplySourceCheck">Should reply source IP address/port number be checked on reply reception</param>
+    public AgentParameters(SnmpVersion version, OctetString community, bool disableReplySourceCheck)
         : this(version, community)
     {
         _disableReplySourceCheck = disableReplySourceCheck;
     }
 
-	/// <summary>
-	///     Get SNMP version 1 or 2 community name object
-	/// </summary>
-	public virtual OctetString Community => _community;
+    /// <summary>
+    ///     Get SNMP version 1 or 2 community name object
+    /// </summary>
+    public virtual OctetString Community => _community;
 
-	/// <summary>
-	///     Get/Set flag that disables checking of host IP address and port number from which reply is received. If not
-	///     disabled, only
-	///     replies from the host IP/port to which request was sent will be considered valid and all others will be ignored.
-	/// </summary>
-	public bool DisableReplySourceCheck
+    /// <summary>
+    ///     Get/Set flag that disables checking of host IP address and port number from which reply is received. If not
+    ///     disabled, only
+    ///     replies from the host IP/port to which request was sent will be considered valid and all others will be ignored.
+    /// </summary>
+    public bool DisableReplySourceCheck
     {
         get => _disableReplySourceCheck;
         set => _disableReplySourceCheck = value;
     }
 
-	/// <summary>
-	///     Get/Set SNMP protocol version.
-	/// </summary>
-	/// <exception cref="SnmpInvalidVersionException">
-	///     Thrown when attempting to set protocol version
-	///     other then version 1 or 2c
-	/// </exception>
-	public virtual SnmpVersion Version
+    /// <summary>
+    ///     Get/Set SNMP protocol version.
+    /// </summary>
+    /// <exception cref="SnmpInvalidVersionException">
+    ///     Thrown when attempting to set protocol version
+    ///     other then version 1 or 2c
+    /// </exception>
+    public virtual SnmpVersion Version
     {
         get => (SnmpVersion)_version.Value;
         set
@@ -146,11 +146,11 @@ public class AgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Validate object.
-	/// </summary>
-	/// <returns>true if object is valid, otherwise false</returns>
-	public bool Valid()
+    /// <summary>
+    ///     Validate object.
+    /// </summary>
+    /// <returns>true if object is valid, otherwise false</returns>
+    public bool Valid()
     {
         if (_community != null && _community.Length > 0 && _version != null)
             if (_version.Value == (int)SnmpVersion.Ver1 || _version.Value == (int)SnmpVersion.Ver2)
@@ -158,12 +158,12 @@ public class AgentParameters : IAgentParameters
         return false;
     }
 
-	/// <summary>
-	///     Initialize SNMP packet class with agent parameters. In this class, SNMP community name is
-	///     set in SNMPv1 and SNMPv2 packets.
-	/// </summary>
-	/// <param name="packet">Packet class to initialize</param>
-	public void InitializePacket(SnmpPacket packet)
+    /// <summary>
+    ///     Initialize SNMP packet class with agent parameters. In this class, SNMP community name is
+    ///     set in SNMPv1 and SNMPv2 packets.
+    /// </summary>
+    /// <param name="packet">Packet class to initialize</param>
+    public void InitializePacket(SnmpPacket packet)
     {
         if (packet is SnmpV1Packet)
         {
@@ -181,20 +181,20 @@ public class AgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Clone current object
-	/// </summary>
-	/// <returns>Duplicate object initialized with values from this class.</returns>
-	public object Clone()
+    /// <summary>
+    ///     Clone current object
+    /// </summary>
+    /// <returns>Duplicate object initialized with values from this class.</returns>
+    public object Clone()
     {
         return new AgentParameters(Version, Community, DisableReplySourceCheck);
     }
 
-	/// <summary>
-	///     Return SNMP version Integer32 object
-	/// </summary>
-	/// <returns>Integer32 object</returns>
-	public Integer32 GetVersion()
+    /// <summary>
+    ///     Return SNMP version Integer32 object
+    /// </summary>
+    /// <returns>Integer32 object</returns>
+    public Integer32 GetVersion()
     {
         return _version;
     }

@@ -30,100 +30,100 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class MsgFlags : AsnType, ICloneable
 {
-	/// <summary>
-	///     Bit value that, when set, indicates that packet has been authenticated.
-	/// </summary>
-	public static byte FLAG_AUTH = 0x01;
+    /// <summary>
+    ///     Bit value that, when set, indicates that packet has been authenticated.
+    /// </summary>
+    public static byte FLAG_AUTH = 0x01;
 
-	/// <summary>
-	///     Bit value that, when set, indicates that packet has been privacy protected.
-	/// </summary>
-	public static byte FLAG_PRIV = 0x02;
+    /// <summary>
+    ///     Bit value that, when set, indicates that packet has been privacy protected.
+    /// </summary>
+    public static byte FLAG_PRIV = 0x02;
 
-	/// <summary>
-	///     Bit value that, when set, indicates that sender of the packet expects report packet to be sent by the agent on
-	///     errors.
-	/// </summary>
-	public static byte FLAG_REPORTABLE = 0x04;
+    /// <summary>
+    ///     Bit value that, when set, indicates that sender of the packet expects report packet to be sent by the agent on
+    ///     errors.
+    /// </summary>
+    public static byte FLAG_REPORTABLE = 0x04;
 
-	/// <summary>
-	///     True if authentication is used to secure the packet, otherwise false.
-	/// </summary>
-	protected bool _authenticationFlag;
+    /// <summary>
+    ///     True if authentication is used to secure the packet, otherwise false.
+    /// </summary>
+    protected bool _authenticationFlag;
 
-	/// <summary>
-	///     True if ScopedPdu portion of the packet is privacy protected with encryption, otherwise false.
-	/// </summary>
-	protected bool _privacyFlag;
+    /// <summary>
+    ///     True if ScopedPdu portion of the packet is privacy protected with encryption, otherwise false.
+    /// </summary>
+    protected bool _privacyFlag;
 
-	/// <summary>
-	///     True if reportable flag is set, otherwise false.
-	/// </summary>
-	protected bool _reportableFlag;
+    /// <summary>
+    ///     True if reportable flag is set, otherwise false.
+    /// </summary>
+    protected bool _reportableFlag;
 
-	/// <summary>
-	///     Standard constructor. All flags are set to false by default.
-	/// </summary>
-	public MsgFlags()
+    /// <summary>
+    ///     Standard constructor. All flags are set to false by default.
+    /// </summary>
+    public MsgFlags()
     {
         _authenticationFlag = _privacyFlag = _reportableFlag = false;
     }
 
-	/// <summary>
-	///     Constructor. Initialize individual flag values.
-	/// </summary>
-	/// <param name="authentication">true if authentication is used, otherwise false</param>
-	/// <param name="privacy">true if privacy protection is used, otherwise false</param>
-	/// <param name="reportable">true if report is expected, otherwise false</param>
-	public MsgFlags(bool authentication, bool privacy, bool reportable)
+    /// <summary>
+    ///     Constructor. Initialize individual flag values.
+    /// </summary>
+    /// <param name="authentication">true if authentication is used, otherwise false</param>
+    /// <param name="privacy">true if privacy protection is used, otherwise false</param>
+    /// <param name="reportable">true if report is expected, otherwise false</param>
+    public MsgFlags(bool authentication, bool privacy, bool reportable)
     {
         _authenticationFlag = authentication;
         _privacyFlag = privacy;
         _reportableFlag = reportable;
     }
 
-	/// <summary>
-	///     Get/Set authentication flag. Value is true if authentication is used, false if packet is not authenticated
-	/// </summary>
-	public bool Authentication
+    /// <summary>
+    ///     Get/Set authentication flag. Value is true if authentication is used, false if packet is not authenticated
+    /// </summary>
+    public bool Authentication
     {
         get => _authenticationFlag;
         set => _authenticationFlag = value;
     }
 
-	/// <summary>
-	///     Get/Set privacy flag. Value is true if privacy protection is used, false if packet is not privacy protected.
-	/// </summary>
-	public bool Privacy
+    /// <summary>
+    ///     Get/Set privacy flag. Value is true if privacy protection is used, false if packet is not privacy protected.
+    /// </summary>
+    public bool Privacy
     {
         get => _privacyFlag;
         set => _privacyFlag = value;
     }
 
-	/// <summary>
-	///     Get/Set reportable flag. Value is true if sender expects report packet on errors, false if sender does
-	///     not expect report packets.
-	/// </summary>
-	public bool Reportable
+    /// <summary>
+    ///     Get/Set reportable flag. Value is true if sender expects report packet on errors, false if sender does
+    ///     not expect report packets.
+    /// </summary>
+    public bool Reportable
     {
         get => _reportableFlag;
         set => _reportableFlag = value;
     }
 
-	/// <summary>
-	///     Clone this class.
-	/// </summary>
-	/// <returns>Cloned class cast as Object</returns>
-	public override object Clone()
+    /// <summary>
+    ///     Clone this class.
+    /// </summary>
+    /// <returns>Cloned class cast as Object</returns>
+    public override object Clone()
     {
         return new MsgFlags(_authenticationFlag, _privacyFlag, _reportableFlag);
     }
 
-	/// <summary>
-	///     Encode SNMP v3 message flag field
-	/// </summary>
-	/// <param name="buffer">Buffer to append encoded value to</param>
-	public override void encode(MutableByte buffer)
+    /// <summary>
+    ///     Encode SNMP v3 message flag field
+    /// </summary>
+    /// <param name="buffer">Buffer to append encoded value to</param>
+    public override void encode(MutableByte buffer)
     {
         byte flag = 0x00;
         if (_authenticationFlag)
@@ -136,13 +136,13 @@ public class MsgFlags : AsnType, ICloneable
         flagObject.encode(buffer);
     }
 
-	/// <summary>
-	///     Decode message flags from the BER encoded buffer starting at specified offset.
-	/// </summary>
-	/// <param name="buffer">BER encoded buffer</param>
-	/// <param name="offset">Offset within the buffer to start decoding process</param>
-	/// <returns>Buffer position after the decoded value</returns>
-	public override int decode(byte[] buffer, int offset)
+    /// <summary>
+    ///     Decode message flags from the BER encoded buffer starting at specified offset.
+    /// </summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">Offset within the buffer to start decoding process</param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public override int decode(byte[] buffer, int offset)
     {
         // reset class values
         _authenticationFlag = false;
@@ -167,11 +167,11 @@ public class MsgFlags : AsnType, ICloneable
         return offset;
     }
 
-	/// <summary>
-	///     Return string representation of the object.
-	/// </summary>
-	/// <returns>String representation of the class values.</returns>
-	public override string ToString()
+    /// <summary>
+    ///     Return string representation of the object.
+    /// </summary>
+    /// <returns>String representation of the class values.</returns>
+    public override string ToString()
     {
         return string.Format("Reportable {0} Authenticated {1} Privacy {2}", _reportableFlag.ToString(),
             _authenticationFlag.ToString(), _privacyFlag.ToString());

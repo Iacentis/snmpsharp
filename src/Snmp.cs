@@ -2,10 +2,10 @@
 
 public class Snmp : UdpTransport
 {
-	/// <summary>
-	///     Internal storage for request target information.
-	/// </summary>
-	protected ITarget _target;
+    /// <summary>
+    ///     Internal storage for request target information.
+    /// </summary>
+    protected ITarget _target;
 
     #region Constructor(s)
 

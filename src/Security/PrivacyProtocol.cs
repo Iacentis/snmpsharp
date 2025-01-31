@@ -31,27 +31,27 @@ namespace SnmpSharpNet;
 /// </remarks>
 public sealed class PrivacyProtocol
 {
-	/// <summary>
-	///     Private constructor. This class cannot be instantiated.
-	/// </summary>
-	private PrivacyProtocol()
+    /// <summary>
+    ///     Private constructor. This class cannot be instantiated.
+    /// </summary>
+    private PrivacyProtocol()
     {
     }
 
-	/// <summary>
-	///     Based on the supplied privacyProtocol, return instance of the privacy protocol implementation class.
-	/// </summary>
-	/// <param name="privProtocol">
-	///     Privacy protocol code. Available protocols are <see cref="PrivacyProtocols.DES" />,
-	///     <see cref="PrivacyProtocols.AES128" />, <see cref="PrivacyProtocols.AES192" />,
-	///     <see cref="PrivacyProtocols.AES256" /> and
-	///     <see cref="PrivacyProtocols.TripleDES" />.
-	/// </param>
-	/// <returns>
-	///     Privacy protocol implementation class on success. If privacy protocol is <see cref="PrivacyProtocols.None" />
-	///     then null is returned.
-	/// </returns>
-	public static IPrivacyProtocol GetInstance(PrivacyProtocols privProtocol)
+    /// <summary>
+    ///     Based on the supplied privacyProtocol, return instance of the privacy protocol implementation class.
+    /// </summary>
+    /// <param name="privProtocol">
+    ///     Privacy protocol code. Available protocols are <see cref="PrivacyProtocols.DES" />,
+    ///     <see cref="PrivacyProtocols.AES128" />, <see cref="PrivacyProtocols.AES192" />,
+    ///     <see cref="PrivacyProtocols.AES256" /> and
+    ///     <see cref="PrivacyProtocols.TripleDES" />.
+    /// </param>
+    /// <returns>
+    ///     Privacy protocol implementation class on success. If privacy protocol is <see cref="PrivacyProtocols.None" />
+    ///     then null is returned.
+    /// </returns>
+    public static IPrivacyProtocol GetInstance(PrivacyProtocols privProtocol)
     {
         if (privProtocol == PrivacyProtocols.None)
             return null;

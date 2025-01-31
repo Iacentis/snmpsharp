@@ -32,19 +32,19 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SecureAgentParameters : IAgentParameters
 {
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	public SecureAgentParameters()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public SecureAgentParameters()
     {
         Reset();
     }
 
-	/// <summary>
-	///     Copy constructor. Initialize the class with the values of the parameter class values.
-	/// </summary>
-	/// <param name="second">Parameter class.</param>
-	public SecureAgentParameters(SecureAgentParameters second)
+    /// <summary>
+    ///     Copy constructor. Initialize the class with the values of the parameter class values.
+    /// </summary>
+    /// <param name="second">Parameter class.</param>
+    public SecureAgentParameters(SecureAgentParameters second)
         : this()
     {
         _contextEngineId.Set(second.ContextEngineId);
@@ -66,34 +66,34 @@ public class SecureAgentParameters : IAgentParameters
             _privacyKey = (byte[])second.PrivacyKey.Clone();
     }
 
-	/// <summary>
-	///     Get/Set cached privacy key value
-	/// </summary>
-	/// <remarks>
-	///     Privacy key is set by reference.
-	/// </remarks>
-	public byte[] PrivacyKey
+    /// <summary>
+    ///     Get/Set cached privacy key value
+    /// </summary>
+    /// <remarks>
+    ///     Privacy key is set by reference.
+    /// </remarks>
+    public byte[] PrivacyKey
     {
         get => _privacyKey;
         set => _privacyKey = value;
     }
 
-	/// <summary>
-	///     Get/Set cached authentication key value
-	/// </summary>
-	/// <remarks>
-	///     Authentication key value is set by reference.
-	/// </remarks>
-	public byte[] AuthenticationKey
+    /// <summary>
+    ///     Get/Set cached authentication key value
+    /// </summary>
+    /// <remarks>
+    ///     Authentication key value is set by reference.
+    /// </remarks>
+    public byte[] AuthenticationKey
     {
         get => _authenticationKey;
         set => _authenticationKey = value;
     }
 
-	/// <summary>
-	///     Check if cached privacy or authentication keys are available
-	/// </summary>
-	public bool HasCachedKeys
+    /// <summary>
+    ///     Check if cached privacy or authentication keys are available
+    /// </summary>
+    public bool HasCachedKeys
     {
         get
         {
@@ -119,14 +119,14 @@ public class SecureAgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Checks validity of the class.
-	/// </summary>
-	/// <returns>
-	///     Returns false if all required values are not initialized, or if invalid
-	///     combination of options is set, otherwise true.
-	/// </returns>
-	public bool Valid()
+    /// <summary>
+    ///     Checks validity of the class.
+    /// </summary>
+    /// <returns>
+    ///     Returns false if all required values are not initialized, or if invalid
+    ///     combination of options is set, otherwise true.
+    /// </returns>
+    public bool Valid()
     {
         if (SecurityName.Length <= 0 && (_authenticationProtocol != AuthenticationDigests.None ||
                                          _privacyProtocol != PrivacyProtocols.None))
@@ -147,12 +147,12 @@ public class SecureAgentParameters : IAgentParameters
         return true;
     }
 
-	/// <summary>
-	///     InitializePacket SNMP packet with values from this class. Works only on SNMP version 3 packets.
-	/// </summary>
-	/// <param name="packet">Instance of <see cref="SnmpV3Packet" /></param>
-	/// <exception cref="SnmpInvalidVersionException">Thrown when parameter packet is not SnmpV3Packet</exception>
-	public void InitializePacket(SnmpPacket packet)
+    /// <summary>
+    ///     InitializePacket SNMP packet with values from this class. Works only on SNMP version 3 packets.
+    /// </summary>
+    /// <param name="packet">Instance of <see cref="SnmpV3Packet" /></param>
+    /// <exception cref="SnmpInvalidVersionException">Thrown when parameter packet is not SnmpV3Packet</exception>
+    public void InitializePacket(SnmpPacket packet)
     {
         if (packet is SnmpV3Packet)
         {
@@ -186,20 +186,20 @@ public class SecureAgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Clone current object
-	/// </summary>
-	/// <returns>Duplicate object initialized with values from this class.</returns>
-	public object Clone()
+    /// <summary>
+    ///     Clone current object
+    /// </summary>
+    /// <returns>Duplicate object initialized with values from this class.</returns>
+    public object Clone()
     {
         return new SecureAgentParameters(this);
     }
 
-	/// <summary>
-	///     Prepare class for noAuthNoPriv operations. Set authentication and privacy protocols to none.
-	/// </summary>
-	/// <param name="securityName">User security name</param>
-	public void noAuthNoPriv(string securityName)
+    /// <summary>
+    ///     Prepare class for noAuthNoPriv operations. Set authentication and privacy protocols to none.
+    /// </summary>
+    /// <param name="securityName">User security name</param>
+    public void noAuthNoPriv(string securityName)
     {
         _securityName.Set(securityName);
         _authenticationProtocol = AuthenticationDigests.None;
@@ -208,13 +208,13 @@ public class SecureAgentParameters : IAgentParameters
         _privacySecret.Clear();
     }
 
-	/// <summary>
-	///     Prepare class for authNoPriv operations. Set privacy protocol to none
-	/// </summary>
-	/// <param name="securityName">User security name</param>
-	/// <param name="authDigest">Authentication protocol</param>
-	/// <param name="authSecret">Authentication secret (password)</param>
-	public void authNoPriv(string securityName, AuthenticationDigests authDigest, string authSecret)
+    /// <summary>
+    ///     Prepare class for authNoPriv operations. Set privacy protocol to none
+    /// </summary>
+    /// <param name="securityName">User security name</param>
+    /// <param name="authDigest">Authentication protocol</param>
+    /// <param name="authSecret">Authentication secret (password)</param>
+    public void authNoPriv(string securityName, AuthenticationDigests authDigest, string authSecret)
     {
         _securityName.Set(securityName);
         _authenticationProtocol = authDigest;
@@ -223,15 +223,15 @@ public class SecureAgentParameters : IAgentParameters
         _privacySecret.Clear();
     }
 
-	/// <summary>
-	///     Prepare class for authPriv operations.
-	/// </summary>
-	/// <param name="securityName">User security name</param>
-	/// <param name="authDigest">Authentication protocol</param>
-	/// <param name="authSecret">Authentication secret (password)</param>
-	/// <param name="privProtocol">Privacy protocol</param>
-	/// <param name="privSecret">Privacy secret (encryption password)</param>
-	public void authPriv(string securityName, AuthenticationDigests authDigest, string authSecret,
+    /// <summary>
+    ///     Prepare class for authPriv operations.
+    /// </summary>
+    /// <param name="securityName">User security name</param>
+    /// <param name="authDigest">Authentication protocol</param>
+    /// <param name="authSecret">Authentication secret (password)</param>
+    /// <param name="privProtocol">Privacy protocol</param>
+    /// <param name="privSecret">Privacy secret (encryption password)</param>
+    public void authPriv(string securityName, AuthenticationDigests authDigest, string authSecret,
         PrivacyProtocols privProtocol, string privSecret)
     {
         _securityName.Set(securityName);
@@ -241,17 +241,17 @@ public class SecureAgentParameters : IAgentParameters
         _privacySecret.Set(privSecret);
     }
 
-	/// <summary>
-	///     Copy all relevant values from the SnmpV3Packet class. Do not use this class for
-	///     updating the SNMP version 3 discovery process results because secret name, authentication
-	///     and privacy values are updated as well which discovery process doesn't use.
-	/// </summary>
-	/// <param name="packet"><see cref="SnmpV3Packet" /> cast as <see cref="SnmpPacket" /></param>
-	/// <exception cref="SnmpInvalidVersionException">
-	///     Thrown when SNMP packet class other then version 3
-	///     is passed as parameter
-	/// </exception>
-	public void UpdateValues(SnmpPacket packet)
+    /// <summary>
+    ///     Copy all relevant values from the SnmpV3Packet class. Do not use this class for
+    ///     updating the SNMP version 3 discovery process results because secret name, authentication
+    ///     and privacy values are updated as well which discovery process doesn't use.
+    /// </summary>
+    /// <param name="packet"><see cref="SnmpV3Packet" /> cast as <see cref="SnmpPacket" /></param>
+    /// <exception cref="SnmpInvalidVersionException">
+    ///     Thrown when SNMP packet class other then version 3
+    ///     is passed as parameter
+    /// </exception>
+    public void UpdateValues(SnmpPacket packet)
     {
         if (packet is SnmpV3Packet)
         {
@@ -271,16 +271,16 @@ public class SecureAgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Update class values with SNMP version 3 discovery values from the supplied <see cref="SnmpV3Packet" />
-	///     class. Values updated are EngineId, EngineTime and EngineBoots.
-	/// </summary>
-	/// <param name="packet"><see cref="SnmpV3Packet" /> class cast as <see cref="SnmpPacket" /></param>
-	/// <exception cref="SnmpInvalidVersionException">
-	///     Thrown when SNMP packet class other then version 3
-	///     is passed as parameter
-	/// </exception>
-	public void UpdateDiscoveryValues(SnmpPacket packet)
+    /// <summary>
+    ///     Update class values with SNMP version 3 discovery values from the supplied <see cref="SnmpV3Packet" />
+    ///     class. Values updated are EngineId, EngineTime and EngineBoots.
+    /// </summary>
+    /// <param name="packet"><see cref="SnmpV3Packet" /> class cast as <see cref="SnmpPacket" /></param>
+    /// <exception cref="SnmpInvalidVersionException">
+    ///     Thrown when SNMP packet class other then version 3
+    ///     is passed as parameter
+    /// </exception>
+    public void UpdateDiscoveryValues(SnmpPacket packet)
     {
         if (packet is SnmpV3Packet)
         {
@@ -298,26 +298,26 @@ public class SecureAgentParameters : IAgentParameters
         }
     }
 
-	/// <summary>
-	///     Updates engine time timestamp. This value is used to determine if agents engine time stored
-	///     in this class is valid.
-	///     Timestamp is saved as DateTime class by default initialized to DateTime.MinValue. Timestamp value
-	///     is stored in GMT to make it portable (if it is saved on one computer and loaded on another that uses
-	///     a different time zone).
-	/// </summary>
-	public void UpdateTimeStamp()
+    /// <summary>
+    ///     Updates engine time timestamp. This value is used to determine if agents engine time stored
+    ///     in this class is valid.
+    ///     Timestamp is saved as DateTime class by default initialized to DateTime.MinValue. Timestamp value
+    ///     is stored in GMT to make it portable (if it is saved on one computer and loaded on another that uses
+    ///     a different time zone).
+    /// </summary>
+    public void UpdateTimeStamp()
     {
         _engineTimeStamp = DateTime.UtcNow;
     }
 
-	/// <summary>
-	///     Validate agents engine time. Valid engine time value is time that has been initialized to
-	///     a value other then default (DateTime.MinValue is default set in the constructor) and that
-	///     has been updated in the last 10 times the SNMP v3 timely window (150 seconds). In other words,
-	///     valid time is any time value in the last 1500 seconds (or 25 minutes).
-	/// </summary>
-	/// <returns>True if engine time value is valid, otherwise false.</returns>
-	public bool ValidateEngineTime()
+    /// <summary>
+    ///     Validate agents engine time. Valid engine time value is time that has been initialized to
+    ///     a value other then default (DateTime.MinValue is default set in the constructor) and that
+    ///     has been updated in the last 10 times the SNMP v3 timely window (150 seconds). In other words,
+    ///     valid time is any time value in the last 1500 seconds (or 25 minutes).
+    /// </summary>
+    /// <returns>True if engine time value is valid, otherwise false.</returns>
+    public bool ValidateEngineTime()
     {
         if (_engineTimeStamp == DateTime.MinValue)
             return false; // timestamp is at its initial value. not valid
@@ -332,14 +332,14 @@ public class SecureAgentParameters : IAgentParameters
         return true;
     }
 
-	/// <summary>
-	///     Calculates and returns current agents engine time. <see cref="ValidateEngineTime" /> is called
-	///     prior to calculation to make sure current engine time is timely enough to use.
-	///     EngineTime is calculated as last received engine time + difference in seconds between the time
-	///     stamp saved when last time value was received and current time (using the internal GMT clock).
-	/// </summary>
-	/// <returns>Adjusted engine time value or 0 if time is outside the time window.</returns>
-	public int GetCurrentEngineTime()
+    /// <summary>
+    ///     Calculates and returns current agents engine time. <see cref="ValidateEngineTime" /> is called
+    ///     prior to calculation to make sure current engine time is timely enough to use.
+    ///     EngineTime is calculated as last received engine time + difference in seconds between the time
+    ///     stamp saved when last time value was received and current time (using the internal GMT clock).
+    /// </summary>
+    /// <returns>Adjusted engine time value or 0 if time is outside the time window.</returns>
+    public int GetCurrentEngineTime()
     {
         if (!ValidateEngineTime())
             return 0;
@@ -348,30 +348,30 @@ public class SecureAgentParameters : IAgentParameters
         return Convert.ToInt32(_engineTime.Value + diff.TotalSeconds + 1);
     }
 
-	/// <summary>
-	///     Validate that incoming packet has arrived from the correct engine id and is using a correct
-	///     combination of privacy and authentication values.
-	/// </summary>
-	/// <param name="packet">Received and parsed SNMP version 3 packet.</param>
-	/// <returns>True if packet is valid, otherwise false.</returns>
-	/// <exception cref="SnmpException">
-	///     Thrown on following errors with ErrorCode:
-	///     * ErrorCode = 0: SecureAgentParameters was updated after request was made but before reply was received (this is
-	///     not allowed)
-	///     * SnmpException.InvalidAuthoritativeEngineId: engine id in the reply does not match request
-	///     * SnmpException.InvalidSecurityName: security name mismatch between request and reply packets
-	///     * SnmpException.ReportOnNoReports: report packet received when we had reportable set to false in the request
-	///     * SnmpException.UnsupportedNoAuthPriv: noAuthPriv is not supported
-	/// </exception>
-	/// <exception cref="SnmpPrivacyException">
-	///     Thrown when configured privacy passwords in this class and in the packet class
-	///     do not match
-	/// </exception>
-	/// <exception cref="SnmpAuthenticationException">
-	///     Thrown when configured authentication passwords in this class and in the
-	///     packet class do not match
-	/// </exception>
-	public bool ValidateIncomingPacket(SnmpV3Packet packet)
+    /// <summary>
+    ///     Validate that incoming packet has arrived from the correct engine id and is using a correct
+    ///     combination of privacy and authentication values.
+    /// </summary>
+    /// <param name="packet">Received and parsed SNMP version 3 packet.</param>
+    /// <returns>True if packet is valid, otherwise false.</returns>
+    /// <exception cref="SnmpException">
+    ///     Thrown on following errors with ErrorCode:
+    ///     * ErrorCode = 0: SecureAgentParameters was updated after request was made but before reply was received (this is
+    ///     not allowed)
+    ///     * SnmpException.InvalidAuthoritativeEngineId: engine id in the reply does not match request
+    ///     * SnmpException.InvalidSecurityName: security name mismatch between request and reply packets
+    ///     * SnmpException.ReportOnNoReports: report packet received when we had reportable set to false in the request
+    ///     * SnmpException.UnsupportedNoAuthPriv: noAuthPriv is not supported
+    /// </exception>
+    /// <exception cref="SnmpPrivacyException">
+    ///     Thrown when configured privacy passwords in this class and in the packet class
+    ///     do not match
+    /// </exception>
+    /// <exception cref="SnmpAuthenticationException">
+    ///     Thrown when configured authentication passwords in this class and in the
+    ///     packet class do not match
+    /// </exception>
+    public bool ValidateIncomingPacket(SnmpV3Packet packet)
     {
         // First check if this is a report packet.
         if (packet.Pdu.Type == PduType.Report)
@@ -417,19 +417,19 @@ public class SecureAgentParameters : IAgentParameters
         return true;
     }
 
-	/// <summary>
-	///     Reset privacy and authentication keys to null.
-	/// </summary>
-	public void ResetKeys()
+    /// <summary>
+    ///     Reset privacy and authentication keys to null.
+    /// </summary>
+    public void ResetKeys()
     {
         _privacyKey = null;
         _authenticationKey = null;
     }
 
-	/// <summary>
-	///     Reset the class. Initialize all member values to class defaults.
-	/// </summary>
-	public void Reset()
+    /// <summary>
+    ///     Reset the class. Initialize all member values to class defaults.
+    /// </summary>
+    public void Reset()
     {
         _engineId = new OctetString();
         _engineBoots = new Integer32();
@@ -457,16 +457,16 @@ public class SecureAgentParameters : IAgentParameters
         _authenticationKey = null;
     }
 
-	/// <summary>
-	///     Build cached authentication and privacy encryption keys if they are appropriate for the selected security mode.
-	/// </summary>
-	/// <remarks>
-	///     This method should be called after discovery process has been completed and all security related values
-	///     have been set. For noAuthNoPriv, none of the keys are generated. authNoPriv will result in authentication
-	///     key cached. authPriv will generate authentication and privacy keys.
-	///     For successful key caching you need to set both relevant protocols and secret values.
-	/// </remarks>
-	public void BuildCachedSecurityKeys()
+    /// <summary>
+    ///     Build cached authentication and privacy encryption keys if they are appropriate for the selected security mode.
+    /// </summary>
+    /// <remarks>
+    ///     This method should be called after discovery process has been completed and all security related values
+    ///     have been set. For noAuthNoPriv, none of the keys are generated. authNoPriv will result in authentication
+    ///     key cached. authPriv will generate authentication and privacy keys.
+    ///     For successful key caching you need to set both relevant protocols and secret values.
+    /// </remarks>
+    public void BuildCachedSecurityKeys()
     {
         _authenticationKey = _privacyKey = null;
 

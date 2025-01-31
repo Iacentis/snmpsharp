@@ -25,88 +25,88 @@ namespace SnmpSharpNet;
 [Serializable]
 public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
 {
-	/// <summary>
-	///     Internal unsigned integer 32-bit value
-	/// </summary>
-	protected uint _value;
+    /// <summary>
+    ///     Internal unsigned integer 32-bit value
+    /// </summary>
+    protected uint _value;
 
-	/// <summary>
-	///     Constructor. Class value is set to 0.
-	/// </summary>
-	public UInteger32()
+    /// <summary>
+    ///     Constructor. Class value is set to 0.
+    /// </summary>
+    public UInteger32()
     {
         _asnType = SnmpConstants.SMI_UNSIGNED32;
     }
 
-	/// <summary>
-	///     Constructor. SET the class value to the supplied 32-bit value.
-	/// </summary>
-	/// <param name="val">
-	///     Value to initialize the class with.
-	/// </param>
-	public UInteger32(uint val) : this()
+    /// <summary>
+    ///     Constructor. SET the class value to the supplied 32-bit value.
+    /// </summary>
+    /// <param name="val">
+    ///     Value to initialize the class with.
+    /// </param>
+    public UInteger32(uint val) : this()
     {
         _value = val;
     }
 
-	/// <summary>
-	///     Constructor. Initializes the class to the same value as the argument.
-	/// </summary>
-	/// <param name="second">
-	///     Object whose value is used to initialize this class.
-	/// </param>
-	public UInteger32(UInteger32 second) : this(second.Value)
+    /// <summary>
+    ///     Constructor. Initializes the class to the same value as the argument.
+    /// </summary>
+    /// <param name="second">
+    ///     Object whose value is used to initialize this class.
+    /// </param>
+    public UInteger32(UInteger32 second) : this(second.Value)
     {
     }
 
-	/// <summary>
-	///     Constructor. Initialize the class with the unsigned integer 32-bit value
-	///     stored as a string value in the argument.
-	/// </summary>
-	/// <param name="val">
-	///     Unsigned integer value encoded as a string
-	/// </param>
-	public UInteger32(string val) : this()
+    /// <summary>
+    ///     Constructor. Initialize the class with the unsigned integer 32-bit value
+    ///     stored as a string value in the argument.
+    /// </summary>
+    /// <param name="val">
+    ///     Unsigned integer value encoded as a string
+    /// </param>
+    public UInteger32(string val) : this()
     {
         Set(val);
     }
 
-	/// <summary>
-	///     Value of the object. Returns 32 bit unsigned integer
-	/// </summary>
-	public uint Value
+    /// <summary>
+    ///     Value of the object. Returns 32 bit unsigned integer
+    /// </summary>
+    public uint Value
     {
         get => _value;
         set => _value = value;
     }
 
-	/// <summary>
-	///     Compare implementation that will compare this class value with argument UInt32 value.
-	/// </summary>
-	/// <param name="other">UInt32 value to compare class value with.</param>
-	/// <returns>True if values are the same, otherwise false</returns>
-	public int CompareTo(uint other)
+    /// <summary>
+    ///     Compare implementation that will compare this class value with argument UInt32 value.
+    /// </summary>
+    /// <param name="other">UInt32 value to compare class value with.</param>
+    /// <returns>True if values are the same, otherwise false</returns>
+    public int CompareTo(uint other)
     {
         return _value.CompareTo(other);
     }
 
-	/// <summary>
-	///     Compare implementation that will compare this class value with the value of another <see cref="UInteger32" />
-	///     class.
-	/// </summary>
-	/// <param name="other">UInteger32 value to compare class value with.</param>
-	/// <returns>True if values are the same, otherwise false</returns>
-	public int CompareTo(UInteger32 other)
+    /// <summary>
+    ///     Compare implementation that will compare this class value with the value of another <see cref="UInteger32" />
+    ///     class.
+    /// </summary>
+    /// <param name="other">UInteger32 value to compare class value with.</param>
+    /// <returns>True if values are the same, otherwise false</returns>
+    public int CompareTo(UInteger32 other)
     {
         return _value.CompareTo(other.Value);
     }
 
-	/// <summary>
-	///     Parse an UInteger32 value from a string.
-	/// </summary>
-	/// <param name="value">String containing an UInteger32 value</param>
-	/// <exception cref="ArgumentException">Argument string is length == 0</exception>
-	public void Set(string value)
+    /// <summary>
+    ///     Parse an UInteger32 value from a string.
+    /// </summary>
+    /// <param name="value">String containing an UInteger32 value</param>
+    /// <exception cref="ArgumentException">Argument string is length == 0</exception>
+    public void Set(string value)
     {
         if (value.Length == 0)
             throw new ArgumentException("value", "String has to be length greater then 0");
@@ -114,12 +114,12 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         _value = uint.Parse(value);
     }
 
-	/// <summary>
-	///     SET class value from another UInteger32 or Integer32 class cast as <seealso cref="AsnType" />.
-	/// </summary>
-	/// <param name="value">UInteger32 class cast as <seealso cref="AsnType" /></param>
-	/// <exception cref="ArgumentNullException">Parameter is null.</exception>
-	public void Set(AsnType value)
+    /// <summary>
+    ///     SET class value from another UInteger32 or Integer32 class cast as <seealso cref="AsnType" />.
+    /// </summary>
+    /// <param name="value">UInteger32 class cast as <seealso cref="AsnType" /></param>
+    /// <exception cref="ArgumentNullException">Parameter is null.</exception>
+    public void Set(AsnType value)
     {
         if (value == null)
             throw new ArgumentNullException("value", "Parameter is null");
@@ -128,45 +128,45 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         else if (value is Integer32) _value = (uint)((Integer32)value).Value;
     }
 
-	/// <summary>
-	///     Returns the string representation of the object.
-	/// </summary>
-	/// <returns>String representation of the of the class value.</returns>
-	public override string ToString()
+    /// <summary>
+    ///     Returns the string representation of the object.
+    /// </summary>
+    /// <returns>String representation of the of the class value.</returns>
+    public override string ToString()
     {
         return Convert.ToString(_value, CultureInfo.CurrentCulture);
     }
 
-	/// <summary>
-	///     Returns a duplicate of the current object
-	/// </summary>
-	/// <returns>
-	///     A duplicate copy of the current object
-	/// </returns>
-	public override object Clone()
+    /// <summary>
+    ///     Returns a duplicate of the current object
+    /// </summary>
+    /// <returns>
+    ///     A duplicate copy of the current object
+    /// </returns>
+    public override object Clone()
     {
         return new UInteger32(this);
     }
 
-	/// <summary>
-	///     Implicit casting of the object value as UInt32 value
-	/// </summary>
-	/// <param name="value">UInteger32 class</param>
-	/// <returns>UInt32 value stored by the UInteger32 class</returns>
-	public static implicit operator uint(UInteger32 value)
+    /// <summary>
+    ///     Implicit casting of the object value as UInt32 value
+    /// </summary>
+    /// <param name="value">UInteger32 class</param>
+    /// <returns>UInt32 value stored by the UInteger32 class</returns>
+    public static implicit operator uint(UInteger32 value)
     {
         if (value == null)
             return 0;
         return value.Value;
     }
 
-	/// <summary>
-	///     Compare class value against the object argument. Supported argument types are
-	///     <see cref="UInteger32" /> and Int32.
-	/// </summary>
-	/// <param name="obj">Object to compare values with</param>
-	/// <returns>True if object value is the same as this class, otherwise false.</returns>
-	public override bool Equals(object obj)
+    /// <summary>
+    ///     Compare class value against the object argument. Supported argument types are
+    ///     <see cref="UInteger32" /> and Int32.
+    /// </summary>
+    /// <param name="obj">Object to compare values with</param>
+    /// <returns>True if object value is the same as this class, otherwise false.</returns>
+    public override bool Equals(object obj)
     {
         if (obj == null)
             return false;
@@ -185,13 +185,13 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         return false; // last resort
     }
 
-	/// <summary>
-	///     Comparison operator
-	/// </summary>
-	/// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
-	/// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
-	/// <returns>True if class values match, otherwise false</returns>
-	public static bool operator ==(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Comparison operator
+    /// </summary>
+    /// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
+    /// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
+    /// <returns>True if class values match, otherwise false</returns>
+    public static bool operator ==(UInteger32 first, UInteger32 second)
     {
         if ((object)first == null && (object)second == null)
             return true;
@@ -200,25 +200,25 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         return first.Equals(second);
     }
 
-	/// <summary>
-	///     Negative comparison operator
-	/// </summary>
-	/// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
-	/// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
-	/// <returns>True if class values do NOT match, otherwise false</returns>
-	public static bool operator !=(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Negative comparison operator
+    /// </summary>
+    /// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
+    /// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
+    /// <returns>True if class values do NOT match, otherwise false</returns>
+    public static bool operator !=(UInteger32 first, UInteger32 second)
     {
         return !(first == second);
     }
 
-	/// <summary>
-	///     Greater then operator
-	/// </summary>
-	/// <remarks>Compare two UInteger32 class values and return true if first class value is greater then second.</remarks>
-	/// <param name="first">First class</param>
-	/// <param name="second">Second class</param>
-	/// <returns>True if first class value is greater then second class value, otherwise false</returns>
-	public static bool operator >(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Greater then operator
+    /// </summary>
+    /// <remarks>Compare two UInteger32 class values and return true if first class value is greater then second.</remarks>
+    /// <param name="first">First class</param>
+    /// <param name="second">Second class</param>
+    /// <returns>True if first class value is greater then second class value, otherwise false</returns>
+    public static bool operator >(UInteger32 first, UInteger32 second)
     {
         if ((object)first == null && (object)second == null)
             return false;
@@ -231,14 +231,14 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         return false;
     }
 
-	/// <summary>
-	///     Less then operator
-	/// </summary>
-	/// <remarks>Compare two UInteger32 class values and return true if first class value is less then second.</remarks>
-	/// <param name="first">First class</param>
-	/// <param name="second">Second class</param>
-	/// <returns>True if first class value is less then second class value, otherwise false</returns>
-	public static bool operator <(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Less then operator
+    /// </summary>
+    /// <remarks>Compare two UInteger32 class values and return true if first class value is less then second.</remarks>
+    /// <param name="first">First class</param>
+    /// <param name="second">Second class</param>
+    /// <returns>True if first class value is less then second class value, otherwise false</returns>
+    public static bool operator <(UInteger32 first, UInteger32 second)
     {
         if ((object)first == null && (object)second == null)
             return false;
@@ -251,31 +251,31 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         return false;
     }
 
-	/// <summary>
-	///     Returns hashed class value.
-	/// </summary>
-	/// <returns>Int32 hash value</returns>
-	public override int GetHashCode()
+    /// <summary>
+    ///     Returns hashed class value.
+    /// </summary>
+    /// <returns>Int32 hash value</returns>
+    public override int GetHashCode()
     {
         return _value.GetHashCode();
     }
 
-	/// <summary>
-	///     Addition operator.
-	/// </summary>
-	/// <remarks>
-	///     Add two UInteger32 object values. Values of the two objects are added and
-	///     a new class is instantiated with the result. Original values of the two parameter classes
-	///     are preserved.
-	/// </remarks>
-	/// <param name="first">First UInteger32 object</param>
-	/// <param name="second">Second UInteger32 object</param>
-	/// <returns>
-	///     New object with values of the 2 parameter objects added. If both parameters are null
-	///     references then null is returned. If either of the two parameters is null, the non-null objects
-	///     value is set as the value of the new object and returned.
-	/// </returns>
-	public static UInteger32 operator +(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Addition operator.
+    /// </summary>
+    /// <remarks>
+    ///     Add two UInteger32 object values. Values of the two objects are added and
+    ///     a new class is instantiated with the result. Original values of the two parameter classes
+    ///     are preserved.
+    /// </remarks>
+    /// <param name="first">First UInteger32 object</param>
+    /// <param name="second">Second UInteger32 object</param>
+    /// <returns>
+    ///     New object with values of the 2 parameter objects added. If both parameters are null
+    ///     references then null is returned. If either of the two parameters is null, the non-null objects
+    ///     value is set as the value of the new object and returned.
+    /// </returns>
+    public static UInteger32 operator +(UInteger32 first, UInteger32 second)
     {
         if (first == null && second == null)
             return null;
@@ -285,22 +285,22 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         return new UInteger32(first.Value + second.Value);
     }
 
-	/// <summary>
-	///     Subtraction operator
-	/// </summary>
-	/// <remarks>
-	///     Subtract the value of the second UInteger32 class value from the first UInteger32 class value.
-	///     Values of the two objects are subtracted and a new class is instantiated with the result.
-	///     Original values of the two parameter classes are preserved.
-	/// </remarks>
-	/// <param name="first">First UInteger32 object</param>
-	/// <param name="second">Second UInteger32 object</param>
-	/// <returns>
-	///     New object with subtracted values of the 2 parameter objects. If both parameters are null
-	///     references then null is returned. If either of the two parameters is null, the non-null objects
-	///     value is set as the value of the new object and returned.
-	/// </returns>
-	public static UInteger32 operator -(UInteger32 first, UInteger32 second)
+    /// <summary>
+    ///     Subtraction operator
+    /// </summary>
+    /// <remarks>
+    ///     Subtract the value of the second UInteger32 class value from the first UInteger32 class value.
+    ///     Values of the two objects are subtracted and a new class is instantiated with the result.
+    ///     Original values of the two parameter classes are preserved.
+    /// </remarks>
+    /// <param name="first">First UInteger32 object</param>
+    /// <param name="second">Second UInteger32 object</param>
+    /// <returns>
+    ///     New object with subtracted values of the 2 parameter objects. If both parameters are null
+    ///     references then null is returned. If either of the two parameters is null, the non-null objects
+    ///     value is set as the value of the new object and returned.
+    /// </returns>
+    public static UInteger32 operator -(UInteger32 first, UInteger32 second)
     {
         if (first == null && second == null)
             return null;

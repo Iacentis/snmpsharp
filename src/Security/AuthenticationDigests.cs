@@ -21,33 +21,33 @@ namespace SnmpSharpNet;
 /// </summary>
 public enum AuthenticationDigests
 {
-	/// <summary>
-	///     Authentication hash method none. Used when authentication is disabled.
-	/// </summary>
-	None = 0,
+    /// <summary>
+    ///     Authentication hash method none. Used when authentication is disabled.
+    /// </summary>
+    None = 0,
 
-	/// <summary>
-	///     Authentication protocol is HMAC-MD5.
-	/// </summary>
-	MD5,
+    /// <summary>
+    ///     Authentication protocol is HMAC-MD5.
+    /// </summary>
+    MD5,
 
-	/// <summary>
-	///     Authentication protocol is HMAC-SHA1.
-	/// </summary>
-	SHA1,
+    /// <summary>
+    ///     Authentication protocol is HMAC-SHA1.
+    /// </summary>
+    SHA1,
 
-	/// <summary>
-	///     Authentication protocol is HMAC-SHA256.
-	/// </summary>
-	SHA256,
+    /// <summary>
+    ///     Authentication protocol is HMAC-SHA256.
+    /// </summary>
+    SHA256,
 
-	/// <summary>
-	///     Authentication protocol is HMAC-SHA384.
-	/// </summary>
-	SHA384,
+    /// <summary>
+    ///     Authentication protocol is HMAC-SHA384.
+    /// </summary>
+    SHA384,
 
-	/// <summary>
-	///     Authentication protocol is HMAC-SHA512.
-	/// </summary>
-	SHA512
+    /// <summary>
+    ///     Authentication protocol is HMAC-SHA512.
+    /// </summary>
+    SHA512
 }

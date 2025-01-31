@@ -42,23 +42,23 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class MutableByte : object, ICloneable, IComparable<MutableByte>, IComparable<byte[]>
 {
-	/// <summary>
-	///     Internal byte buffer
-	/// </summary>
-	private byte[] _buffer;
+    /// <summary>
+    ///     Internal byte buffer
+    /// </summary>
+    private byte[] _buffer;
 
-	/// <summary>
-	///     Standard constructor. Initializes the internal buffer to null.
-	/// </summary>
-	public MutableByte()
+    /// <summary>
+    ///     Standard constructor. Initializes the internal buffer to null.
+    /// </summary>
+    public MutableByte()
     {
     }
 
-	/// <summary>
-	///     Constructor. Initialize internal buffer with supplied value.
-	/// </summary>
-	/// <param name="buf">Byte array to copy into internal buffer</param>
-	public MutableByte(byte[] buf)
+    /// <summary>
+    ///     Constructor. Initialize internal buffer with supplied value.
+    /// </summary>
+    /// <param name="buf">Byte array to copy into internal buffer</param>
+    public MutableByte(byte[] buf)
     {
         if (buf != null)
         {
@@ -67,14 +67,14 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Create new <see cref="MutableByte" /> class initialized by adding two byte buffers together. If
-	///     one of the supplied byte arrays is value null then <see cref="ArgumentNullException" /> is thrown.
-	/// </summary>
-	/// <param name="buf1">First byte array</param>
-	/// <param name="buf2">Second byte array</param>
-	/// <exception cref="ArgumentNullException">If one or both arguments are null or length 0</exception>
-	public MutableByte(byte[] buf1, byte[] buf2)
+    /// <summary>
+    ///     Create new <see cref="MutableByte" /> class initialized by adding two byte buffers together. If
+    ///     one of the supplied byte arrays is value null then <see cref="ArgumentNullException" /> is thrown.
+    /// </summary>
+    /// <param name="buf1">First byte array</param>
+    /// <param name="buf2">Second byte array</param>
+    /// <exception cref="ArgumentNullException">If one or both arguments are null or length 0</exception>
+    public MutableByte(byte[] buf1, byte[] buf2)
     {
         if (buf1 == null || buf1.Length == 0)
             throw new ArgumentNullException("buf1");
@@ -86,27 +86,27 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         Buffer.BlockCopy(buf2, 0, _buffer, buf1.Length, buf2.Length);
     }
 
-	/// <summary>
-	///     Create new <see cref="MutableByte" /> class initialized with data from the supplied array up to length of buflen.
-	///     Internaly,
-	///     a call is made to MutableByte.Set(buf[],int) to initialize the new class data buffer.
-	/// </summary>
-	/// <param name="buf">Array used to initialize the class data</param>
-	/// <param name="buflen">Number of bytes to use from the argument array to initialize the class.</param>
-	public MutableByte(byte[] buf, int buflen)
+    /// <summary>
+    ///     Create new <see cref="MutableByte" /> class initialized with data from the supplied array up to length of buflen.
+    ///     Internaly,
+    ///     a call is made to MutableByte.Set(buf[],int) to initialize the new class data buffer.
+    /// </summary>
+    /// <param name="buf">Array used to initialize the class data</param>
+    /// <param name="buflen">Number of bytes to use from the argument array to initialize the class.</param>
+    public MutableByte(byte[] buf, int buflen)
     {
         Set(buf, buflen);
     }
 
-	/// <summary>
-	///     Get byte[] buffer value. This property is internal because it exposes the internal byte array.
-	/// </summary>
-	internal byte[] Value => _buffer;
+    /// <summary>
+    ///     Get byte[] buffer value. This property is internal because it exposes the internal byte array.
+    /// </summary>
+    internal byte[] Value => _buffer;
 
-	/// <summary>
-	///     Byte buffer current length
-	/// </summary>
-	public int Length
+    /// <summary>
+    ///     Byte buffer current length
+    /// </summary>
+    public int Length
     {
         get
         {
@@ -115,16 +115,16 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Index operator. Index access to the underlying byte array
-	/// </summary>
-	/// <param name="index">Index to access</param>
-	/// <returns>byte array value</returns>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown if requested byte index is outside the size of the internal byte
-	///     array
-	/// </exception>
-	public byte this[int index]
+    /// <summary>
+    ///     Index operator. Index access to the underlying byte array
+    /// </summary>
+    /// <param name="index">Index to access</param>
+    /// <returns>byte array value</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown if requested byte index is outside the size of the internal byte
+    ///     array
+    /// </exception>
+    public byte this[int index]
     {
         get
         {
@@ -140,21 +140,21 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Clone object
-	/// </summary>
-	/// <returns>Cloned copy of the object cast as <see cref="Object" /></returns>
-	public object Clone()
+    /// <summary>
+    ///     Clone object
+    /// </summary>
+    /// <returns>Cloned copy of the object cast as <see cref="Object" /></returns>
+    public object Clone()
     {
         return new MutableByte(_buffer);
     }
 
-	/// <summary>
-	///     Compare class to a byte[] array.
-	/// </summary>
-	/// <param name="other">Byte array to compare with</param>
-	/// <returns>-1 if class is less then, 0 if equal or 1 if greater then array it's compared against</returns>
-	public int CompareTo(byte[] other)
+    /// <summary>
+    ///     Compare class to a byte[] array.
+    /// </summary>
+    /// <param name="other">Byte array to compare with</param>
+    /// <returns>-1 if class is less then, 0 if equal or 1 if greater then array it's compared against</returns>
+    public int CompareTo(byte[] other)
     {
         if (other.Length > Length) return -1;
 
@@ -169,12 +169,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         return 0;
     }
 
-	/// <summary>
-	///     Compare class to another MutableByte class.
-	/// </summary>
-	/// <param name="other">Class to compare with</param>
-	/// <returns>-1 if class is less then, 0 if equal or 1 if greater then class it's compared against</returns>
-	public int CompareTo(MutableByte other)
+    /// <summary>
+    ///     Compare class to another MutableByte class.
+    /// </summary>
+    /// <param name="other">Class to compare with</param>
+    /// <returns>-1 if class is less then, 0 if equal or 1 if greater then class it's compared against</returns>
+    public int CompareTo(MutableByte other)
     {
         if (other.Length > Length) return -1;
 
@@ -189,11 +189,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         return 0;
     }
 
-	/// <summary>
-	///     Set internal buffer to supplied value. Overwrites existing data.
-	/// </summary>
-	/// <param name="buf">Value to copy into internal buffer</param>
-	public void Set(byte[] buf)
+    /// <summary>
+    ///     Set internal buffer to supplied value. Overwrites existing data.
+    /// </summary>
+    /// <param name="buf">Value to copy into internal buffer</param>
+    public void Set(byte[] buf)
     {
         _buffer = null;
 
@@ -204,13 +204,13 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         Buffer.BlockCopy(buf, 0, _buffer, 0, buf.Length);
     }
 
-	/// <summary>
-	///     Copy source buffer array up to length into the class.
-	/// </summary>
-	/// <param name="buf">Source byte array</param>
-	/// <param name="length">Number of items to copy</param>
-	/// <exception cref="ArgumentNullException">Thrown if buf argument is null or length of zero</exception>
-	public void Set(byte[] buf, int length)
+    /// <summary>
+    ///     Copy source buffer array up to length into the class.
+    /// </summary>
+    /// <param name="buf">Source byte array</param>
+    /// <param name="length">Number of items to copy</param>
+    /// <exception cref="ArgumentNullException">Thrown if buf argument is null or length of zero</exception>
+    public void Set(byte[] buf, int length)
     {
         _buffer = null;
         if (buf == null || buf.Length == 0)
@@ -220,34 +220,34 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         Buffer.BlockCopy(buf, 0, _buffer, 0, length);
     }
 
-	/// <summary>
-	///     Set internal buffer to size 1 and copy supplied byte value into it
-	/// </summary>
-	/// <param name="buf">Byte value to copy into internal byte array of size 1</param>
-	public void Set(byte buf)
+    /// <summary>
+    ///     Set internal buffer to size 1 and copy supplied byte value into it
+    /// </summary>
+    /// <param name="buf">Byte value to copy into internal byte array of size 1</param>
+    public void Set(byte buf)
     {
         _buffer = new byte[1];
         _buffer[0] = buf;
     }
 
-	/// <summary>
-	///     Set value at specified position to the supplied value
-	/// </summary>
-	/// <param name="position">Zero based offset from the beginning of the buffer</param>
-	/// <param name="value">Value to set</param>
-	public void Set(int position, byte value)
+    /// <summary>
+    ///     Set value at specified position to the supplied value
+    /// </summary>
+    /// <param name="position">Zero based offset from the beginning of the buffer</param>
+    /// <param name="value">Value to set</param>
+    public void Set(int position, byte value)
     {
         if (position < 0 || position >= Length) return;
         _buffer[position] = value;
     }
 
-	/// <summary>
-	///     Set class value to the contents of the supplied array starting from offset with specified length
-	/// </summary>
-	/// <param name="value">Value to set the class to</param>
-	/// <param name="offset">From the value start copying data from this offset</param>
-	/// <param name="length">Byte count to copy</param>
-	public void Set(byte[] value, int offset, int length)
+    /// <summary>
+    ///     Set class value to the contents of the supplied array starting from offset with specified length
+    /// </summary>
+    /// <param name="value">Value to set the class to</param>
+    /// <param name="offset">From the value start copying data from this offset</param>
+    /// <param name="length">Byte count to copy</param>
+    public void Set(byte[] value, int offset, int length)
     {
         if (offset < 0 || length < 0 || offset + length > value.Length)
             throw new ArgumentOutOfRangeException();
@@ -255,11 +255,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         Buffer.BlockCopy(value, offset, _buffer, 0, length);
     }
 
-	/// <summary>
-	///     Set class value with bytes from the string. UTF8 encoding is assumed.
-	/// </summary>
-	/// <param name="value">String value</param>
-	public void Set(string value)
+    /// <summary>
+    ///     Set class value with bytes from the string. UTF8 encoding is assumed.
+    /// </summary>
+    /// <param name="value">String value</param>
+    public void Set(string value)
     {
         if (value == null || value.Length <= 0)
             _buffer = null;
@@ -267,12 +267,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
             Set(ASCIIEncoding.UTF8.GetBytes(value));
     }
 
-	/// <summary>
-	///     Append data to the internal buffer
-	/// </summary>
-	/// <param name="buf">Byte array to append to the internal byte array</param>
-	/// <exception cref="ArgumentNullException">Thrown when argument buf is null or length of zero</exception>
-	public void Append(byte[] buf)
+    /// <summary>
+    ///     Append data to the internal buffer
+    /// </summary>
+    /// <param name="buf">Byte array to append to the internal byte array</param>
+    /// <exception cref="ArgumentNullException">Thrown when argument buf is null or length of zero</exception>
+    public void Append(byte[] buf)
     {
         if (buf == null || buf.Length == 0)
             //	throw new ArgumentNullException("buf");
@@ -289,11 +289,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Append a single byte value to the internal buffer
-	/// </summary>
-	/// <param name="buf">Byte value to append to the internal buffer</param>
-	public void Append(byte buf)
+    /// <summary>
+    ///     Append a single byte value to the internal buffer
+    /// </summary>
+    /// <param name="buf">Byte value to append to the internal buffer</param>
+    public void Append(byte buf)
     {
         if (_buffer == null)
         {
@@ -306,12 +306,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Insert byte array at position
-	/// </summary>
-	/// <param name="position">Insert position</param>
-	/// <param name="buf">Byte array to insert at specified position</param>
-	public void Insert(int position, byte[] buf)
+    /// <summary>
+    ///     Insert byte array at position
+    /// </summary>
+    /// <param name="position">Insert position</param>
+    /// <param name="buf">Byte array to insert at specified position</param>
+    public void Insert(int position, byte[] buf)
     {
         if (position < 0 || position >= Length)
             throw new ArgumentOutOfRangeException("position", "Index outside of the buffer scope");
@@ -329,12 +329,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         _buffer = tmp;
     }
 
-	/// <summary>
-	///     Insert single byte at specified location
-	/// </summary>
-	/// <param name="position">Location to perform insert (0 based)</param>
-	/// <param name="buf">Byte value to insert</param>
-	public void Insert(int position, byte buf)
+    /// <summary>
+    ///     Insert single byte at specified location
+    /// </summary>
+    /// <param name="position">Location to perform insert (0 based)</param>
+    /// <param name="buf">Byte value to insert</param>
+    public void Insert(int position, byte buf)
     {
         if (position < 0 || position >= Length)
             throw new ArgumentOutOfRangeException("position", "Index outside of the buffer scope");
@@ -351,11 +351,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         _buffer = tmp;
     }
 
-	/// <summary>
-	///     Prepend (insert at beginning) a byte array
-	/// </summary>
-	/// <param name="buf">Byte array to prepend</param>
-	public void Prepend(byte[] buf)
+    /// <summary>
+    ///     Prepend (insert at beginning) a byte array
+    /// </summary>
+    /// <param name="buf">Byte array to prepend</param>
+    public void Prepend(byte[] buf)
     {
         if (Length <= 0)
         {
@@ -371,11 +371,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Prepend (add at the beginning) a single byte value
-	/// </summary>
-	/// <param name="buf">Byte value to prepend</param>
-	public void Prepend(byte buf)
+    /// <summary>
+    ///     Prepend (add at the beginning) a single byte value
+    /// </summary>
+    /// <param name="buf">Byte value to prepend</param>
+    public void Prepend(byte buf)
     {
         if (Length <= 0)
         {
@@ -391,12 +391,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Remove bytes from the beginning of the array
-	/// </summary>
-	/// <param name="count">Number of bytes to remove</param>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
-	public void RemoveBeginning(int count)
+    /// <summary>
+    ///     Remove bytes from the beginning of the array
+    /// </summary>
+    /// <param name="count">Number of bytes to remove</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
+    public void RemoveBeginning(int count)
     {
         if (Length == 0)
             throw new ArgumentOutOfRangeException("count", "Buffer is length 0. Unable to remove members.");
@@ -414,12 +414,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         _buffer = tmp;
     }
 
-	/// <summary>
-	///     Remove number of byte values from the end of the internal buffer
-	/// </summary>
-	/// <param name="count">Number of bytes to remove</param>
-	/// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
-	public void RemoveEnd(int count)
+    /// <summary>
+    ///     Remove number of byte values from the end of the internal buffer
+    /// </summary>
+    /// <param name="count">Number of bytes to remove</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
+    public void RemoveEnd(int count)
     {
         if (Length == 0)
             throw new ArgumentOutOfRangeException("count", "Buffer is length 0. Unable to remove members.");
@@ -435,18 +435,18 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         Array.Resize(ref _buffer, _buffer.Length - count);
     }
 
-	/// <summary>
-	///     Remove array byte members starting with position start for the length length bytes.
-	/// </summary>
-	/// <param name="start">Start position of bytes to remove</param>
-	/// <param name="count">How many bytes to remove</param>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown if internal buffer is null or length zero, if start argument
-	///     is less then zero or past the end of the internal byte array, and if argument count is greater then length of the
-	///     internal byte array, start + count is past greater then the length of the buffer array or if argument count is less
-	///     then 1.
-	/// </exception>
-	public void Remove(int start, int count)
+    /// <summary>
+    ///     Remove array byte members starting with position start for the length length bytes.
+    /// </summary>
+    /// <param name="start">Start position of bytes to remove</param>
+    /// <param name="count">How many bytes to remove</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown if internal buffer is null or length zero, if start argument
+    ///     is less then zero or past the end of the internal byte array, and if argument count is greater then length of the
+    ///     internal byte array, start + count is past greater then the length of the buffer array or if argument count is less
+    ///     then 1.
+    /// </exception>
+    public void Remove(int start, int count)
     {
         if (_buffer.Length == 0)
             throw new ArgumentOutOfRangeException("start", "Byte array is empty. Unable to remove members.");
@@ -473,17 +473,17 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         }
     }
 
-	/// <summary>
-	///     Get sub-array
-	/// </summary>
-	/// <param name="position">Start of the sub-array. Zero based.</param>
-	/// <param name="length">Count of bytes to copy</param>
-	/// <returns>MutableByte array containing the sub-array.</returns>
-	/// <exception cref="OverflowException">
-	///     Thrown when position starts before the beginning of the array (position is less then 0) or
-	///     position + length is greater then the length of the byte array contained in the object.
-	/// </exception>
-	public MutableByte Get(int position, int length)
+    /// <summary>
+    ///     Get sub-array
+    /// </summary>
+    /// <param name="position">Start of the sub-array. Zero based.</param>
+    /// <param name="length">Count of bytes to copy</param>
+    /// <returns>MutableByte array containing the sub-array.</returns>
+    /// <exception cref="OverflowException">
+    ///     Thrown when position starts before the beginning of the array (position is less then 0) or
+    ///     position + length is greater then the length of the byte array contained in the object.
+    /// </exception>
+    public MutableByte Get(int position, int length)
     {
         if (_buffer.Length <= position || _buffer.Length < position + length)
             throw new OverflowException("Buffer is too small to extract sub-array.\r\n" +
@@ -494,48 +494,48 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         return new MutableByte(buf);
     }
 
-	/// <summary>
-	///     Add <see cref="MutableByte" /> and byte array values into a new MutableByte class.
-	/// </summary>
-	/// <param name="buf1"><see cref="MutableByte" /> class</param>
-	/// <param name="buf2"><see cref="MutableByte" /> class</param>
-	/// <returns>New <see cref="MutableByte" /> class containing concatenated result</returns>
-	public static MutableByte operator +(MutableByte buf1, byte[] buf2)
+    /// <summary>
+    ///     Add <see cref="MutableByte" /> and byte array values into a new MutableByte class.
+    /// </summary>
+    /// <param name="buf1"><see cref="MutableByte" /> class</param>
+    /// <param name="buf2"><see cref="MutableByte" /> class</param>
+    /// <returns>New <see cref="MutableByte" /> class containing concatenated result</returns>
+    public static MutableByte operator +(MutableByte buf1, byte[] buf2)
     {
         return new MutableByte(buf1.Value, buf2);
     }
 
-	/// <summary>
-	///     Add <see cref="MutableByte" /> buffer values.
-	/// </summary>
-	/// <param name="buf1"><see cref="MutableByte" /> class</param>
-	/// <param name="buf2"><see cref="MutableByte" /> class</param>
-	/// <returns>New <see cref="MutableByte" /> class containing concatenated result</returns>
-	public static MutableByte operator +(MutableByte buf1, MutableByte buf2)
+    /// <summary>
+    ///     Add <see cref="MutableByte" /> buffer values.
+    /// </summary>
+    /// <param name="buf1"><see cref="MutableByte" /> class</param>
+    /// <param name="buf2"><see cref="MutableByte" /> class</param>
+    /// <returns>New <see cref="MutableByte" /> class containing concatenated result</returns>
+    public static MutableByte operator +(MutableByte buf1, MutableByte buf2)
     {
         return new MutableByte(buf1, buf2);
     }
 
-	/// <summary>
-	///     Add a MutableByte array and a single byte value
-	/// </summary>
-	/// <param name="buf1">MutableByte array</param>
-	/// <param name="b">Byte value</param>
-	/// <returns>New MutableByte array with values added</returns>
-	public static MutableByte operator +(MutableByte buf1, byte b)
+    /// <summary>
+    ///     Add a MutableByte array and a single byte value
+    /// </summary>
+    /// <param name="buf1">MutableByte array</param>
+    /// <param name="b">Byte value</param>
+    /// <returns>New MutableByte array with values added</returns>
+    public static MutableByte operator +(MutableByte buf1, byte b)
     {
         var tmp = new MutableByte(buf1.Value);
         tmp.Append(b);
         return tmp;
     }
 
-	/// <summary>
-	///     Compare two <see cref="MutableByte" /> class contents
-	/// </summary>
-	/// <param name="buf1"><see cref="MutableByte" /> class</param>
-	/// <param name="buf2"><see cref="MutableByte" /> class</param>
-	/// <returns>true if the same, otherwise falseB</returns>
-	public static bool operator ==(MutableByte buf1, MutableByte buf2)
+    /// <summary>
+    ///     Compare two <see cref="MutableByte" /> class contents
+    /// </summary>
+    /// <param name="buf1"><see cref="MutableByte" /> class</param>
+    /// <param name="buf2"><see cref="MutableByte" /> class</param>
+    /// <returns>true if the same, otherwise falseB</returns>
+    public static bool operator ==(MutableByte buf1, MutableByte buf2)
     {
         if ((object)buf1 == null && (object)buf2 == null)
             return true;
@@ -544,13 +544,13 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         return buf1.Equals(buf2);
     }
 
-	/// <summary>
-	///     Negative compare.
-	/// </summary>
-	/// <param name="buf1">First MutableByte array</param>
-	/// <param name="buf2">Second MutableByte array</param>
-	/// <returns>true if class values are not equal, otherwise false.</returns>
-	public static bool operator !=(MutableByte buf1, MutableByte buf2)
+    /// <summary>
+    ///     Negative compare.
+    /// </summary>
+    /// <param name="buf1">First MutableByte array</param>
+    /// <param name="buf2">Second MutableByte array</param>
+    /// <returns>true if class values are not equal, otherwise false.</returns>
+    public static bool operator !=(MutableByte buf1, MutableByte buf2)
     {
         if ((object)buf1 == null && (object)buf2 == null)
             return false;
@@ -560,12 +560,12 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         return !buf1.Equals(buf2);
     }
 
-	/// <summary>
-	///     Allow implicit casting of this object as a byte array for any callers.
-	/// </summary>
-	/// <param name="obj">MutableByte object whose values should be cast as byte array</param>
-	/// <returns>Byte array represented in the MutableObject class.</returns>
-	public static implicit operator byte[](MutableByte obj)
+    /// <summary>
+    ///     Allow implicit casting of this object as a byte array for any callers.
+    /// </summary>
+    /// <param name="obj">MutableByte object whose values should be cast as byte array</param>
+    /// <returns>Byte array represented in the MutableObject class.</returns>
+    public static implicit operator byte[](MutableByte obj)
     {
         return obj.Value;
     }

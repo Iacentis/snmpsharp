@@ -34,40 +34,40 @@ public delegate void SnmpAsyncResponse(AsyncRequestResult result, SnmpPacket pac
 /// </remarks>
 public class UdpTarget : UdpTransport, IDisposable
 {
-	/// <summary>
-	///     SNMP request target host IP address
-	/// </summary>
-	protected IPAddress _address;
+    /// <summary>
+    ///     SNMP request target host IP address
+    /// </summary>
+    protected IPAddress _address;
 
-	/// <summary>
-	///     Internal storage of the agent parameters information passed to the async request member function.
-	/// </summary>
-	protected IAgentParameters _agentParameters;
+    /// <summary>
+    ///     Internal storage of the agent parameters information passed to the async request member function.
+    /// </summary>
+    protected IAgentParameters _agentParameters;
 
-	/// <summary>
-	///     SNMP target UDP port number
-	/// </summary>
-	protected int _port;
+    /// <summary>
+    ///     SNMP target UDP port number
+    /// </summary>
+    protected int _port;
 
-	/// <summary>
-	///     Maximum number of retries. Value of 0 (zero) will result in a single request without
-	///     retries.
-	/// </summary>
-	protected int _retry;
+    /// <summary>
+    ///     Maximum number of retries. Value of 0 (zero) will result in a single request without
+    ///     retries.
+    /// </summary>
+    protected int _retry;
 
-	/// <summary>
-	///     SNMP request timeout value in milliseconds
-	/// </summary>
-	protected int _timeout;
+    /// <summary>
+    ///     SNMP request timeout value in milliseconds
+    /// </summary>
+    protected int _timeout;
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peer">SNMP peer IP address</param>
-	/// <param name="port">SNMP peer UDP port number</param>
-	/// <param name="timeout">SNMP peer timeout in milliseconds</param>
-	/// <param name="retry">SNMP peer maximum retires setting. Value of 0 will result in a single request with no retries.</param>
-	public UdpTarget(IPAddress peer, int port, int timeout, int retry)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peer">SNMP peer IP address</param>
+    /// <param name="port">SNMP peer UDP port number</param>
+    /// <param name="timeout">SNMP peer timeout in milliseconds</param>
+    /// <param name="retry">SNMP peer maximum retires setting. Value of 0 will result in a single request with no retries.</param>
+    public UdpTarget(IPAddress peer, int port, int timeout, int retry)
         : base(peer.AddressFamily == AddressFamily.InterNetworkV6)
     {
         _address = peer;
@@ -76,15 +76,15 @@ public class UdpTarget : UdpTransport, IDisposable
         _retry = retry;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <remarks>
-	///     Initializes the class with defaults for timeout (2000ms = 2 seconds), retry (two) and agent UDP port
-	///     number (161).
-	/// </remarks>
-	/// <param name="peer">Agent IP address</param>
-	public UdpTarget(IPAddress peer)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <remarks>
+    ///     Initializes the class with defaults for timeout (2000ms = 2 seconds), retry (two) and agent UDP port
+    ///     number (161).
+    /// </remarks>
+    /// <param name="peer">Agent IP address</param>
+    public UdpTarget(IPAddress peer)
         : base(peer.AddressFamily == AddressFamily.InterNetworkV6)
     {
         _address = peer;
@@ -93,10 +93,10 @@ public class UdpTarget : UdpTransport, IDisposable
         _retry = 2;
     }
 
-	/// <summary>
-	///     Get/Set Udp agent IP address
-	/// </summary>
-	public IPAddress Address
+    /// <summary>
+    ///     Get/Set Udp agent IP address
+    /// </summary>
+    public IPAddress Address
     {
         get => _address;
         set
@@ -109,70 +109,70 @@ public class UdpTarget : UdpTransport, IDisposable
         }
     }
 
-	/// <summary>
-	///     Get/Set Udp agent port number
-	/// </summary>
-	public int Port
+    /// <summary>
+    ///     Get/Set Udp agent port number
+    /// </summary>
+    public int Port
     {
         get => _port;
         set => _port = value;
     }
 
-	/// <summary>
-	///     Get/Set Udp agent timeout value in milliseconds
-	/// </summary>
-	public int Timeout
+    /// <summary>
+    ///     Get/Set Udp agent timeout value in milliseconds
+    /// </summary>
+    public int Timeout
     {
         get => _timeout;
         set => _timeout = value;
     }
 
-	/// <summary>
-	///     Get/Set Udp agent maximum retry value. Value of 0 (zero) will result in a single request
-	///     being sent without further retry attempts.
-	/// </summary>
-	public int Retry
+    /// <summary>
+    ///     Get/Set Udp agent maximum retry value. Value of 0 (zero) will result in a single request
+    ///     being sent without further retry attempts.
+    /// </summary>
+    public int Retry
     {
         get => _retry;
         set => _retry = value;
     }
 
-	/// <summary>Make SNMP Request</summary>
-	/// <remarks>
-	///     Make SNMP request. With this method you can make blocked SNMP version 1, 2 and 3 requests of type GET,
-	///     GET-NEXT, GET-BULK, SET and REPORT (request types have to compatible with the SNMP protocol version you
-	///     are using).
-	///     This method will pass through any exceptions thrown by parsing classes/methods so see individual packet
-	///     classes, ASN.1 type classes, authentication, privacy, etc. classes for exceptions thrown.
-	/// </remarks>
-	/// <param name="pdu">Pdu class (do not pass ScopedPdu)</param>
-	/// <param name="agentParameters">
-	///     Security information for the request. Use <see cref="AgentParameters" />
-	///     for SNMP versions 1 and 2 requests. Use <see cref="SecureAgentParameters" /> for SNMP version 3
-	///     requests.
-	/// </param>
-	/// <returns>
-	///     Appropriate SNMP packet class for the reply received (<see cref="SnmpV1Packet" />,
-	///     <see cref="SnmpV2Packet" />, or <see cref="SnmpV3Packet" />. Null value if there was an error
-	///     with the request.
-	/// </returns>
-	/// <exception cref="SnmpAuthenticationException">
-	///     Thrown on SNMPv3 requests when authentication password
-	///     is not specified on authNoPriv or authPriv requests in SecureAgentParameters or if incoming packet
-	///     authentication check failed.
-	///     With SNMP ver1 and ver2c, authentication check fails when invalid community name is parsed in the reply.
-	/// </exception>
-	/// <exception cref="SnmpPrivacyException">
-	///     Thrown on SNMPv3 requests when privacy password is not
-	///     specified in SecureAgentParameters on authPriv requests.
-	/// </exception>
-	/// <exception cref="SnmpException">
-	///     Thrown in following cases:
-	///     * IAgentParameters.Valid() returned false. SnmpException.ErrorCode is set to SnmpException.InvalidIAgentParameters
-	///     * No data received on request. SnmpException.ErrorCode is set to SnmpException.NoDataReceived
-	///     * Invalid RequestId in reply. SnmpException.ErrorCode is set to SnmpException.InvalidRequestId
-	/// </exception>
-	public SnmpPacket Request(Pdu pdu, IAgentParameters agentParameters)
+    /// <summary>Make SNMP Request</summary>
+    /// <remarks>
+    ///     Make SNMP request. With this method you can make blocked SNMP version 1, 2 and 3 requests of type GET,
+    ///     GET-NEXT, GET-BULK, SET and REPORT (request types have to compatible with the SNMP protocol version you
+    ///     are using).
+    ///     This method will pass through any exceptions thrown by parsing classes/methods so see individual packet
+    ///     classes, ASN.1 type classes, authentication, privacy, etc. classes for exceptions thrown.
+    /// </remarks>
+    /// <param name="pdu">Pdu class (do not pass ScopedPdu)</param>
+    /// <param name="agentParameters">
+    ///     Security information for the request. Use <see cref="AgentParameters" />
+    ///     for SNMP versions 1 and 2 requests. Use <see cref="SecureAgentParameters" /> for SNMP version 3
+    ///     requests.
+    /// </param>
+    /// <returns>
+    ///     Appropriate SNMP packet class for the reply received (<see cref="SnmpV1Packet" />,
+    ///     <see cref="SnmpV2Packet" />, or <see cref="SnmpV3Packet" />. Null value if there was an error
+    ///     with the request.
+    /// </returns>
+    /// <exception cref="SnmpAuthenticationException">
+    ///     Thrown on SNMPv3 requests when authentication password
+    ///     is not specified on authNoPriv or authPriv requests in SecureAgentParameters or if incoming packet
+    ///     authentication check failed.
+    ///     With SNMP ver1 and ver2c, authentication check fails when invalid community name is parsed in the reply.
+    /// </exception>
+    /// <exception cref="SnmpPrivacyException">
+    ///     Thrown on SNMPv3 requests when privacy password is not
+    ///     specified in SecureAgentParameters on authPriv requests.
+    /// </exception>
+    /// <exception cref="SnmpException">
+    ///     Thrown in following cases:
+    ///     * IAgentParameters.Valid() returned false. SnmpException.ErrorCode is set to SnmpException.InvalidIAgentParameters
+    ///     * No data received on request. SnmpException.ErrorCode is set to SnmpException.NoDataReceived
+    ///     * Invalid RequestId in reply. SnmpException.ErrorCode is set to SnmpException.InvalidRequestId
+    /// </exception>
+    public SnmpPacket Request(Pdu pdu, IAgentParameters agentParameters)
     {
         byte[] outPacket;
         if (agentParameters.Version == SnmpVersion.Ver3)
@@ -279,27 +279,27 @@ public class UdpTarget : UdpTransport, IDisposable
         return null;
     }
 
-	/// <summary>
-	///     Internal event to send result of the async request to.
-	/// </summary>
-	protected event SnmpAsyncResponse _response;
+    /// <summary>
+    ///     Internal event to send result of the async request to.
+    /// </summary>
+    protected event SnmpAsyncResponse _response;
 
-	/// <summary>
-	///     Make SNMP request. With this method you can make blocked SNMP version 1, 2 and 3 requests of type GET,
-	///     GET-NEXT, GET-BULK, SET and REPORT (request types have to compatible with the SNMP protocol version you
-	///     are using).
-	///     This method will pass through any exceptions thrown by parsing classes/methods so see individual packet
-	///     classes, ASN.1 type classes, authentication, privacy, etc. classes for exceptions thrown.
-	/// </summary>
-	/// <param name="pdu">Pdu class (do not pass ScopedPdu)</param>
-	/// <param name="agentParameters">
-	///     Security information for the request. Use <see cref="AgentParameters" />
-	///     for SNMP versions 1 and 2 requests. Use <see cref="SecureAgentParameters" /> for SNMP version 3
-	///     requests.
-	/// </param>
-	/// <param name="responseCallback">Callback that receives the result of the async operation.</param>
-	/// <returns>True if async request was successfully initiated, otherwise false.</returns>
-	public bool RequestAsync(Pdu pdu, IAgentParameters agentParameters, SnmpAsyncResponse responseCallback)
+    /// <summary>
+    ///     Make SNMP request. With this method you can make blocked SNMP version 1, 2 and 3 requests of type GET,
+    ///     GET-NEXT, GET-BULK, SET and REPORT (request types have to compatible with the SNMP protocol version you
+    ///     are using).
+    ///     This method will pass through any exceptions thrown by parsing classes/methods so see individual packet
+    ///     classes, ASN.1 type classes, authentication, privacy, etc. classes for exceptions thrown.
+    /// </summary>
+    /// <param name="pdu">Pdu class (do not pass ScopedPdu)</param>
+    /// <param name="agentParameters">
+    ///     Security information for the request. Use <see cref="AgentParameters" />
+    ///     for SNMP versions 1 and 2 requests. Use <see cref="SecureAgentParameters" /> for SNMP version 3
+    ///     requests.
+    /// </param>
+    /// <param name="responseCallback">Callback that receives the result of the async operation.</param>
+    /// <returns>True if async request was successfully initiated, otherwise false.</returns>
+    public bool RequestAsync(Pdu pdu, IAgentParameters agentParameters, SnmpAsyncResponse responseCallback)
     {
         if (IsBusy) return false; // class is busy
         _response = null;
@@ -381,19 +381,19 @@ public class UdpTarget : UdpTransport, IDisposable
         return true;
     }
 
-	/// <summary>
-	///     Perform SNMP version 3 discovery operation. This is the first operation that needs to be
-	///     performed on a newly accessed agent to retrieve agentId, agentBoots and agentTime values, critical
-	///     for further authentication and privacy operations.
-	/// </summary>
-	/// <param name="param">
-	///     <see cref="SecureAgentParameters" /> class instance that will be updated
-	///     with discovered agent values. This class with be reset to its defaults prior to agent
-	///     discovered values so do not store any critical information in it prior to calling the
-	///     discovery method
-	/// </param>
-	/// <returns>True if discovery operation was a success, otherwise false</returns>
-	public bool Discovery(SecureAgentParameters param)
+    /// <summary>
+    ///     Perform SNMP version 3 discovery operation. This is the first operation that needs to be
+    ///     performed on a newly accessed agent to retrieve agentId, agentBoots and agentTime values, critical
+    ///     for further authentication and privacy operations.
+    /// </summary>
+    /// <param name="param">
+    ///     <see cref="SecureAgentParameters" /> class instance that will be updated
+    ///     with discovered agent values. This class with be reset to its defaults prior to agent
+    ///     discovered values so do not store any critical information in it prior to calling the
+    ///     discovery method
+    /// </param>
+    /// <returns>True if discovery operation was a success, otherwise false</returns>
+    public bool Discovery(SecureAgentParameters param)
     {
         param.Reset();
         param.SecurityName.Set("");
@@ -417,13 +417,13 @@ public class UdpTarget : UdpTransport, IDisposable
         return false;
     }
 
-	/// <summary>
-	///     Make an async discovery request for protocol version 3.
-	/// </summary>
-	/// <param name="param">Agent parameters</param>
-	/// <param name="callback">Callback method</param>
-	/// <returns>True if operation was correctly initiated, otherwise false.</returns>
-	public bool DiscoveryAsync(SecureAgentParameters param, SnmpAsyncResponse callback)
+    /// <summary>
+    ///     Make an async discovery request for protocol version 3.
+    /// </summary>
+    /// <param name="param">Agent parameters</param>
+    /// <param name="callback">Callback method</param>
+    /// <returns>True if operation was correctly initiated, otherwise false.</returns>
+    public bool DiscoveryAsync(SecureAgentParameters param, SnmpAsyncResponse callback)
     {
         var p = new Pdu();
         return RequestAsync(p, param, callback);

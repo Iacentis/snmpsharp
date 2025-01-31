@@ -21,11 +21,11 @@ namespace SnmpSharpNet;
 /// </summary>
 public class SnmpInvalidPduTypeException : SnmpException
 {
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="msg">Error message</param>
-	public SnmpInvalidPduTypeException(string msg)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="msg">Error message</param>
+    public SnmpInvalidPduTypeException(string msg)
         : base(msg)
     {
     }

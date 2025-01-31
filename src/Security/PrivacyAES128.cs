@@ -21,16 +21,16 @@ namespace SnmpSharpNet;
 /// </summary>
 public class PrivacyAES128 : PrivacyAES
 {
-	/// <summary>
-	///     Standard constructor. Initializes the base <see cref="PrivacyAES" /> class with key size 16 bytes (128-bit).
-	/// </summary>
-	public PrivacyAES128()
+    /// <summary>
+    ///     Standard constructor. Initializes the base <see cref="PrivacyAES" /> class with key size 16 bytes (128-bit).
+    /// </summary>
+    public PrivacyAES128()
         : base(16)
     {
     }
 
-	/// <summary>
-	///     Returns privacy protocol name "AES128"
-	/// </summary>
-	public override string Name => "AES128";
+    /// <summary>
+    ///     Returns privacy protocol name "AES128"
+    /// </summary>
+    public override string Name => "AES128";
 }

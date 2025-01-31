@@ -8,25 +8,25 @@ namespace SnmpSharpNet;
 [Serializable]
 public class Sequence : AsnType, ICloneable
 {
-	/// <summary>
-	///     data buffer
-	/// </summary>
-	protected byte[] _data;
+    /// <summary>
+    ///     data buffer
+    /// </summary>
+    protected byte[] _data;
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	public Sequence()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    public Sequence()
     {
         _asnType = SnmpConstants.SMI_SEQUENCE;
         _data = null;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="value">Sequence data</param>
-	public Sequence(byte[] value)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="value">Sequence data</param>
+    public Sequence(byte[] value)
         : this()
     {
         if (value != null && value.Length > 0)
@@ -36,25 +36,25 @@ public class Sequence : AsnType, ICloneable
         }
     }
 
-	/// <summary>
-	///     Get sequence data
-	/// </summary>
-	public byte[] Value => _data;
+    /// <summary>
+    ///     Get sequence data
+    /// </summary>
+    public byte[] Value => _data;
 
-	/// <summary>
-	///     Clone sequence
-	/// </summary>
-	/// <returns>Cloned sequence cast as object</returns>
-	public override object Clone()
+    /// <summary>
+    ///     Clone sequence
+    /// </summary>
+    /// <returns>Cloned sequence cast as object</returns>
+    public override object Clone()
     {
         return new Sequence(_data);
     }
 
-	/// <summary>
-	///     Set sequence data
-	/// </summary>
-	/// <param name="value">Byte array containing BER encoded sequence data</param>
-	public void Set(byte[] value)
+    /// <summary>
+    ///     Set sequence data
+    /// </summary>
+    /// <param name="value">Byte array containing BER encoded sequence data</param>
+    public void Set(byte[] value)
     {
         if (value == null || value.Length <= 0)
         {
@@ -67,11 +67,11 @@ public class Sequence : AsnType, ICloneable
         }
     }
 
-	/// <summary>
-	///     BER encode sequence
-	/// </summary>
-	/// <param name="buffer">Target buffer</param>
-	public override void encode(MutableByte buffer)
+    /// <summary>
+    ///     BER encode sequence
+    /// </summary>
+    /// <param name="buffer">Target buffer</param>
+    public override void encode(MutableByte buffer)
     {
         var dataLen = 0;
         if (_data != null && _data.Length > 0)
@@ -81,13 +81,13 @@ public class Sequence : AsnType, ICloneable
             buffer.Append(_data);
     }
 
-	/// <summary>
-	///     Decode sequence from the byte array. Returned offset value is advanced by the size of the sequence header.
-	/// </summary>
-	/// <param name="buffer">Source data buffer</param>
-	/// <param name="offset">Offset within the buffer to start parsing from</param>
-	/// <returns>Returns offset position after the sequence header</returns>
-	public override int decode(byte[] buffer, int offset)
+    /// <summary>
+    ///     Decode sequence from the byte array. Returned offset value is advanced by the size of the sequence header.
+    /// </summary>
+    /// <param name="buffer">Source data buffer</param>
+    /// <param name="offset">Offset within the buffer to start parsing from</param>
+    /// <returns>Returns offset position after the sequence header</returns>
+    public override int decode(byte[] buffer, int offset)
     {
         _data = null;
         var dataLen = 0;

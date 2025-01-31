@@ -34,43 +34,43 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class PrivacyDES : IPrivacyProtocol
 {
-	/// <summary>
-	///     Internal salt value. As per RFC standard, salt value is initialized in the constructor and incremented by 1 for
-	///     each
-	///     subsequent packet.
-	/// </summary>
-	protected int _salt;
+    /// <summary>
+    ///     Internal salt value. As per RFC standard, salt value is initialized in the constructor and incremented by 1 for
+    ///     each
+    ///     subsequent packet.
+    /// </summary>
+    protected int _salt;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public PrivacyDES()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public PrivacyDES()
     {
         var random = new Random();
         _salt = random.Next(1, int.MaxValue);
     }
 
-	/// <summary>
-	///     Encrypt ScopedPdu using DES encryption protocol
-	/// </summary>
-	/// <param name="unencryptedData">Unencrypted ScopedPdu byte array</param>
-	/// <param name="offset">Offset to start encryption</param>
-	/// <param name="length">Length of data to encrypt</param>
-	/// <param name="key">Encryption key. Key has to be at least 32 bytes is length</param>
-	/// <param name="engineBoots">Authoritative engine boots value</param>
-	/// <param name="engineTime">Authoritative engine time value. Not used for DES</param>
-	/// <param name="privacyParameters">
-	///     Privacy parameters out buffer. This field will be filled in with information
-	///     required to decrypt the information. Output length of this field is 8 bytes and space has to be reserved
-	///     in the USM header to store this information
-	/// </param>
-	/// <param name="authDigest">Authentication digest class reference. Not used by DES and can be null.</param>
-	/// <returns>Encrypted byte array</returns>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown when encryption key is null or length of the encryption key is too
-	///     short.
-	/// </exception>
-	public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Encrypt ScopedPdu using DES encryption protocol
+    /// </summary>
+    /// <param name="unencryptedData">Unencrypted ScopedPdu byte array</param>
+    /// <param name="offset">Offset to start encryption</param>
+    /// <param name="length">Length of data to encrypt</param>
+    /// <param name="key">Encryption key. Key has to be at least 32 bytes is length</param>
+    /// <param name="engineBoots">Authoritative engine boots value</param>
+    /// <param name="engineTime">Authoritative engine time value. Not used for DES</param>
+    /// <param name="privacyParameters">
+    ///     Privacy parameters out buffer. This field will be filled in with information
+    ///     required to decrypt the information. Output length of this field is 8 bytes and space has to be reserved
+    ///     in the USM header to store this information
+    /// </param>
+    /// <param name="authDigest">Authentication digest class reference. Not used by DES and can be null.</param>
+    /// <returns>Encrypted byte array</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when encryption key is null or length of the encryption key is too
+    ///     short.
+    /// </exception>
+    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         if (key == null || key.Length < MinimumKeyLength)
@@ -119,26 +119,26 @@ public class PrivacyDES : IPrivacyProtocol
         return result;
     }
 
-	/// <summary>
-	///     Decrypt DES encrypted ScopedPdu
-	/// </summary>
-	/// <param name="encryptedData">Source data buffer</param>
-	/// <param name="offset">Offset within the buffer to start decryption process</param>
-	/// <param name="length">Length of data to decrypt</param>
-	/// <param name="key">
-	///     Decryption key. Key length has to be 32 bytes in length or longer (bytes beyond 32 bytes are
-	///     ignored).
-	/// </param>
-	/// <param name="engineBoots">Authoritative engine boots value</param>
-	/// <param name="engineTime">Authoritative engine time value</param>
-	/// <param name="privacyParameters">Privacy parameters extracted from USM header</param>
-	/// <returns>Decrypted byte array</returns>
-	/// <exception cref="ArgumentNullException">Thrown when encrypted data is null or length == 0</exception>
-	/// <exception cref="ArgumentOutOfRangeException">
-	///     Thrown when encryption key length is less then 32 byte or if privacy parameters
-	///     argument is null or length other then 8 bytes
-	/// </exception>
-	public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    /// <summary>
+    ///     Decrypt DES encrypted ScopedPdu
+    /// </summary>
+    /// <param name="encryptedData">Source data buffer</param>
+    /// <param name="offset">Offset within the buffer to start decryption process</param>
+    /// <param name="length">Length of data to decrypt</param>
+    /// <param name="key">
+    ///     Decryption key. Key length has to be 32 bytes in length or longer (bytes beyond 32 bytes are
+    ///     ignored).
+    /// </param>
+    /// <param name="engineBoots">Authoritative engine boots value</param>
+    /// <param name="engineTime">Authoritative engine time value</param>
+    /// <param name="privacyParameters">Privacy parameters extracted from USM header</param>
+    /// <returns>Decrypted byte array</returns>
+    /// <exception cref="ArgumentNullException">Thrown when encrypted data is null or length == 0</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     Thrown when encryption key length is less then 32 byte or if privacy parameters
+    ///     argument is null or length other then 8 bytes
+    /// </exception>
+    public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
@@ -172,73 +172,73 @@ public class PrivacyDES : IPrivacyProtocol
         return decryptedData;
     }
 
-	/// <summary>
-	///     Returns minimum encryption/decryption key length. For DES, returned value is 16.
-	/// </summary>
-	/// <remarks>
-	///     DES protocol requires an 8 byte encryption key and additional 8 bytes are used for generating the
-	///     encryption IV.
-	/// </remarks>
-	public int MinimumKeyLength => 16;
+    /// <summary>
+    ///     Returns minimum encryption/decryption key length. For DES, returned value is 16.
+    /// </summary>
+    /// <remarks>
+    ///     DES protocol requires an 8 byte encryption key and additional 8 bytes are used for generating the
+    ///     encryption IV.
+    /// </remarks>
+    public int MinimumKeyLength => 16;
 
-	/// <summary>
-	///     Return maximum encryption/decryption key length. For DES, returned value is 16
-	/// </summary>
-	/// <remarks>
-	///     DES protocol requires an 8 byte encryption key and additional 8 bytes are used for generating the
-	///     encryption IV.
-	/// </remarks>
-	public int MaximumKeyLength => 16;
+    /// <summary>
+    ///     Return maximum encryption/decryption key length. For DES, returned value is 16
+    /// </summary>
+    /// <remarks>
+    ///     DES protocol requires an 8 byte encryption key and additional 8 bytes are used for generating the
+    ///     encryption IV.
+    /// </remarks>
+    public int MaximumKeyLength => 16;
 
-	/// <summary>
-	///     Get final encrypted length
-	/// </summary>
-	/// <param name="scopedPduLength">BER encoded ScopedPdu data length</param>
-	/// <returns>Length of encrypted byte array</returns>
-	public int GetEncryptedLength(int scopedPduLength)
+    /// <summary>
+    ///     Get final encrypted length
+    /// </summary>
+    /// <param name="scopedPduLength">BER encoded ScopedPdu data length</param>
+    /// <returns>Length of encrypted byte array</returns>
+    public int GetEncryptedLength(int scopedPduLength)
     {
         if (scopedPduLength % 8 == 0) return scopedPduLength;
         return 8 * (scopedPduLength / 8 + 1);
     }
 
-	/// <summary>
-	///     Returns the length of privacyParameters USM header field. For DES, field length is 8.
-	/// </summary>
-	public int PrivacyParametersLength => 8;
+    /// <summary>
+    ///     Returns the length of privacyParameters USM header field. For DES, field length is 8.
+    /// </summary>
+    public int PrivacyParametersLength => 8;
 
-	/// <summary>
-	///     Operation not used by DES. Key length has to be 16 bytes of encryption/decryption operation will fail.
-	///     When called, shortKey is returned.
-	/// </summary>
-	/// <param name="shortKey">Encryption key</param>
-	/// <param name="password">Privacy password</param>
-	/// <param name="engineID">Authoritative engine id</param>
-	/// <param name="authProtocol">Authentication protocol class instance</param>
-	/// <returns>unaltered shortKey value</returns>
-	public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Operation not used by DES. Key length has to be 16 bytes of encryption/decryption operation will fail.
+    ///     When called, shortKey is returned.
+    /// </summary>
+    /// <param name="shortKey">Encryption key</param>
+    /// <param name="password">Privacy password</param>
+    /// <param name="engineID">Authoritative engine id</param>
+    /// <param name="authProtocol">Authentication protocol class instance</param>
+    /// <returns>unaltered shortKey value</returns>
+    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
     {
         return shortKey;
     }
 
-	/// <summary>
-	///     Privacy protocol name
-	/// </summary>
-	public string Name => "DES";
+    /// <summary>
+    ///     Privacy protocol name
+    /// </summary>
+    public string Name => "DES";
 
-	/// <summary>
-	///     DES implementation does NOT support extending of a short encryption key. Always returns false.
-	/// </summary>
-	public bool CanExtendShortKey => false;
+    /// <summary>
+    ///     DES implementation does NOT support extending of a short encryption key. Always returns false.
+    /// </summary>
+    public bool CanExtendShortKey => false;
 
-	/// <summary>
-	///     Convert privacy password into encryption key using packet authentication hash.
-	/// </summary>
-	/// <param name="secret">Privacy user secret</param>
-	/// <param name="engineId">Authoritative engine id of the snmp agent</param>
-	/// <param name="authProtocol">Authentication protocol</param>
-	/// <returns>Encryption key</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
-	public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    /// <summary>
+    ///     Convert privacy password into encryption key using packet authentication hash.
+    /// </summary>
+    /// <param name="secret">Privacy user secret</param>
+    /// <param name="engineId">Authoritative engine id of the snmp agent</param>
+    /// <param name="authProtocol">Authentication protocol</param>
+    /// <returns>Encryption key</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
+    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
     {
         // RFC 3414 - password length is minimum of 8 bytes long
         if (secret == null || secret.Length < 8)
@@ -247,11 +247,11 @@ public class PrivacyDES : IPrivacyProtocol
         return encryptionKey;
     }
 
-	/// <summary>
-	///     Returns next salt value.
-	/// </summary>
-	/// <returns>32-bit integer salt value in network byte order (big endian)</returns>
-	protected int NextSalt()
+    /// <summary>
+    ///     Returns next salt value.
+    /// </summary>
+    /// <returns>32-bit integer salt value in network byte order (big endian)</returns>
+    protected int NextSalt()
     {
         if (_salt == int.MaxValue)
             _salt = 1;
@@ -260,13 +260,13 @@ public class PrivacyDES : IPrivacyProtocol
         return _salt;
     }
 
-	/// <summary>
-	///     Get DES encryption salt value. Salt value is generated by concatenating engineBoots value with
-	///     the random integer value.
-	/// </summary>
-	/// <param name="engineBoots">SNMP engine boots value</param>
-	/// <returns>Salt byte array 8 byte in length</returns>
-	private byte[] GetSalt(int engineBoots)
+    /// <summary>
+    ///     Get DES encryption salt value. Salt value is generated by concatenating engineBoots value with
+    ///     the random integer value.
+    /// </summary>
+    /// <param name="engineBoots">SNMP engine boots value</param>
+    /// <returns>Salt byte array 8 byte in length</returns>
+    private byte[] GetSalt(int engineBoots)
     {
         var salt = new byte[8]; // salt is 8 bytes
         var s = NextSalt();
@@ -284,15 +284,15 @@ public class PrivacyDES : IPrivacyProtocol
         return salt;
     }
 
-	/// <summary>
-	///     Extract and return DES encryption key.
-	///     Privacy password is 16 bytes in length. Only the first 8 bytes are used as DES password. Remaining
-	///     8 bytes are used as pre-IV value.
-	/// </summary>
-	/// <param name="privacyPassword">16 byte privacy password</param>
-	/// <returns>8 byte DES encryption password</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when privacy password is less then 16 bytes long</exception>
-	private byte[] GetKey(byte[] privacyPassword)
+    /// <summary>
+    ///     Extract and return DES encryption key.
+    ///     Privacy password is 16 bytes in length. Only the first 8 bytes are used as DES password. Remaining
+    ///     8 bytes are used as pre-IV value.
+    /// </summary>
+    /// <param name="privacyPassword">16 byte privacy password</param>
+    /// <returns>8 byte DES encryption password</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when privacy password is less then 16 bytes long</exception>
+    private byte[] GetKey(byte[] privacyPassword)
     {
         if (privacyPassword == null || privacyPassword.Length < 16)
             throw new SnmpPrivacyException("Invalid privacy key length.");
@@ -301,14 +301,14 @@ public class PrivacyDES : IPrivacyProtocol
         return key;
     }
 
-	/// <summary>
-	///     Generate IV from the privacy key and salt value returned by GetSalt method.
-	/// </summary>
-	/// <param name="privacyKey">16 byte privacy key</param>
-	/// <param name="salt">Salt value returned by GetSalt method</param>
-	/// <returns>IV value used in the encryption process</returns>
-	/// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
-	private byte[] GetIV(byte[] privacyKey, byte[] salt)
+    /// <summary>
+    ///     Generate IV from the privacy key and salt value returned by GetSalt method.
+    /// </summary>
+    /// <param name="privacyKey">16 byte privacy key</param>
+    /// <param name="salt">Salt value returned by GetSalt method</param>
+    /// <returns>IV value used in the encryption process</returns>
+    /// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
+    private byte[] GetIV(byte[] privacyKey, byte[] salt)
     {
         if (privacyKey.Length < 16)
             throw new SnmpPrivacyException("Invalid privacy key length");

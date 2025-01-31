@@ -22,11 +22,11 @@ namespace SnmpSharpNet;
 /// </summary>
 public class SnmpAuthenticationException : SnmpException
 {
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	/// <param name="msg">Error message</param>
-	public SnmpAuthenticationException(string msg)
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    /// <param name="msg">Error message</param>
+    public SnmpAuthenticationException(string msg)
         : base(msg)
     {
     }

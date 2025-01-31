@@ -99,43 +99,43 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SnmpV3Packet : SnmpPacket
 {
-	/// <summary>
-	///     Maximum message size. In the discovery packet, set it to the maximum acceptable size = 64KB. Agent will
-	///     return the maximum value it is ready to handle so you should stick with that value in all following
-	///     requests.
-	/// </summary>
-	private readonly Integer32 _maxMessageSize;
+    /// <summary>
+    ///     Maximum message size. In the discovery packet, set it to the maximum acceptable size = 64KB. Agent will
+    ///     return the maximum value it is ready to handle so you should stick with that value in all following
+    ///     requests.
+    /// </summary>
+    private readonly Integer32 _maxMessageSize;
 
-	/// <summary>
-	///     SNMP version 3 message id. Uniquly identifies the message.
-	/// </summary>
-	private readonly Integer32 _messageId;
+    /// <summary>
+    ///     SNMP version 3 message id. Uniquly identifies the message.
+    /// </summary>
+    private readonly Integer32 _messageId;
 
-	/// <summary>
-	///     Message flags field in the SNMP v3 packet. Message flag field defined Authentication (0/1), Privacy (0/1) and
-	///     Reportable (0/1) fields. Each bit is 1 bit long and with 0 denoting disabled feature, 1 enabled feature.
-	/// </summary>
-	private readonly MsgFlags _msgFlags;
+    /// <summary>
+    ///     Message flags field in the SNMP v3 packet. Message flag field defined Authentication (0/1), Privacy (0/1) and
+    ///     Reportable (0/1) fields. Each bit is 1 bit long and with 0 denoting disabled feature, 1 enabled feature.
+    /// </summary>
+    private readonly MsgFlags _msgFlags;
 
-	/// <summary>
-	///     Scoped PDU class.
-	/// </summary>
-	private readonly ScopedPdu _scopedPdu;
+    /// <summary>
+    ///     Scoped PDU class.
+    /// </summary>
+    private readonly ScopedPdu _scopedPdu;
 
-	/// <summary>
-	///     Internal <see cref="UserSecurityModel" /> class.
-	/// </summary>
-	private readonly UserSecurityModel _userSecurityModel;
+    /// <summary>
+    ///     Internal <see cref="UserSecurityModel" /> class.
+    /// </summary>
+    private readonly UserSecurityModel _userSecurityModel;
 
-	/// <summary>
-	///     Security model code. Only supported security model is UserSecurityModel (integer value 3)
-	/// </summary>
-	protected Integer32 _securityModel;
+    /// <summary>
+    ///     Security model code. Only supported security model is UserSecurityModel (integer value 3)
+    /// </summary>
+    protected Integer32 _securityModel;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public SnmpV3Packet()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public SnmpV3Packet()
         : base(SnmpVersion.Ver3)
     {
         _messageId = new Integer32();
@@ -147,112 +147,112 @@ public class SnmpV3Packet : SnmpPacket
         _scopedPdu = new ScopedPdu();
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Sets internal ScopedPdu class to the argument supplied instance of the
-	///     class. This is a good cheat that will allow you direct access to the internal ScopedPdu class
-	///     since it is not cloned but assigned to the internal variable.
-	/// </remarks>
-	/// <param name="pdu"><see cref="ScopedPdu" /> class assigned to the class</param>
-	public SnmpV3Packet(ScopedPdu pdu)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Sets internal ScopedPdu class to the argument supplied instance of the
+    ///     class. This is a good cheat that will allow you direct access to the internal ScopedPdu class
+    ///     since it is not cloned but assigned to the internal variable.
+    /// </remarks>
+    /// <param name="pdu"><see cref="ScopedPdu" /> class assigned to the class</param>
+    public SnmpV3Packet(ScopedPdu pdu)
         : this()
     {
         if (pdu != null)
             _scopedPdu = pdu;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Create new SNMPv3 packet class and initialize security parameters
-	/// </remarks>
-	/// <param name="param">Initialization SNMPv3 security parameters</param>
-	public SnmpV3Packet(SecureAgentParameters param)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Create new SNMPv3 packet class and initialize security parameters
+    /// </remarks>
+    /// <param name="param">Initialization SNMPv3 security parameters</param>
+    public SnmpV3Packet(SecureAgentParameters param)
         : this()
     {
         if (param != null)
             param.InitializePacket(this);
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <remarks>
-	///     Create new SNMPv3 packet class and initialize security parameters and ScopedPdu.
-	/// </remarks>
-	/// <param name="param">SNMPv3 security parameters</param>
-	/// <param name="pdu">ScopedPdu assigned to the class</param>
-	public SnmpV3Packet(SecureAgentParameters param, ScopedPdu pdu)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <remarks>
+    ///     Create new SNMPv3 packet class and initialize security parameters and ScopedPdu.
+    /// </remarks>
+    /// <param name="param">SNMPv3 security parameters</param>
+    /// <param name="pdu">ScopedPdu assigned to the class</param>
+    public SnmpV3Packet(SecureAgentParameters param, ScopedPdu pdu)
         : this(param)
     {
         if (pdu != null)
             _scopedPdu = pdu;
     }
 
-	/// <summary>
-	///     Get SNMP version 3 message id object.
-	/// </summary>
-	public int MessageId
+    /// <summary>
+    ///     Get SNMP version 3 message id object.
+    /// </summary>
+    public int MessageId
     {
         get => _messageId.Value;
         set => _messageId.Value = value;
     }
 
-	/// <summary>
-	///     Get maximum message size to be sent to the agent in the request.
-	/// </summary>
-	public int MaxMessageSize
+    /// <summary>
+    ///     Get maximum message size to be sent to the agent in the request.
+    /// </summary>
+    public int MaxMessageSize
     {
         get => _maxMessageSize.Value;
         set => _maxMessageSize.Value = value;
     }
 
-	/// <summary>
-	///     Message flags interface. Allows you to directly set or clear SNMP version 3 header flags field.
-	///     Available flags are MsgFlags.Authentication, MsgFlags.Privacy and MsgFlags.Reportable.
-	///     Please be careful how you use this property. After setting authentication or privacy parameters to true,
-	///     you will need to update <see cref="UserSecurityModel" /> authentication and privacy types to the correct
-	///     values otherwise encoding/decoding will not work.
-	/// </summary>
-	public MsgFlags MsgFlags => _msgFlags;
+    /// <summary>
+    ///     Message flags interface. Allows you to directly set or clear SNMP version 3 header flags field.
+    ///     Available flags are MsgFlags.Authentication, MsgFlags.Privacy and MsgFlags.Reportable.
+    ///     Please be careful how you use this property. After setting authentication or privacy parameters to true,
+    ///     you will need to update <see cref="UserSecurityModel" /> authentication and privacy types to the correct
+    ///     values otherwise encoding/decoding will not work.
+    /// </summary>
+    public MsgFlags MsgFlags => _msgFlags;
 
-	/// <summary>
-	///     Get <see cref="UserSecurityModel" /> class reference.
-	/// </summary>
-	public UserSecurityModel USM => _userSecurityModel;
+    /// <summary>
+    ///     Get <see cref="UserSecurityModel" /> class reference.
+    /// </summary>
+    public UserSecurityModel USM => _userSecurityModel;
 
-	/// <summary>
-	///     Override base class implementation. Returns class ScopedPdu cast as Pdu
-	/// </summary>
-	public override Pdu Pdu => _scopedPdu;
+    /// <summary>
+    ///     Override base class implementation. Returns class ScopedPdu cast as Pdu
+    /// </summary>
+    public override Pdu Pdu => _scopedPdu;
 
-	/// <summary>
-	///     Access packet ScopedPdu class.
-	/// </summary>
-	public ScopedPdu ScopedPdu => _scopedPdu;
+    /// <summary>
+    ///     Access packet ScopedPdu class.
+    /// </summary>
+    public ScopedPdu ScopedPdu => _scopedPdu;
 
-	/// <summary>
-	///     Get or set SNMP version 3 packet Reportable flag in the message flags section. By default this value is set to
-	///     true.
-	/// </summary>
-	public bool IsReportable
+    /// <summary>
+    ///     Get or set SNMP version 3 packet Reportable flag in the message flags section. By default this value is set to
+    ///     true.
+    /// </summary>
+    public bool IsReportable
     {
         get => _msgFlags.Reportable;
         set => _msgFlags.Reportable = value;
     }
 
-	/// <summary>
-	///     Packet is a discovery request
-	/// </summary>
-	/// <remarks>
-	///     Class checks if Engine id, engine boots and engine time values are set to default values (null, 0 and 0). If they
-	///     are
-	///     packet is probably a discovery packet, otherwise it is not an false is returned
-	/// </remarks>
-	public bool IsDiscoveryPacket
+    /// <summary>
+    ///     Packet is a discovery request
+    /// </summary>
+    /// <remarks>
+    ///     Class checks if Engine id, engine boots and engine time values are set to default values (null, 0 and 0). If they
+    ///     are
+    ///     packet is probably a discovery packet, otherwise it is not an false is returned
+    /// </remarks>
+    public bool IsDiscoveryPacket
     {
         get
         {
@@ -262,46 +262,46 @@ public class SnmpV3Packet : SnmpPacket
         }
     }
 
-	/// <summary>
-	///     Set class security to no authentication and no privacy. User name is set to "initial" (suitable for
-	///     SNMP version 3 discovery process). Change username before using if discovery is not being performed.
-	/// </summary>
-	public void NoAuthNoPriv()
+    /// <summary>
+    ///     Set class security to no authentication and no privacy. User name is set to "initial" (suitable for
+    ///     SNMP version 3 discovery process). Change username before using if discovery is not being performed.
+    /// </summary>
+    public void NoAuthNoPriv()
     {
         _msgFlags.Authentication = false;
         _msgFlags.Privacy = false;
         _userSecurityModel.SecurityName.Set("initial");
     }
 
-	/// <summary>
-	///     Set class security to no authentication and no privacy with the specific user name.
-	/// </summary>
-	/// <param name="userName">User name</param>
-	public void NoAuthNoPriv(byte[] userName)
+    /// <summary>
+    ///     Set class security to no authentication and no privacy with the specific user name.
+    /// </summary>
+    /// <param name="userName">User name</param>
+    public void NoAuthNoPriv(byte[] userName)
     {
         _msgFlags.Authentication = false;
         _msgFlags.Privacy = false;
         _userSecurityModel.SecurityName.Set(userName);
     }
 
-	/// <summary>
-	///     Set class security to enabled authentication and no privacy. To perform authentication,
-	///     authentication password needs to be supplied and authentication protocol to be used
-	///     to perform authentication.
-	///     This method does not initialize the packet user name. Use SNMPV3Packet.SecurityName
-	///     method to set the security name (also called user name) for this request.
-	/// </summary>
-	/// <param name="userName">User name</param>
-	/// <param name="authenticationPassword">
-	///     Authentication password to use in authenticating the message. This
-	///     value has to match the password configured on the agent.
-	/// </param>
-	/// <param name="authenticationProtocol">
-	///     Authentication protocol to use. Available authentication protocols are:
-	///     <see cref="AuthenticationDigests.MD5" /> for HMAC-MD5 authentication, and <see cref="AuthenticationDigests.SHA1" />
-	///     for HMAC-SHA1 message authentication.
-	/// </param>
-	public void authNoPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol)
+    /// <summary>
+    ///     Set class security to enabled authentication and no privacy. To perform authentication,
+    ///     authentication password needs to be supplied and authentication protocol to be used
+    ///     to perform authentication.
+    ///     This method does not initialize the packet user name. Use SNMPV3Packet.SecurityName
+    ///     method to set the security name (also called user name) for this request.
+    /// </summary>
+    /// <param name="userName">User name</param>
+    /// <param name="authenticationPassword">
+    ///     Authentication password to use in authenticating the message. This
+    ///     value has to match the password configured on the agent.
+    /// </param>
+    /// <param name="authenticationProtocol">
+    ///     Authentication protocol to use. Available authentication protocols are:
+    ///     <see cref="AuthenticationDigests.MD5" /> for HMAC-MD5 authentication, and <see cref="AuthenticationDigests.SHA1" />
+    ///     for HMAC-SHA1 message authentication.
+    /// </param>
+    public void authNoPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol)
     {
         NoAuthNoPriv(userName); // reset authentication and privacy values and set user name
         _msgFlags.Authentication = true;
@@ -310,18 +310,18 @@ public class SnmpV3Packet : SnmpPacket
         _msgFlags.Privacy = false;
     }
 
-	/// <summary>
-	///     Set packet security to authentication enabled and privacy protection enabled (SNMP v3 mode authPriv)
-	/// </summary>
-	/// <param name="userName">User name</param>
-	/// <param name="authenticationPassword">Authentication password</param>
-	/// <param name="authenticationProtocol">
-	///     Authentication protocol. See definitions in <see cref="AuthenticationDigests" />
-	///     enumeration.
-	/// </param>
-	/// <param name="privacyPassword">Privacy protection password.</param>
-	/// <param name="privacyProtocol">Privacy protocol. See definitions in <see cref="PrivacyProtocols" /> enumeration.</param>
-	public void authPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol,
+    /// <summary>
+    ///     Set packet security to authentication enabled and privacy protection enabled (SNMP v3 mode authPriv)
+    /// </summary>
+    /// <param name="userName">User name</param>
+    /// <param name="authenticationPassword">Authentication password</param>
+    /// <param name="authenticationProtocol">
+    ///     Authentication protocol. See definitions in <see cref="AuthenticationDigests" />
+    ///     enumeration.
+    /// </param>
+    /// <param name="privacyPassword">Privacy protection password.</param>
+    /// <param name="privacyProtocol">Privacy protocol. See definitions in <see cref="PrivacyProtocols" /> enumeration.</param>
+    public void authPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol,
         byte[] privacyPassword, PrivacyProtocols privacyProtocol)
     {
         NoAuthNoPriv(userName); // reset authentication and privacy values and set user name
@@ -333,22 +333,22 @@ public class SnmpV3Packet : SnmpPacket
         _userSecurityModel.Privacy = privacyProtocol;
     }
 
-	/// <summary>
-	///     Set engine time and boots values
-	/// </summary>
-	/// <param name="engineBoots">Authoritative engine boots value retrived from the agent during discovery procedure.</param>
-	/// <param name="engineTime">Engine time value.</param>
-	public void SetEngineTime(int engineBoots, int engineTime)
+    /// <summary>
+    ///     Set engine time and boots values
+    /// </summary>
+    /// <param name="engineBoots">Authoritative engine boots value retrived from the agent during discovery procedure.</param>
+    /// <param name="engineTime">Engine time value.</param>
+    public void SetEngineTime(int engineBoots, int engineTime)
     {
         _userSecurityModel.EngineBoots = engineBoots;
         _userSecurityModel.EngineTime = engineTime;
     }
 
-	/// <summary>
-	///     Set authoritative engine id
-	/// </summary>
-	/// <param name="engineId">Authoritative engine id</param>
-	public void SetEngineId(byte[] engineId)
+    /// <summary>
+    ///     Set authoritative engine id
+    /// </summary>
+    /// <param name="engineId">Authoritative engine id</param>
+    public void SetEngineId(byte[] engineId)
     {
         _userSecurityModel.EngineId.Set(engineId);
     }

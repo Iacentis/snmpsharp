@@ -36,98 +36,98 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SimpleSnmp
 {
-	/// <summary>
-	///     the authentication protocol used for SNMPV3
-	/// </summary>
-	protected AuthenticationDigests _authDigests = AuthenticationDigests.None;
+    /// <summary>
+    ///     the authentication protocol used for SNMPV3
+    /// </summary>
+    protected AuthenticationDigests _authDigests = AuthenticationDigests.None;
 
-	/// <summary>
-	///     the authentication password
-	/// </summary>
-	protected string _authSecret = "";
+    /// <summary>
+    ///     the authentication password
+    /// </summary>
+    protected string _authSecret = "";
 
-	/// <summary>
-	///     SNMP community name
-	/// </summary>
-	protected string _community;
+    /// <summary>
+    ///     SNMP community name
+    /// </summary>
+    protected string _community;
 
-	/// <summary>
-	///     the SNMPV3 context name
-	/// </summary>
-	protected string _contextName = "";
+    /// <summary>
+    ///     the SNMPV3 context name
+    /// </summary>
+    protected string _contextName = "";
 
-	/// <summary>
-	///     Maximum repetitions value used in SNMP GET-BULK requests
-	/// </summary>
-	protected int _maxRepetitions = 50;
+    /// <summary>
+    ///     Maximum repetitions value used in SNMP GET-BULK requests
+    /// </summary>
+    protected int _maxRepetitions = 50;
 
-	/// <summary>
-	///     Non repeaters value used in SNMP GET-BULK requests
-	/// </summary>
-	protected int _nonRepeaters;
+    /// <summary>
+    ///     Non repeaters value used in SNMP GET-BULK requests
+    /// </summary>
+    protected int _nonRepeaters;
 
-	/// <summary>
-	///     SNMP Agents IP address
-	/// </summary>
-	protected IPAddress _peerIP;
+    /// <summary>
+    ///     SNMP Agents IP address
+    /// </summary>
+    protected IPAddress _peerIP;
 
-	/// <summary>
-	///     SNMP Agents name
-	/// </summary>
-	protected string _peerName;
+    /// <summary>
+    ///     SNMP Agents name
+    /// </summary>
+    protected string _peerName;
 
-	/// <summary>
-	///     SNMP Agent UDP port number
-	/// </summary>
-	protected int _peerPort;
+    /// <summary>
+    ///     SNMP Agent UDP port number
+    /// </summary>
+    protected int _peerPort;
 
-	/// <summary>
-	///     the privacy protocol used for SNMPV3
-	/// </summary>
-	protected PrivacyProtocols _privProtocols = PrivacyProtocols.None;
+    /// <summary>
+    ///     the privacy protocol used for SNMPV3
+    /// </summary>
+    protected PrivacyProtocols _privProtocols = PrivacyProtocols.None;
 
-	/// <summary>
-	///     the privacy password
-	/// </summary>
-	protected string _privSecret = "";
+    /// <summary>
+    ///     the privacy password
+    /// </summary>
+    protected string _privSecret = "";
 
-	/// <summary>
-	///     Maximum retry count excluding the first request
-	/// </summary>
-	protected int _retry;
+    /// <summary>
+    ///     Maximum retry count excluding the first request
+    /// </summary>
+    protected int _retry;
 
-	/// <summary>
-	///     the SNMPV3 secure parameters
-	/// </summary>
-	private SecureAgentParameters _secparam;
+    /// <summary>
+    ///     the SNMPV3 secure parameters
+    /// </summary>
+    private SecureAgentParameters _secparam;
 
-	/// <summary>
-	///     security name for SNMPV3 requests
-	/// </summary>
-	protected string _securityName = "";
+    /// <summary>
+    ///     security name for SNMPV3 requests
+    /// </summary>
+    protected string _securityName = "";
 
-	/// <summary>
-	///     Flag determines if exceptions are suppressed or thrown. When exceptions are suppressed, methods
-	///     return null on errors regardless of what the error is.
-	/// </summary>
-	protected bool _suppressExceptions = true;
+    /// <summary>
+    ///     Flag determines if exceptions are suppressed or thrown. When exceptions are suppressed, methods
+    ///     return null on errors regardless of what the error is.
+    /// </summary>
+    protected bool _suppressExceptions = true;
 
-	/// <summary>
-	///     Target class
-	/// </summary>
-	protected UdpTarget _target;
+    /// <summary>
+    ///     Target class
+    /// </summary>
+    protected UdpTarget _target;
 
-	/// <summary>
-	///     Timeout value in milliseconds
-	/// </summary>
-	protected int _timeout;
+    /// <summary>
+    ///     Timeout value in milliseconds
+    /// </summary>
+    protected int _timeout;
 
-	/// <summary>Constructor.</summary>
-	/// <remarks>
-	///     Class is initialized to default values. Peer IP address is set to loopback, peer port number
-	///     to 161, timeout to 2000 ms (2 seconds), retry count to 2 and community name to public.
-	/// </remarks>
-	public SimpleSnmp()
+    /// <summary>Constructor.</summary>
+    /// <remarks>
+    ///     Class is initialized to default values. Peer IP address is set to loopback, peer port number
+    ///     to 161, timeout to 2000 ms (2 seconds), retry count to 2 and community name to public.
+    /// </remarks>
+    public SimpleSnmp()
     {
         _peerIP = IPAddress.Loopback;
         _peerPort = 161;
@@ -138,82 +138,82 @@ public class SimpleSnmp
         _peerName = "localhost";
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <remarks>
-	///     Class is initialized with default values with the agent name set to the supplied DNS name (or
-	///     IP address). If peer name is a DNS name, DNS resolution will take place in the constructor attempting
-	///     to resolve it an IP address.
-	/// </remarks>
-	/// <param name="peerName">Peer name or IP address</param>
-	public SimpleSnmp(string peerName)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <remarks>
+    ///     Class is initialized with default values with the agent name set to the supplied DNS name (or
+    ///     IP address). If peer name is a DNS name, DNS resolution will take place in the constructor attempting
+    ///     to resolve it an IP address.
+    /// </remarks>
+    /// <param name="peerName">Peer name or IP address</param>
+    public SimpleSnmp(string peerName)
         : this()
     {
         _peerName = peerName;
         Resolve();
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="peerPort">Peer UDP port number</param>
-	public SimpleSnmp(string peerName, int peerPort)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="peerPort">Peer UDP port number</param>
+    public SimpleSnmp(string peerName, int peerPort)
         : this(peerName)
     {
         _peerPort = peerPort;
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="community">SNMP community name</param>
-	public SimpleSnmp(string peerName, string community)
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="community">SNMP community name</param>
+    public SimpleSnmp(string peerName, string community)
         : this(peerName)
     {
         _community = community;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="peerPort">Peer UDP port number</param>
-	/// <param name="community">SNMP community name</param>
-	public SimpleSnmp(string peerName, int peerPort, string community)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="peerPort">Peer UDP port number</param>
+    /// <param name="community">SNMP community name</param>
+    public SimpleSnmp(string peerName, int peerPort, string community)
         : this(peerName, community)
     {
         _peerPort = peerPort;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="peerPort">Peer UDP port number</param>
-	/// <param name="community">SNMP community name</param>
-	/// <param name="timeout">SNMP request timeout</param>
-	/// <param name="retry">Maximum number of retries excluding the first request (0 = 1 request is sent)</param>
-	public SimpleSnmp(string peerName, int peerPort, string community, int timeout, int retry)
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="peerPort">Peer UDP port number</param>
+    /// <param name="community">SNMP community name</param>
+    /// <param name="timeout">SNMP request timeout</param>
+    /// <param name="retry">Maximum number of retries excluding the first request (0 = 1 request is sent)</param>
+    public SimpleSnmp(string peerName, int peerPort, string community, int timeout, int retry)
         : this(peerName, peerPort, community)
     {
         _timeout = timeout;
         _retry = retry;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="securityName">security name for SNMPV3 requests</param>
-	/// <param name="authDigests">the authentication protocol used for SNMPV3</param>
-	/// <param name="authSecret">the authentication password</param>
-	/// <param name="privProtocols">the privacy protocol used for SNMPV3</param>
-	/// <param name="privSecret">the privacy password</param>
-	/// <param name="contextName">the SNMPV3 context name</param>
-	public SimpleSnmp(string peerName, string securityName, AuthenticationDigests authDigests,
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="securityName">security name for SNMPV3 requests</param>
+    /// <param name="authDigests">the authentication protocol used for SNMPV3</param>
+    /// <param name="authSecret">the authentication password</param>
+    /// <param name="privProtocols">the privacy protocol used for SNMPV3</param>
+    /// <param name="privSecret">the privacy password</param>
+    /// <param name="contextName">the SNMPV3 context name</param>
+    public SimpleSnmp(string peerName, string securityName, AuthenticationDigests authDigests,
         string authSecret, PrivacyProtocols privProtocols, string privSecret, string contextName)
         : this(peerName)
     {
@@ -225,18 +225,18 @@ public class SimpleSnmp
         _contextName = contextName;
     }
 
-	/// <summary>
-	///     Constructor.
-	/// </summary>
-	/// <param name="peerName">Peer name or IP address</param>
-	/// <param name="peerPort">Peer UDP port number</param>
-	/// <param name="securityName">security name for SNMPV3 requests</param>
-	/// <param name="authDigests">the authentication protocol used for SNMPV3</param>
-	/// <param name="authSecret">the authentication password</param>
-	/// <param name="privProtocols">the privacy protocol used for SNMPV3</param>
-	/// <param name="privSecret">the privacy password</param>
-	/// <param name="contextName">the SNMPV3 context name</param>
-	public SimpleSnmp(string peerName, int peerPort, string securityName, AuthenticationDigests authDigests,
+    /// <summary>
+    ///     Constructor.
+    /// </summary>
+    /// <param name="peerName">Peer name or IP address</param>
+    /// <param name="peerPort">Peer UDP port number</param>
+    /// <param name="securityName">security name for SNMPV3 requests</param>
+    /// <param name="authDigests">the authentication protocol used for SNMPV3</param>
+    /// <param name="authSecret">the authentication password</param>
+    /// <param name="privProtocols">the privacy protocol used for SNMPV3</param>
+    /// <param name="privSecret">the privacy password</param>
+    /// <param name="contextName">the SNMPV3 context name</param>
+    public SimpleSnmp(string peerName, int peerPort, string securityName, AuthenticationDigests authDigests,
         string authSecret, PrivacyProtocols privProtocols, string privSecret, string contextName)
         : this(peerName, peerPort)
     {
@@ -248,12 +248,12 @@ public class SimpleSnmp
         _contextName = contextName;
     }
 
-	/// <summary>Class validity flag</summary>
-	/// <remarks>
-	///     Return class validity status. If class is valid, it is ready to send requests and receive
-	///     replies. If false, requests to send requests will fail.
-	/// </remarks>
-	public bool Valid
+    /// <summary>Class validity flag</summary>
+    /// <remarks>
+    ///     Return class validity status. If class is valid, it is ready to send requests and receive
+    ///     replies. If false, requests to send requests will fail.
+    /// </remarks>
+    public bool Valid
     {
         get
         {

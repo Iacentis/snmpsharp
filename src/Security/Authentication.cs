@@ -37,25 +37,25 @@ namespace SnmpSharpNet;
 /// </remarks>
 public sealed class Authentication
 {
-	/// <summary>
-	///     Constructor. Private to prevent the class from being instantiated.
-	/// </summary>
-	private Authentication()
+    /// <summary>
+    ///     Constructor. Private to prevent the class from being instantiated.
+    /// </summary>
+    private Authentication()
     {
     }
 
-	/// <summary>
-	///     Get instance of authentication protocol.
-	/// </summary>
-	/// <param name="authProtocol">
-	///     Authentication protocol code. Available codes are <see cref="AuthenticationDigests.MD5" />,
-	///     <see cref="AuthenticationDigests.SHA1" /> or <see cref="AuthenticationDigests.None" />
-	/// </param>
-	/// <returns>
-	///     Instance of the authentication protocol or null if unrecognized authentication protocol or value
-	///     <see cref="AuthenticationDigests.None" /> is passed.
-	/// </returns>
-	public static IAuthenticationDigest GetInstance(AuthenticationDigests authProtocol)
+    /// <summary>
+    ///     Get instance of authentication protocol.
+    /// </summary>
+    /// <param name="authProtocol">
+    ///     Authentication protocol code. Available codes are <see cref="AuthenticationDigests.MD5" />,
+    ///     <see cref="AuthenticationDigests.SHA1" /> or <see cref="AuthenticationDigests.None" />
+    /// </param>
+    /// <returns>
+    ///     Instance of the authentication protocol or null if unrecognized authentication protocol or value
+    ///     <see cref="AuthenticationDigests.None" /> is passed.
+    /// </returns>
+    public static IAuthenticationDigest GetInstance(AuthenticationDigests authProtocol)
     {
         if (authProtocol == AuthenticationDigests.MD5)
             return new AuthenticationMD5();

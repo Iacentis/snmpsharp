@@ -23,129 +23,129 @@ namespace SnmpSharpNet;
 /// </summary>
 public class Vb : AsnType, ICloneable
 {
-	/// <summary>
-	///     OID of the object
-	/// </summary>
-	private Oid _oid;
+    /// <summary>
+    ///     OID of the object
+    /// </summary>
+    private Oid _oid;
 
-	/// <summary>
-	///     Value of the object
-	/// </summary>
-	private AsnType _value;
+    /// <summary>
+    ///     Value of the object
+    /// </summary>
+    private AsnType _value;
 
-	/// <summary>
-	///     Standard constructor. Initializes values to null.
-	/// </summary>
-	public Vb()
+    /// <summary>
+    ///     Standard constructor. Initializes values to null.
+    /// </summary>
+    public Vb()
     {
         _asnType = (byte)(SEQUENCE | CONSTRUCTOR);
     }
 
-	/// <summary>
-	///     Construct Vb with the supplied OID and Null value
-	/// </summary>
-	/// <param name="oid">OID</param>
-	public Vb(Oid oid)
+    /// <summary>
+    ///     Construct Vb with the supplied OID and Null value
+    /// </summary>
+    /// <param name="oid">OID</param>
+    public Vb(Oid oid)
         : this()
     {
         _oid = (Oid)oid.Clone();
         _value = new Null();
     }
 
-	/// <summary>
-	///     Construct Vb with the OID and value
-	/// </summary>
-	/// <param name="oid">OID</param>
-	/// <param name="value">Value</param>
-	public Vb(Oid oid, AsnType value)
+    /// <summary>
+    ///     Construct Vb with the OID and value
+    /// </summary>
+    /// <param name="oid">OID</param>
+    /// <param name="value">Value</param>
+    public Vb(Oid oid, AsnType value)
         : this(oid)
     {
         _value = (AsnType)value.Clone();
     }
 
-	/// <summary>
-	///     Construct Vb with the oid value and <seealso cref="Null" /> value.
-	/// </summary>
-	/// <param name="oid">String representing OID value to set</param>
-	public Vb(string oid)
+    /// <summary>
+    ///     Construct Vb with the oid value and <seealso cref="Null" /> value.
+    /// </summary>
+    /// <param name="oid">String representing OID value to set</param>
+    public Vb(string oid)
         : this()
     {
         _oid = new Oid(oid);
         _value = new Null();
     }
 
-	/// <summary>
-	///     Copy constructor. Initialize class with cloned values from second class.
-	/// </summary>
-	/// <param name="second">Vb class to clone data from.</param>
-	public Vb(Vb second)
+    /// <summary>
+    ///     Copy constructor. Initialize class with cloned values from second class.
+    /// </summary>
+    /// <param name="second">Vb class to clone data from.</param>
+    public Vb(Vb second)
         : this()
     {
         Set(second);
     }
 
-	/// <summary>
-	///     SET/Get AsnType value of the Vb
-	/// </summary>
-	public AsnType Value
+    /// <summary>
+    ///     SET/Get AsnType value of the Vb
+    /// </summary>
+    public AsnType Value
     {
         set => _value = (AsnType)value.Clone();
         get => _value;
     }
 
-	/// <summary>
-	///     Get/SET OID of the Vb
-	/// </summary>
-	public Oid Oid
+    /// <summary>
+    ///     Get/SET OID of the Vb
+    /// </summary>
+    public Oid Oid
     {
         set => _oid = (Oid)value.Clone();
         get => _oid;
     }
 
-	/// <summary>
-	///     Clone Vb object
-	/// </summary>
-	/// <returns>Cloned Vb object cast to System.Object</returns>
-	public override object Clone()
+    /// <summary>
+    ///     Clone Vb object
+    /// </summary>
+    /// <returns>Cloned Vb object cast to System.Object</returns>
+    public override object Clone()
     {
         return new Vb(_oid, _value);
     }
 
-	/// <summary>
-	///     SET class value from supplied Vb class
-	/// </summary>
-	/// <param name="value">Vb class to clone data from</param>
-	public void Set(Vb value)
+    /// <summary>
+    ///     SET class value from supplied Vb class
+    /// </summary>
+    /// <param name="value">Vb class to clone data from</param>
+    public void Set(Vb value)
     {
         _oid = (Oid)value.Oid.Clone();
         _value = (Oid)value.Value.Clone();
     }
 
-	/// <summary>
-	///     Reset Vb value to Null
-	/// </summary>
-	public void ResetValue()
+    /// <summary>
+    ///     Reset Vb value to Null
+    /// </summary>
+    public void ResetValue()
     {
         _value = new Null();
     }
 
-	/// <summary>
-	///     Return printable string in the format oid: value
-	/// </summary>
-	/// <returns>Format Vb string</returns>
-	public override string ToString()
+    /// <summary>
+    ///     Return printable string in the format oid: value
+    /// </summary>
+    /// <returns>Format Vb string</returns>
+    public override string ToString()
     {
         return _oid.ToString() + ": (" + SnmpConstants.GetTypeName(_value.Type) + ") " + _value;
     }
 
-	/// <summary>
-	///     BER encode the variable binding
-	/// </summary>
-	/// <param name="buffer">
-	///     <see cref="MutableByte" /> class to the end of which encoded variable
-	///     binding values will be added.
-	/// </param>
-	public override void encode(MutableByte buffer)
+    /// <summary>
+    ///     BER encode the variable binding
+    /// </summary>
+    /// <param name="buffer">
+    ///     <see cref="MutableByte" /> class to the end of which encoded variable
+    ///     binding values will be added.
+    /// </param>
+    public override void encode(MutableByte buffer)
     {
         // encode oid to the temporary buffer
         var oidbuf = new MutableByte();
@@ -163,19 +163,19 @@ public class Vb : AsnType, ICloneable
         buffer.Append(valbuf);
     }
 
-	/// <summary>
-	///     Decode BER encoded variable binding.
-	/// </summary>
-	/// <param name="buffer">
-	///     BER encoded buffer
-	/// </param>
-	/// <param name="offset">
-	///     Offset in the data buffer from where to start decoding. Offset is
-	///     passed by reference and will contain the offset of the byte immediately after the parsed
-	///     variable binding.
-	/// </param>
-	/// <returns>Buffer position after the decoded value</returns>
-	public override int decode(byte[] buffer, int offset)
+    /// <summary>
+    ///     Decode BER encoded variable binding.
+    /// </summary>
+    /// <param name="buffer">
+    ///     BER encoded buffer
+    /// </param>
+    /// <param name="offset">
+    ///     Offset in the data buffer from where to start decoding. Offset is
+    ///     passed by reference and will contain the offset of the byte immediately after the parsed
+    ///     variable binding.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public override int decode(byte[] buffer, int offset)
     {
         int headerLength;
         var asnType = ParseHeader(buffer, ref offset, out headerLength);

@@ -21,11 +21,11 @@ namespace SnmpSharpNet;
 /// </summary>
 public class SnmpDecodingException : SnmpException
 {
-	/// <summary>
-	///     standard constructor
-	/// </summary>
-	/// <param name="msg">exception message</param>
-	public SnmpDecodingException(string msg)
+    /// <summary>
+    ///     standard constructor
+    /// </summary>
+    /// <param name="msg">exception message</param>
+    public SnmpDecodingException(string msg)
         : base(msg)
     {
     }

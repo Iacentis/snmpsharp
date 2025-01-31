@@ -69,20 +69,20 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SnmpV2Packet : SnmpPacket
 {
-	/// <summary>
-	///     SNMP Protocol Data Unit
-	/// </summary>
-	public Pdu _pdu;
+    /// <summary>
+    ///     SNMP Protocol Data Unit
+    /// </summary>
+    public Pdu _pdu;
 
-	/// <summary>
-	///     SNMP community name
-	/// </summary>
-	protected OctetString _snmpCommunity;
+    /// <summary>
+    ///     SNMP community name
+    /// </summary>
+    protected OctetString _snmpCommunity;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public SnmpV2Packet()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public SnmpV2Packet()
         : base(SnmpVersion.Ver2)
     {
         _protocolVersion.Value = (int)SnmpVersion.Ver2;
@@ -90,31 +90,31 @@ public class SnmpV2Packet : SnmpPacket
         _snmpCommunity = new OctetString();
     }
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	/// <param name="snmpCommunity">SNMP community name for the packet</param>
-	public SnmpV2Packet(string snmpCommunity)
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    /// <param name="snmpCommunity">SNMP community name for the packet</param>
+    public SnmpV2Packet(string snmpCommunity)
         : this()
     {
         _snmpCommunity.Set(snmpCommunity);
     }
 
-	/// <summary>
-	///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
-	/// </summary>
-	public OctetString Community => _snmpCommunity;
+    /// <summary>
+    ///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
+    /// </summary>
+    public OctetString Community => _snmpCommunity;
 
-	/// <summary>
-	///     Access to the packet <see cref="Pdu" />.
-	/// </summary>
-	public override Pdu Pdu => _pdu;
+    /// <summary>
+    ///     Access to the packet <see cref="Pdu" />.
+    /// </summary>
+    public override Pdu Pdu => _pdu;
 
-	/// <summary>
-	///     String representation of the SNMP v1 Packet contents.
-	/// </summary>
-	/// <returns>String representation of the class.</returns>
-	public override string ToString()
+    /// <summary>
+    ///     String representation of the SNMP v1 Packet contents.
+    /// </summary>
+    /// <returns>String representation of the class.</returns>
+    public override string ToString()
     {
         var str = new StringBuilder();
         str.AppendFormat("SnmpV2Packet:\nCommunity: {0}\n{1}\n", Community, Pdu);

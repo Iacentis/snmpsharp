@@ -47,58 +47,58 @@ namespace SnmpSharpNet;
 /// </remarks>
 public class SnmpV1TrapPacket : SnmpPacket
 {
-	/// <summary>
-	///     SNMP Protocol Data Unit
-	/// </summary>
-	protected TrapPdu _pdu;
+    /// <summary>
+    ///     SNMP Protocol Data Unit
+    /// </summary>
+    protected TrapPdu _pdu;
 
-	/// <summary>
-	///     SNMP community name
-	/// </summary>
-	protected OctetString _snmpCommunity;
+    /// <summary>
+    ///     SNMP community name
+    /// </summary>
+    protected OctetString _snmpCommunity;
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	public SnmpV1TrapPacket()
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public SnmpV1TrapPacket()
         : base(SnmpVersion.Ver1)
     {
         _snmpCommunity = new OctetString();
         _pdu = new TrapPdu();
     }
 
-	/// <summary>
-	///     Standard constructor.
-	/// </summary>
-	/// <param name="snmpCommunity">SNMP community name for the packet</param>
-	public SnmpV1TrapPacket(string snmpCommunity)
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    /// <param name="snmpCommunity">SNMP community name for the packet</param>
+    public SnmpV1TrapPacket(string snmpCommunity)
         : this()
     {
         _snmpCommunity.Set(snmpCommunity);
     }
 
-	/// <summary>
-	///     Access to the packet <see cref="TrapPdu" />.
-	/// </summary>
-	public new TrapPdu Pdu => _pdu;
+    /// <summary>
+    ///     Access to the packet <see cref="TrapPdu" />.
+    /// </summary>
+    public new TrapPdu Pdu => _pdu;
 
-	/// <summary>
-	///     Get TrapPdu
-	/// </summary>
-	public TrapPdu TrapPdu => _pdu;
+    /// <summary>
+    ///     Get TrapPdu
+    /// </summary>
+    public TrapPdu TrapPdu => _pdu;
 
-	/// <summary>
-	///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
-	/// </summary>
-	public OctetString Community => _snmpCommunity;
+    /// <summary>
+    ///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
+    /// </summary>
+    public OctetString Community => _snmpCommunity;
 
-	/// <summary>
-	///     Decode received packet. This method overrides the base implementation that cannot be used with this type of the
-	///     packet.
-	/// </summary>
-	/// <param name="buffer">Packet buffer</param>
-	/// <param name="length">Buffer length</param>
-	public override int decode(byte[] buffer, int length)
+    /// <summary>
+    ///     Decode received packet. This method overrides the base implementation that cannot be used with this type of the
+    ///     packet.
+    /// </summary>
+    /// <param name="buffer">Packet buffer</param>
+    /// <param name="length">Buffer length</param>
+    public override int decode(byte[] buffer, int length)
     {
         var offset = 0;
         var buf = new MutableByte(buffer, length);
@@ -120,11 +120,11 @@ public class SnmpV1TrapPacket : SnmpPacket
         return offset;
     }
 
-	/// <summary>
-	///     Encode SNMP packet for sending.
-	/// </summary>
-	/// <returns>BER encoded SNMP packet.</returns>
-	public override byte[] encode()
+    /// <summary>
+    ///     Encode SNMP packet for sending.
+    /// </summary>
+    /// <returns>BER encoded SNMP packet.</returns>
+    public override byte[] encode()
     {
         var tmpBuffer = new MutableByte();
 

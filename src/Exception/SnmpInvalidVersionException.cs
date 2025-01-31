@@ -21,11 +21,11 @@ namespace SnmpSharpNet;
 /// </summary>
 public class SnmpInvalidVersionException : SnmpException
 {
-	/// <summary>
-	///     Standard constructor
-	/// </summary>
-	/// <param name="msg">Exception error message</param>
-	public SnmpInvalidVersionException(string msg)
+    /// <summary>
+    ///     Standard constructor
+    /// </summary>
+    /// <param name="msg">Exception error message</param>
+    public SnmpInvalidVersionException(string msg)
         : base(msg)
     {
     }

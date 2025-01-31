@@ -68,26 +68,26 @@ namespace SnmpSharpNet;
 [Serializable]
 public class IpAddress : OctetString, IComparable, ICloneable
 {
-	/// <summary>
-	///     Constructs a default object with a
-	///     length of zero. See the super class
-	///     constructor for more details.
-	/// </summary>
-	public IpAddress()
+    /// <summary>
+    ///     Constructs a default object with a
+    ///     length of zero. See the super class
+    ///     constructor for more details.
+    /// </summary>
+    public IpAddress()
     {
         _asnType = SnmpConstants.SMI_IPADDRESS;
         _data = new byte[] { 0, 0, 0, 0 };
     }
 
-	/// <summary>
-	///     Constructs an Application String with the
-	///     passed data. The data is managed by the
-	///     base class.
-	/// </summary>
-	/// <param name="data">
-	///     The application string to manage (UTF-8)
-	/// </param>
-	public IpAddress(byte[] data) : this()
+    /// <summary>
+    ///     Constructs an Application String with the
+    ///     passed data. The data is managed by the
+    ///     base class.
+    /// </summary>
+    /// <param name="data">
+    ///     The application string to manage (UTF-8)
+    /// </param>
+    public IpAddress(byte[] data) : this()
     {
         _asnType = SnmpConstants.SMI_IPADDRESS;
         if (data.Length != 4)
@@ -95,13 +95,13 @@ public class IpAddress : OctetString, IComparable, ICloneable
         Set(data);
     }
 
-	/// <summary>
-	///     Copy constructor. Constructs a duplicate object
-	///     based on the passed application string object.
-	/// </summary>
-	/// <param name="second">The object to copy.</param>
-	/// <exception cref="ArgumentException">IpAddress argument is null</exception>
-	public IpAddress(IpAddress second) : this()
+    /// <summary>
+    ///     Copy constructor. Constructs a duplicate object
+    ///     based on the passed application string object.
+    /// </summary>
+    /// <param name="second">The object to copy.</param>
+    /// <exception cref="ArgumentException">IpAddress argument is null</exception>
+    public IpAddress(IpAddress second) : this()
     {
         if (second == null)
             throw new ArgumentException("Constructor argument cannot be null.");
@@ -112,47 +112,47 @@ public class IpAddress : OctetString, IComparable, ICloneable
             Set(second.GetData());
     }
 
-	/// <summary>Copy constructor.</summary>
-	/// <param name="second">The object to copy</param>
-	public IpAddress(OctetString second) : this(second.GetData())
+    /// <summary>Copy constructor.</summary>
+    /// <param name="second">The object to copy</param>
+    public IpAddress(OctetString second) : this(second.GetData())
     {
     }
 
-	/// <summary>Constructor</summary>
-	/// <remarks>Construct the IpAddress class from supplied IPAddress value.</remarks>
-	/// <param name="inetAddr">IP Address to use to initialize the object.</param>
-	public IpAddress(IPAddress inetAddr) : this(inetAddr.GetAddressBytes())
+    /// <summary>Constructor</summary>
+    /// <remarks>Construct the IpAddress class from supplied IPAddress value.</remarks>
+    /// <param name="inetAddr">IP Address to use to initialize the object.</param>
+    public IpAddress(IPAddress inetAddr) : this(inetAddr.GetAddressBytes())
     {
         _asnType = SnmpConstants.SMI_IPADDRESS;
     }
 
-	/// <summary>
-	///     Constructs the class and initializes the value to the supplied IP address. See comments
-	///     in <see cref="IpAddress.Set(string)" /> method for details.
-	/// </summary>
-	/// <param name="inetAddr">IP address encoded as a string or host name</param>
-	public IpAddress(string inetAddr) : this()
+    /// <summary>
+    ///     Constructs the class and initializes the value to the supplied IP address. See comments
+    ///     in <see cref="IpAddress.Set(string)" /> method for details.
+    /// </summary>
+    /// <param name="inetAddr">IP address encoded as a string or host name</param>
+    public IpAddress(string inetAddr) : this()
     {
         Set(inetAddr);
     }
 
-	/// <summary>
-	///     Constructor
-	/// </summary>
-	/// <remarks>
-	///     Initialize IpAddress class with the IP address value represented as 32-bit unsigned integer
-	///     value
-	/// </remarks>
-	/// <param name="inetAddr">32-bit unsigned integer representation of an IP Address</param>
-	public IpAddress(uint inetAddr) : this()
+    /// <summary>
+    ///     Constructor
+    /// </summary>
+    /// <remarks>
+    ///     Initialize IpAddress class with the IP address value represented as 32-bit unsigned integer
+    ///     value
+    /// </remarks>
+    /// <param name="inetAddr">32-bit unsigned integer representation of an IP Address</param>
+    public IpAddress(uint inetAddr) : this()
     {
         Set(inetAddr);
     }
 
-	/// <summary>
-	///     Returns true if object contains a valid IP address value.
-	/// </summary>
-	public bool Valid
+    /// <summary>
+    ///     Returns true if object contains a valid IP address value.
+    /// </summary>
+    public bool Valid
     {
         get
         {
@@ -165,25 +165,25 @@ public class IpAddress : OctetString, IComparable, ICloneable
         }
     }
 
-	/// <summary>Clone current object.</summary>
-	/// <returns> Cloned IpAddress object.</returns>
-	public override object Clone()
+    /// <summary>Clone current object.</summary>
+    /// <returns> Cloned IpAddress object.</returns>
+    public override object Clone()
     {
         return new IpAddress(this);
     }
 
-	/// <summary>
-	///     Compare value against IPAddress, byte array, UInt32, IpAddress of OctetString class value.
-	/// </summary>
-	/// <param name="obj">
-	///     Type: <see cref="System.Net.IPAddress" /> or byte <see cref="Array" /> or <see cref="UInt32" /> or
-	///     <see cref="IpAddress" /> or <see cref="OctetString" />
-	/// </param>
-	/// <returns>
-	///     0 if class values are the same, -1 if current class value is less then or 1 if greater then the class value
-	///     we are comparing against.
-	/// </returns>
-	public int CompareTo(object obj)
+    /// <summary>
+    ///     Compare value against IPAddress, byte array, UInt32, IpAddress of OctetString class value.
+    /// </summary>
+    /// <param name="obj">
+    ///     Type: <see cref="System.Net.IPAddress" /> or byte <see cref="Array" /> or <see cref="UInt32" /> or
+    ///     <see cref="IpAddress" /> or <see cref="OctetString" />
+    /// </param>
+    /// <returns>
+    ///     0 if class values are the same, -1 if current class value is less then or 1 if greater then the class value
+    ///     we are comparing against.
+    /// </returns>
+    public int CompareTo(object obj)
     {
         byte[] b = null;
         if (obj == null)
@@ -230,19 +230,19 @@ public class IpAddress : OctetString, IComparable, ICloneable
         return 0;
     }
 
-	/// <summary>Sets the class value to the IP address parsed from the string parameter.</summary>
-	/// <remarks>
-	///     Class value will be set with the parsed dotted decimal IP address in the parameter or
-	///     if string parameter does not represent an IP address, DNS resolution
-	///     will be performed.
-	///     Note: DNS resolution is performed using <see cref="System.Net.Dns.GetHostEntry(string)" /> and can result
-	///     in a longer then expected delay in this function. In applications where responsiveness is
-	///     important, name resolution should be performed using async methods available and result passed
-	///     to this method.
-	/// </remarks>
-	/// <param name="value">IP address encoded as a string or host name</param>
-	/// <exception cref="ArgumentException">Thrown when DNS resolution of the parameter value has failed.</exception>
-	public override void Set(string value)
+    /// <summary>Sets the class value to the IP address parsed from the string parameter.</summary>
+    /// <remarks>
+    ///     Class value will be set with the parsed dotted decimal IP address in the parameter or
+    ///     if string parameter does not represent an IP address, DNS resolution
+    ///     will be performed.
+    ///     Note: DNS resolution is performed using <see cref="System.Net.Dns.GetHostEntry(string)" /> and can result
+    ///     in a longer then expected delay in this function. In applications where responsiveness is
+    ///     important, name resolution should be performed using async methods available and result passed
+    ///     to this method.
+    /// </remarks>
+    /// <param name="value">IP address encoded as a string or host name</param>
+    /// <exception cref="ArgumentException">Thrown when DNS resolution of the parameter value has failed.</exception>
+    public override void Set(string value)
     {
         IPAddress ipa;
         if (!IPAddress.TryParse(value, out ipa))
@@ -265,11 +265,11 @@ public class IpAddress : OctetString, IComparable, ICloneable
             _data = ipa.GetAddressBytes();
     }
 
-	/// <summary>
-	///     Set class value from 32-bit unsigned integer value representation of the IP address value
-	/// </summary>
-	/// <param name="ipvalue">IP address value as 32-bit unsigned integer value</param>
-	public void Set(uint ipvalue)
+    /// <summary>
+    ///     Set class value from 32-bit unsigned integer value representation of the IP address value
+    /// </summary>
+    /// <param name="ipvalue">IP address value as 32-bit unsigned integer value</param>
+    public void Set(uint ipvalue)
     {
         _data = new byte[4];
         _data[0] = (byte)ipvalue;
@@ -278,27 +278,27 @@ public class IpAddress : OctetString, IComparable, ICloneable
         _data[3] = (byte)(ipvalue >> 24);
     }
 
-	/// <summary>
-	///     Set class value from the IPAddress argument
-	/// </summary>
-	/// <param name="ipaddr">Type: <see cref="System.Net.IPAddress" /> class instance</param>
-	public void Set(IPAddress ipaddr)
+    /// <summary>
+    ///     Set class value from the IPAddress argument
+    /// </summary>
+    /// <param name="ipaddr">Type: <see cref="System.Net.IPAddress" /> class instance</param>
+    public void Set(IPAddress ipaddr)
     {
         base.Set(ipaddr.GetAddressBytes());
     }
 
-	/// <summary>Allow explicit cast of the class as System.Net.IPAddress class.</summary>
-	/// <param name="ipaddr">IpAddress class</param>
-	/// <returns>IpAddress class value as System.Net.IPAddress class</returns>
-	public static explicit operator IPAddress(IpAddress ipaddr)
+    /// <summary>Allow explicit cast of the class as System.Net.IPAddress class.</summary>
+    /// <param name="ipaddr">IpAddress class</param>
+    /// <returns>IpAddress class value as System.Net.IPAddress class</returns>
+    public static explicit operator IPAddress(IpAddress ipaddr)
     {
         if (ipaddr.Length != 4) return IPAddress.Any;
         return new IPAddress(ipaddr.GetData());
     }
 
-	/// <summary> Returns the application string as a dotted decimal represented IP address.</summary>
-	/// <returns>String representation of the class value.</returns>
-	public override string ToString()
+    /// <summary> Returns the application string as a dotted decimal represented IP address.</summary>
+    /// <returns>String representation of the class value.</returns>
+    public override string ToString()
     {
         if (_data == null)
             return "";
@@ -313,23 +313,23 @@ public class IpAddress : OctetString, IComparable, ICloneable
         return buf.ToString();
     }
 
-	/// <summary>
-	///     Compare 2 IpAddress objects.
-	/// </summary>
-	/// <param name="obj"><see cref="IpAddress" /> object to compare against</param>
-	/// <returns>True if objects are the same, otherwise false.</returns>
-	public override bool Equals(object obj)
+    /// <summary>
+    ///     Compare 2 IpAddress objects.
+    /// </summary>
+    /// <param name="obj"><see cref="IpAddress" /> object to compare against</param>
+    /// <returns>True if objects are the same, otherwise false.</returns>
+    public override bool Equals(object obj)
     {
         if (obj == null)
             return false;
         return CompareTo(obj) == 0 ? true : false;
     }
 
-	/// <summary>
-	///     Return hash representing the value of this object
-	/// </summary>
-	/// <returns>Integer hash representing the object</returns>
-	public override int GetHashCode()
+    /// <summary>
+    ///     Return hash representing the value of this object
+    /// </summary>
+    /// <returns>Integer hash representing the object</returns>
+    public override int GetHashCode()
     {
         if (_data == null || _data.Length != 4)
             return 0;
@@ -338,13 +338,13 @@ public class IpAddress : OctetString, IComparable, ICloneable
         return hash;
     }
 
-	/// <summary>Decode ASN.1 encoded IP address value.</summary>
-	/// <param name="buffer">BER encoded data buffer</param>
-	/// <param name="offset">Offset in the array to start parsing from</param>
-	/// <returns>Buffer position after the decoded value.</returns>
-	/// <exception cref="OverflowException">Parsed data length is not 4 bytes long</exception>
-	/// <exception cref="SnmpException">Parsed data is not in IpAddress format</exception>
-	public override int decode(byte[] buffer, int offset)
+    /// <summary>Decode ASN.1 encoded IP address value.</summary>
+    /// <param name="buffer">BER encoded data buffer</param>
+    /// <param name="offset">Offset in the array to start parsing from</param>
+    /// <returns>Buffer position after the decoded value.</returns>
+    /// <exception cref="OverflowException">Parsed data length is not 4 bytes long</exception>
+    /// <exception cref="SnmpException">Parsed data is not in IpAddress format</exception>
+    public override int decode(byte[] buffer, int offset)
     {
         offset = base.decode(buffer, offset);
         if (_data.Length != 4)
