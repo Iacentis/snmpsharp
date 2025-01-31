@@ -134,7 +134,7 @@ public abstract class AsnType : ICloneable
     internal static void BuildLength(MutableByte mb, int asnLength)
     {
         if (asnLength < 0)
-            throw new ArgumentOutOfRangeException("Length cannot be less then 0.");
+            throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
         var len = BitConverter.GetBytes(asnLength);
         var buf = new MutableByte();
         for (var i = 3; i >= 0; i--)
@@ -169,7 +169,7 @@ public abstract class AsnType : ICloneable
     {
         if (offset == mb.Length)
             throw new OverflowException("Buffer is too short.");
-        var dataLen = 0;
+        int dataLen;
         if ((mb[offset] & HIGH_BIT) == 0)
         {
             // short form encoding

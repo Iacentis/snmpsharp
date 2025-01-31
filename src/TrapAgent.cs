@@ -164,7 +164,7 @@ public class TrapAgent
     {
         var packet = new SnmpV3Packet();
         packet.Pdu.Type = PduType.V2Trap;
-        packet.NoAuthNoPriv(ASCIIEncoding.UTF8.GetBytes(senderUserName));
+        packet.NoAuthNoPriv(Encoding.UTF8.GetBytes(senderUserName));
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);
@@ -197,7 +197,7 @@ public class TrapAgent
     {
         var packet = new SnmpV3Packet();
         packet.Pdu.Type = PduType.V2Trap;
-        packet.authNoPriv(ASCIIEncoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
+        packet.authNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);
@@ -235,7 +235,7 @@ public class TrapAgent
     {
         var packet = new SnmpV3Packet();
         packet.Pdu.Type = PduType.V2Trap;
-        packet.authPriv(ASCIIEncoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
+        packet.authPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);

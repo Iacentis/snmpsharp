@@ -119,7 +119,7 @@ public sealed class SMIDataType
     /// <returns>String formatted name of the SMI type.</returns>
     public static string GetTypeName(SMIDataTypeCode type)
     {
-        return SMIDataTypeCode.GetName(typeof(SMIDataTypeCode), type);
+        return Enum.GetName(typeof(SMIDataTypeCode), type);
     }
 
     /// <summary>

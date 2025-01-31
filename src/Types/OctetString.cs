@@ -264,7 +264,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         if (value.Length == 0)
             _data = null;
         else
-            _data = UTF8Encoding.UTF8.GetBytes(value);
+            _data = Encoding.UTF8.GetBytes(value);
     }
 
     /// <summary>
@@ -331,7 +331,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         {
             if (value.Length > 0)
             {
-                var buffer = UTF8Encoding.UTF8.GetBytes(value);
+                var buffer = Encoding.UTF8.GetBytes(value);
                 if (buffer != null && buffer.Length > 0) Append(buffer);
             }
         }
@@ -386,7 +386,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         if (asHex)
             rs = ToHexString();
         else
-            rs = new string(UTF8Encoding.UTF8.GetChars(_data));
+            rs = new string(Encoding.UTF8.GetChars(_data));
         return rs;
     }
 
@@ -427,7 +427,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         }
         else if (obj is string)
         {
-            d = UTF8Encoding.UTF8.GetBytes((string)obj);
+            d = Encoding.UTF8.GetBytes((string)obj);
         }
         else
         {

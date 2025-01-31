@@ -264,7 +264,7 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         if (value == null || value.Length <= 0)
             _buffer = null;
         else
-            Set(ASCIIEncoding.UTF8.GetBytes(value));
+            Set(Encoding.UTF8.GetBytes(value));
     }
 
     /// <summary>
