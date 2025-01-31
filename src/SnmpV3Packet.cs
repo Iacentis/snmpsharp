@@ -110,14 +110,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public Int32 MessageId
 		{
-			get 
-			{
-				return _messageId.Value; 
-			}
-			set
-			{
-				_messageId.Value = value;
-			}
+			get => _messageId.Value;
+			set => _messageId.Value = value;
 		}
 
 		/// <summary>
@@ -132,8 +126,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public Int32 MaxMessageSize
 		{
-			get { return _maxMessageSize.Value; }
-			set { _maxMessageSize.Value = value; }
+			get => _maxMessageSize.Value;
+			set => _maxMessageSize.Value = value;
 		}
 
 		/// <summary>
@@ -151,10 +145,7 @@ namespace SnmpSharpNet
 		/// you will need to update <see cref="UserSecurityModel"/> authentication and privacy types to the correct
 		/// values otherwise encoding/decoding will not work.
 		/// </summary>
-		public MsgFlags MsgFlags
-		{
-			get { return _msgFlags; }
-		}
+		public MsgFlags MsgFlags => _msgFlags;
 
 		/// <summary>
 		/// Security model code. Only supported security model is UserSecurityModel (integer value 3)
@@ -169,10 +160,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get <see cref="UserSecurityModel"/> class reference.
 		/// </summary>
-		public UserSecurityModel USM
-		{
-			get { return _userSecurityModel; }
-		}
+		public UserSecurityModel USM => _userSecurityModel;
 
 		/// <summary>
 		/// Scoped PDU class.
@@ -182,24 +170,12 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Override base class implementation. Returns class ScopedPdu cast as Pdu
 		/// </summary>
-		public override Pdu Pdu
-		{
-			get
-			{
-				return (Pdu)_scopedPdu;
-			}
-		}
+		public override Pdu Pdu => (Pdu)_scopedPdu;
 
-        /// <summary>
+		/// <summary>
         /// Access packet ScopedPdu class.
         /// </summary>
-        public ScopedPdu ScopedPdu
-        {
-            get
-            {
-                return _scopedPdu;
-            }
-        }
+        public ScopedPdu ScopedPdu => _scopedPdu;
 
 		/// <summary>
 		/// Standard constructor.
@@ -350,14 +326,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool IsReportable
 		{
-			get
-			{
-				return _msgFlags.Reportable;
-			}
-			set
-			{
-				_msgFlags.Reportable = value;
-			}
+			get => _msgFlags.Reportable;
+			set => _msgFlags.Reportable = value;
 		}
 
 		/// <summary>

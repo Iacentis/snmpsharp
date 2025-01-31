@@ -75,10 +75,8 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Flag used to determine if class is using IP version 6 (true) or IP version 4 (false)
 		/// </summary>
-		public bool IsIPv6
-		{
-			get { return _isIPv6; }
-		}
+		public bool IsIPv6 => _isIPv6;
+
 		/// <summary>
 		/// Initialize class socket
 		/// </summary>
@@ -228,10 +226,8 @@ namespace SnmpSharpNet
 		/// Is class busy. This property is true when class is servicing another request, false if
 		/// ready to process a new request.
 		/// </summary>
-		public bool IsBusy
-		{
-			get { return _busy; }
-		}
+		public bool IsBusy => _busy;
+
 		/// <summary>
 		/// Async request state information.
 		/// </summary>

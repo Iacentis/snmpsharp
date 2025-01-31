@@ -117,8 +117,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int ErrorCode
 		{
-			get { return _errorCode; }
-			set { _errorCode = value; }
+			get => _errorCode;
+			set => _errorCode = value;
 		}
 
 		/// <summary>

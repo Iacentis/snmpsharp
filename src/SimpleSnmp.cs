@@ -1256,8 +1256,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public IPAddress PeerIP
 		{
-			get { return _peerIP; }
-			set { _peerIP = value; }
+			get => _peerIP;
+			set => _peerIP = value;
 		}
 
 		/// <summary>
@@ -1265,7 +1265,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public string PeerName
 		{
-			get { return _peerName; }
+			get => _peerName;
 			set
 			{
 				_peerName = value;
@@ -1278,8 +1278,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int PeerPort
 		{
-			get { return _peerPort; }
-			set { _peerPort = value; }
+			get => _peerPort;
+			set => _peerPort = value;
 		}
 
 		/// <summary>
@@ -1287,8 +1287,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Timeout
 		{
-			get { return _timeout; }
-			set { _timeout = value; }
+			get => _timeout;
+			set => _timeout = value;
 		}
 
 		/// <summary>
@@ -1296,8 +1296,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Retry
 		{
-			get { return _retry; }
-			set { _retry = value; }
+			get => _retry;
+			set => _retry = value;
 		}
 
 		/// <summary>
@@ -1305,8 +1305,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public string Community
 		{
-			get { return _community; }
-			set { _community = value; }
+			get => _community;
+			set => _community = value;
 		}
 
 		/// <summary>
@@ -1316,8 +1316,8 @@ namespace SnmpSharpNet
 		/// request type will ignore this value.</remarks>
 		public int NonRepeaters
 		{
-			get { return _nonRepeaters; }
-			set { _nonRepeaters = value; }
+			get => _nonRepeaters;
+			set => _nonRepeaters = value;
 		}
 
 		/// <summary>
@@ -1327,8 +1327,8 @@ namespace SnmpSharpNet
 		/// request type will ignore this value.</remarks>
 		public int MaxRepetitions
 		{
-			get { return _maxRepetitions; }
-			set { _maxRepetitions = value; }
+			get => _maxRepetitions;
+			set => _maxRepetitions = value;
 		}
 
 		#endregion
@@ -1398,8 +1398,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool SuppressExceptions
 		{
-			get { return _suppressExceptions; }
-			set { _suppressExceptions = value; }
+			get => _suppressExceptions;
+			set => _suppressExceptions = value;
 		}
 
 		#endregion

@@ -92,14 +92,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public String Community
 		{
-			get
-			{
-				return _community;
-			}
-			set
-			{
-				_community = value;
-			}
+			get => _community;
+			set => _community = value;
 		}
 
 		#endregion Properties
@@ -157,7 +151,7 @@ namespace SnmpSharpNet
 		/// <exception cref="SnmpInvalidVersionException">Thrown when SNMP version other then 1 or 2c is set</exception>
 		public SnmpVersion Version
 		{
-			get { return _version; }
+			get => _version;
 			set
 			{
 				if (value != SnmpVersion.Ver1 && value != SnmpVersion.Ver2)
@@ -170,10 +164,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Timeout
 		{
-			get
-			{
-				return _timeout;
-			}
+			get => _timeout;
 			set
 			{
 				if (value < 100 || value > 10000)
@@ -186,10 +177,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Retry
 		{
-			get
-			{
-				return _retry;
-			}
+			get => _retry;
 			set
 			{
 				if (value < 0 || value > 5)
@@ -200,26 +188,15 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Target IP address
 		/// </summary>
-		public IpAddress Address
-		{
-			get
-			{
-				return _address;
-			}
-		}
+		public IpAddress Address => _address;
+
 		/// <summary>
 		/// Target port number
 		/// </summary>
 		public int Port
 		{
-			get
-			{
-				return _port;
-			}
-			set
-			{
-				_port = value;
-			}
+			get => _port;
+			set => _port = value;
 		}
 		/// <summary>
 		/// Check validity of the target information.

@@ -47,18 +47,12 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get/Set context engine id value.
 		/// </summary>
-		public OctetString ContextEngineId
-		{
-			get { return _contextEngineId; }
-		}
+		public OctetString ContextEngineId => _contextEngineId;
 
 		/// <summary>
 		/// Get/Set context name value
 		/// </summary>
-		public OctetString ContextName
-		{
-			get { return _contextName; }
-		}
+		public OctetString ContextName => _contextName;
 
 		#endregion
 

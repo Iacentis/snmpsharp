@@ -81,16 +81,9 @@ namespace SnmpSharpNet
 		/// </summary>
 		virtual public UInt64 Value
 		{
-			get
-			{
-				return _value;
-			}
+			get => _value;
 
-			set
-			{
-				_value = value;
-			}
-
+			set => _value = value;
 		}
 
 		/// <summary>

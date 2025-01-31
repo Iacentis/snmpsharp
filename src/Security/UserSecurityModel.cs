@@ -70,20 +70,15 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get SNMP version 3 agent authoritative engine id object
 		/// </summary>
-		public OctetString EngineId
-		{
-			get
-			{
-				return _engineId;
-			}
-		}
+		public OctetString EngineId => _engineId;
+
 		/// <summary>
 		/// Get SNMP version 3 agent authoritative engine boots object
 		/// </summary>
 		public Int32 EngineBoots
 		{
-			get { return _engineBoots.Value; }
-			set { _engineBoots.Value = value; }
+			get => _engineBoots.Value;
+			set => _engineBoots.Value = value;
 		}
 
 		/// <summary>
@@ -91,17 +86,14 @@ namespace SnmpSharpNet
 		/// </summary>
 		public Int32 EngineTime
 		{
-			get { return _engineTime.Value; }
-			set { _engineTime.Value = value; }
+			get => _engineTime.Value;
+			set => _engineTime.Value = value;
 		}
 
 		/// <summary>
 		/// Get SNMP version 3 authentication parameter field object
 		/// </summary>
-		public OctetString AuthenticationParameters
-		{
-			get { return _authenticationParameters; }
-		}
+		public OctetString AuthenticationParameters => _authenticationParameters;
 
 		/// <summary>
 		/// Set SNMP version 3 agent engine time related values.
@@ -118,41 +110,23 @@ namespace SnmpSharpNet
 		/// </summary>
 		public AuthenticationDigests Authentication
 		{
-			get 
-			{
-				return _authentication; 
-			}
-			set
-			{
-				_authentication = value;
-			}
+			get => _authentication;
+			set => _authentication = value;
 		}
 		/// <summary>
 		/// Security name (or user name)
 		/// </summary>
-		public OctetString SecurityName
-		{
-			get
-			{
-				return _securityName;
-			}
-		}
+		public OctetString SecurityName => _securityName;
 
 		/// <summary>
 		/// Authentication secret (or password).
 		/// </summary>
-		public MutableByte AuthenticationSecret
-		{
-			get { return _authenticationSecret; }
-		}
+		public MutableByte AuthenticationSecret => _authenticationSecret;
 
 		/// <summary>
 		/// Privacy secret (or password)
 		/// </summary>
-		public MutableByte PrivacySecret
-		{
-			get { return _privacySecret; }
-		}
+		public MutableByte PrivacySecret => _privacySecret;
 
 		/// <summary>
 		/// Get/set privacy protocol value. For available privacy protocols, see <see cref="PrivacyProtocols"/>
@@ -160,17 +134,15 @@ namespace SnmpSharpNet
 		/// </summary>
 		public PrivacyProtocols Privacy
 		{
-			get { return _privacy; }
-			set { _privacy = value; }
+			get => _privacy;
+			set => _privacy = value;
 		}
 
 		/// <summary>
 		/// Get privacy parameters object.
 		/// </summary>
-		public OctetString PrivacyParameters
-		{
-			get { return _privacyParameters; }
-		}
+		public OctetString PrivacyParameters => _privacyParameters;
+
 		/// <summary>
 		/// Standard constructor.
 		/// </summary>

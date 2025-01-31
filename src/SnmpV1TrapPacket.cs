@@ -51,21 +51,12 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Access to the packet <see cref="TrapPdu"/>.
 		/// </summary>
-		public new TrapPdu Pdu
-		{
-			get { return _pdu; }
-		}
+		public new TrapPdu Pdu => _pdu;
 
 		/// <summary>
 		/// Get TrapPdu
 		/// </summary>
-		public TrapPdu TrapPdu
-		{
-			get
-			{
-				return _pdu;
-			}
-		}
+		public TrapPdu TrapPdu => _pdu;
 
 		/// <summary>
 		/// SNMP community name
@@ -75,10 +66,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get SNMP community value used by SNMP version 1 and version 2 protocols.
 		/// </summary>
-		public OctetString Community
-		{
-			get { return _snmpCommunity; }
-		}
+		public OctetString Community => _snmpCommunity;
 
 		/// <summary>
 		/// Standard constructor.

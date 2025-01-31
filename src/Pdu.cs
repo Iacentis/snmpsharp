@@ -367,9 +367,7 @@ namespace SnmpSharpNet {
 					throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
 				return _errorStatus.Value;
 			}
-			set {
-				_errorStatus.Value = value;
-			}
+			set => _errorStatus.Value = value;
 		}
 		/// <summary>
 		/// ErrorIndex Pdu value
@@ -386,20 +384,14 @@ namespace SnmpSharpNet {
 					throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
 				return _errorIndex.Value;
 			}
-			set {
-				_errorIndex.Value = value;
-			}
+			set => _errorIndex.Value = value;
 		}
 		/// <summary>
 		/// SNMP packet request id that is sent to the SNMP agent. SET this value before making SNMP requests.
 		/// </summary>
 		public int RequestId {
-			set {
-				_requestId.Value = value;
-			}
-			get {
-				return _requestId.Value;
-			}
+			set => _requestId.Value = value;
+			get => _requestId.Value;
 		}
 		/// <summary>
 		/// Get or SET the PDU type. Available types are GET, GETNEXT, SET, GETBULK. PDU types are defined in Pdu class.
@@ -428,9 +420,7 @@ namespace SnmpSharpNet {
 				}
 				_asnType = (byte)value;
 			}
-			get {
-				return (PduType)_asnType;
-			}
+			get => (PduType)_asnType;
 		}
 		/// <summary>
 		/// Tells SNMP Agent how many VBs to include in a single request. Only valid on GETBULK requests.
@@ -481,21 +471,13 @@ namespace SnmpSharpNet {
 		/// <summary>
 		/// VarBind list
 		/// </summary>
-		public VbCollection VbList
-		{
-			get {
-				return _vbs;
-			}
-		}
+		public VbCollection VbList => _vbs;
+
 		/// <summary>
 		/// Get TRAP TimeStamp class from SNMPv2 TRAP and INFORM PDUs
 		/// </summary>
-		public TimeTicks TrapSysUpTime
-		{
-			get {
-				return _trapTimeStamp;
-			}
-		}
+		public TimeTicks TrapSysUpTime => _trapTimeStamp;
+
 		/// <summary>
 		/// Get TRAP ObjectID class from SNMPv2 TRAP and INFORM PDUs
 		/// </summary>
@@ -509,10 +491,7 @@ namespace SnmpSharpNet {
 
 				return _trapObjectID;
 			}
-			set
-			{
-				_trapObjectID.Set(value);
-			}
+			set => _trapObjectID.Set(value);
 		}
 		/// <summary>
 		/// Get VB from VarBind list at the specified index
@@ -526,13 +505,8 @@ namespace SnmpSharpNet {
 		/// <summary>
 		/// Return the number of VB entries in the VarBind list
 		/// </summary>
-		public int VbCount
-		{
-			get
-			{
-				return _vbs.Count;
-			}
-		}
+		public int VbCount => _vbs.Count;
+
 		/// <summary>
 		/// Delete VB from the specified location in the VarBind list
 		/// </summary>
@@ -815,13 +789,7 @@ namespace SnmpSharpNet {
 		/// <param name="index">Index position of the VarBind entry</param>
 		/// <returns>VarBind entry at the specified index</returns>
 		/// <exception cref="IndexOutOfRangeException">Thrown when index is outside the bounds of the collection</exception>
-		public Vb this[int index]
-		{
-			get
-			{
-				return _vbs[index];
-			}
-		}
+		public Vb this[int index] => _vbs[index];
 
 		/// <summary>
 		/// Access variable bindings using Vb Oid value

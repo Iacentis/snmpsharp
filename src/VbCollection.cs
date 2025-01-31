@@ -53,13 +53,8 @@ namespace SnmpSharpNet {
 		/// <summary>
 		/// Get number of VarBind entries in the collection
 		/// </summary>
-		public int Count
-		{
-			get
-			{
-				return _vbs.Count;
-			}
-		}
+		public int Count => _vbs.Count;
+
 		/// <summary>
 		/// Reset the VarBind collection.
 		/// </summary>

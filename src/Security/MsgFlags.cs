@@ -54,8 +54,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool Authentication
 		{
-			get { return _authenticationFlag; }
-			set { _authenticationFlag = value; }
+			get => _authenticationFlag;
+			set => _authenticationFlag = value;
 		}
 		/// <summary>
 		/// True if ScopedPdu portion of the packet is privacy protected with encryption, otherwise false.
@@ -66,8 +66,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool Privacy
 		{
-			get { return _privacyFlag; }
-			set { _privacyFlag = value; }
+			get => _privacyFlag;
+			set => _privacyFlag = value;
 		}
 		/// <summary>
 		/// True if reportable flag is set, otherwise false.
@@ -79,8 +79,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool Reportable
 		{
-			get { return _reportableFlag; }
-			set { _reportableFlag = value; }
+			get => _reportableFlag;
+			set => _reportableFlag = value;
 		}
 
 		/// <summary>

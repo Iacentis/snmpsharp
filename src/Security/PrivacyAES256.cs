@@ -33,12 +33,6 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Returns privacy protocol name "AES256".
 		/// </summary>
-		public override string Name
-		{
-			get
-			{
-				return "AES256";
-			}
-		}
+		public override string Name => "AES256";
 	}
 }

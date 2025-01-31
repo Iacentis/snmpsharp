@@ -49,58 +49,28 @@ namespace SnmpSharpNet
 		#region Properties
 
 		/// <summary>Get remote agent's IP address.</summary>
-		virtual public IpAddress AgentAddress
-		{
-			get
-			{
-				return _agentAddr;
-			}
-		}
+		virtual public IpAddress AgentAddress => _agentAddr;
+
 		/// <summary>Get/Set generic code trap value object</summary>
 		virtual public Int32 Generic
 		{
-			get
-			{
-				return _generic.Value;
-			}
-			set
-			{
-				_generic.Value = value;
-			}
+			get => _generic.Value;
+			set => _generic.Value = value;
 		}
 		/// <summary>Get/Set specific code trap value object</summary>
 		virtual public Int32 Specific
 		{
-			get
-			{
-				return _specific.Value;
-			}
-			set
-			{
-				_specific.Value = value;
-			}
+			get => _specific.Value;
+			set => _specific.Value = value;
 		}
 		/// <summary>Get timeticks trap value object</summary>
 		virtual public UInt32 TimeStamp
 		{
-			get
-			{
-				return _timeStamp.Value;
-			}
-			set
-			{
-				_timeStamp.Value = value;
-			}
-			
+			get => _timeStamp.Value;
+			set => _timeStamp.Value = value;
 		}
 		/// <summary> Returns the number oid/value pairs in the variable binding contained in the PDU</summary>
-		virtual public int Count
-		{
-			get
-			{
-				return _variables.Count;
-			}
-		}
+		virtual public int Count => _variables.Count;
 
 		#endregion Properties
 
@@ -150,13 +120,7 @@ namespace SnmpSharpNet
 		/// Get PDU type.
 		/// </summary>
 		/// <remarks>Always returns PduType.Trap</remarks>
-		public new PduType Type
-		{
-			get
-			{
-				return (PduType)_asnType;
-			}
-		}
+		public new PduType Type => (PduType)_asnType;
 
 		/// <summary>
 		/// Initialize the class with values from another <see cref="TrapPdu"/> class.
@@ -184,37 +148,18 @@ namespace SnmpSharpNet
 		}
 		
 		/// <summary>Get trap enterprise identifier</summary>
-		public Oid Enterprise
-		{
-			get
-			{
-				return _enterprise;
-			}
-		}
+		public Oid Enterprise => _enterprise;
 
 		/// <summary>
 		/// Get <see cref="VbCollection"/> variable binding list.
 		/// </summary>
-		public VbCollection VbList
-		{
-			get
-			{
-				return _variables;
-			}
-
-		}
+		public VbCollection VbList => _variables;
 
 		/// <summary>
 		/// Return number of entries in the VbList
 		/// </summary>
-		public int VbCount
-		{
-			get
-			{
-				return _variables.Count;
-			}
-		}
-		
+		public int VbCount => _variables.Count;
+
 		/// <summary>ASN.1 encode SNMP version 1 trap</summary>
 		/// <param name="buffer"><see cref="MutableByte"/> buffer to the end of which encoded values are appended.</param>
 		public override void encode(MutableByte buffer)

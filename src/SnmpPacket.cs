@@ -31,23 +31,13 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// SNMP Protocol version
 		/// </summary>
-		public SnmpVersion Version
-		{
-			get 
-			{ 
-				return (SnmpVersion)_protocolVersion.Value; 
-			}
-		}
+		public SnmpVersion Version => (SnmpVersion)_protocolVersion.Value;
+
 		/// <summary>
 		/// Get Pdu
 		/// </summary>
-		public virtual Pdu Pdu
-		{
-			get
-			{
-				return null;
-			}
-		}
+		public virtual Pdu Pdu => null;
+
 		/// <summary>
 		/// Constructor. Sets SNMP version to SNMPV1.
 		/// </summary>

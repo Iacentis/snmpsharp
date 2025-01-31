@@ -89,23 +89,15 @@ namespace SnmpSharpNet {
 		/// SET/Get AsnType value of the Vb
 		/// </summary>
 		public AsnType Value {
-			set {
-				_value = (AsnType)value.Clone();
-			}
-			get {
-				return _value;
-			}
+			set => _value = (AsnType)value.Clone();
+			get => _value;
 		}
 		/// <summary>
 		/// Get/SET OID of the Vb
 		/// </summary>
 		public Oid Oid {
-			set {
-				_oid = (Oid)value.Clone();
-			}
-			get {
-				return _oid;
-			}
+			set => _oid = (Oid)value.Clone();
+			get => _oid;
 		}
 
 		/// <summary>

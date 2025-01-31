@@ -108,8 +108,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Value
 		{
-			get { return _value; }
-			set { _value = value; }
+			get => _value;
+			set => _value = value;
 		}
 
 		/// <summary> Returns a duplicate of the current object.</summary>

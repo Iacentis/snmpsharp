@@ -157,23 +157,12 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Agent authoritative engine id
 		/// </summary>
-		public OctetString EngineId
-		{
-			get
-			{
-				return _engineId;
-			}
-		}
+		public OctetString EngineId => _engineId;
+
 		/// <summary>
 		/// SNMP version 3 agent engine boots value
 		/// </summary>
-		public Integer32 EngineBoots
-		{
-			get
-			{
-				return _engineBoots;
-			}
-		}
+		public Integer32 EngineBoots => _engineBoots;
 
 		/// <summary>
 		/// Get engine time stamp value (last time engine boots and time values were retrieved from the SNMP agent).
@@ -186,32 +175,19 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// SNMP version 3 agent engine time value.
 		/// </summary>
-		public Integer32 EngineTime
-		{
-			get
-			{
-				return _engineTime;
-			}
-		}
+		public Integer32 EngineTime => _engineTime;
+
 		/// <summary>
 		/// Security or user name configured on the SNMP version 3 agent.
 		/// </summary>
-		public OctetString SecurityName
-		{
-			get
-			{
-				return _securityName;
-			}
-		}
+		public OctetString SecurityName => _securityName;
+
 		/// <summary>
 		/// Privacy protocol used. Acceptable values are members of <see cref="PrivacyProtocols"/> enum.
 		/// </summary>
 		public PrivacyProtocols Privacy
 		{
-			get
-			{
-				return _privacyProtocol;
-			}
+			get => _privacyProtocol;
 			set
 			{
 				if (value != PrivacyProtocols.None && PrivacyProtocol.GetInstance(value) == null)
@@ -222,22 +198,14 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Privacy secret. Length of the secret is dependent on the selected privacy method.
 		/// </summary>
-		public MutableByte PrivacySecret
-		{
-			get
-			{
-				return _privacySecret;
-			}
-		}
+		public MutableByte PrivacySecret => _privacySecret;
+
 		/// <summary>
 		/// Authentication method. Acceptable values are members of <see cref="AuthenticationDigests"/> enum.
 		/// </summary>
 		public AuthenticationDigests Authentication
 		{
-			get
-			{
-				return _authenticationProtocol;
-			}
+			get => _authenticationProtocol;
 			set
 			{
 				if (value != AuthenticationDigests.None && SnmpSharpNet.Authentication.GetInstance(value) == null)
@@ -248,24 +216,14 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Authentication secret. Secret length depends on the hash algorithm selected.
 		/// </summary>
-		public MutableByte AuthenticationSecret
-		{
-			get
-			{
-				return _authenticationSecret;
-			}
-		}
+		public MutableByte AuthenticationSecret => _authenticationSecret;
+
 		/// <summary>
 		/// SNMP version. Only acceptable version is <see cref="SnmpVersion.Ver3"/>
 		/// </summary>
-		public SnmpVersion Version
-		{
-			get
-			{
-				// return (SnmpVersion)_version.Value;
-				return SnmpVersion.Ver3;
-			}
-		}
+		public SnmpVersion Version =>
+			// return (SnmpVersion)_version.Value;
+			SnmpVersion.Ver3;
 
 		/// <summary>
 		/// Get SNMP version 3 context engine id. By default, this value will be set
@@ -276,48 +234,25 @@ namespace SnmpSharpNet
 		/// To use the default operation, do not set this value or, if you've already set it,
 		/// reset it to null (object.ContextEngineId.Reset()).
 		/// </summary>
-		public OctetString ContextEngineId
-		{
-			get
-			{
-				return _contextEngineId;
-			}
-		}
+		public OctetString ContextEngineId => _contextEngineId;
+
 		/// <summary>
 		/// Get SNMP version 3 context name
 		/// </summary>
-		public OctetString ContextName
-		{
-			get
-			{
-				return _contextName;
-			}
-		}
+		public OctetString ContextName => _contextName;
 
 		/// <summary>
 		/// Get SNMP version 3 maximum message size object
 		/// </summary>
-		public Integer32 MaxMessageSize
-		{
-			get
-			{
-				return _maxMessageSize;
-			}
-		}
+		public Integer32 MaxMessageSize => _maxMessageSize;
 
 		/// <summary>
 		/// Get/Set reportable flag status in the SNMP version 3 packet.
 		/// </summary>
 		public bool Reportable
 		{
-			get
-			{
-				return _reportable;
-			}
-			set
-			{
-				_reportable = value;
-			}
+			get => _reportable;
+			set => _reportable = value;
 		}
 
 		#endregion /* Properties */
@@ -372,14 +307,8 @@ namespace SnmpSharpNet
 		/// </remarks>
 		public byte[] PrivacyKey
 		{
-			get
-			{
-				return _privacyKey;
-			}
-			set
-			{
-				_privacyKey = value;
-			}
+			get => _privacyKey;
+			set => _privacyKey = value;
 		}
 
 		/// <summary>
@@ -390,14 +319,8 @@ namespace SnmpSharpNet
 		/// </remarks>
 		public byte[] AuthenticationKey
 		{
-			get
-			{
-				return _authenticationKey;
-			}
-			set
-			{
-				_authenticationKey = value;
-			}
+			get => _authenticationKey;
+			set => _authenticationKey = value;
 		}
 
 		/// <summary>

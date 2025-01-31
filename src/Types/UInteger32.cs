@@ -96,14 +96,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public UInt32 Value
 		{
-			get
-			{
-				return _value;
-			}
-			set
-			{
-				_value = value;
-			}
+			get => _value;
+			set => _value = value;
 		}
 
 		/// <summary> 

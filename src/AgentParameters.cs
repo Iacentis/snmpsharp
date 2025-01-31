@@ -115,10 +115,7 @@ namespace SnmpSharpNet
 		/// other then version 1 or 2c</exception>
 		public virtual SnmpVersion Version
 		{
-			get
-			{
-				return (SnmpVersion)_version.Value;
-			}
+			get => (SnmpVersion)_version.Value;
 			set
 			{
                 if (value != SnmpVersion.Ver1 && value != SnmpVersion.Ver2)
@@ -137,13 +134,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get SNMP version 1 or 2 community name object
 		/// </summary>
-		virtual public OctetString Community
-		{
-			get
-			{
-				return _community;
-			}
-		}
+		virtual public OctetString Community => _community;
 
 		/// <summary>
 		/// Get/Set flag that disables checking of host IP address and port number from which reply is received. If not disabled, only
@@ -151,14 +142,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public bool DisableReplySourceCheck
 		{
-			get
-			{
-				return _disableReplySourceCheck;
-			}
-			set
-			{
-				_disableReplySourceCheck = value;
-			}
+			get => _disableReplySourceCheck;
+			set => _disableReplySourceCheck = value;
 		}
 
 		/// <summary>

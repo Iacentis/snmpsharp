@@ -34,10 +34,8 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Exception that caused this exception to be thrown
 		/// </summary>
-		public Exception ParentException
-		{
-			get { return _parentException; }
-		}
+		public Exception ParentException => _parentException;
+
 		/// <summary>
 		/// Standard constructor initializes the exceptione error message
 		/// </summary>

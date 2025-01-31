@@ -76,13 +76,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get SNMP community value used by SNMP version 1 and version 2 protocols.
 		/// </summary>
-		public OctetString Community
-		{
-			get
-			{
-				return _snmpCommunity;
-			}
-		}
+		public OctetString Community => _snmpCommunity;
 
 		/// <summary>
 		/// SNMP Protocol Data Unit
@@ -92,10 +86,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Access to the packet <see cref="Pdu"/>.
 		/// </summary>
-		public override SnmpSharpNet.Pdu Pdu
-		{
-			get { return _pdu; }
-		}
+		public override SnmpSharpNet.Pdu Pdu => _pdu;
 
 		/// <summary>
 		/// Standard constructor.

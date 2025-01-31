@@ -95,13 +95,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get sequence data
 		/// </summary>
-		public byte[] Value
-		{
-			get
-			{
-				return _data;
-			}
-		}
+		public byte[] Value => _data;
 
 		/// <summary>
 		/// Clone sequence

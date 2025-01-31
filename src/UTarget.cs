@@ -111,23 +111,12 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Agent authoritative engine id
 		/// </summary>
-		public OctetString EngineId
-		{
-			get
-			{
-				return _engineId;
-			}
-		}
+		public OctetString EngineId => _engineId;
+
 		/// <summary>
 		/// SNMP version 3 agent engine boots value
 		/// </summary>
-		public Integer32 EngineBoots
-		{
-			get
-			{
-				return _engineBoots;
-			}
-		}
+		public Integer32 EngineBoots => _engineBoots;
 
 		/// <summary>
 		/// Get engine time stamp value (last time engine boots and time values were retrieved from the SNMP agent).
@@ -140,32 +129,19 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// SNMP version 3 agent engine time value.
 		/// </summary>
-		public Integer32 EngineTime
-		{
-			get
-			{
-				return _engineTime;
-			}
-		}
+		public Integer32 EngineTime => _engineTime;
+
 		/// <summary>
 		/// Security or user name configured on the SNMP version 3 agent.
 		/// </summary>
-		public OctetString SecurityName
-		{
-			get
-			{
-				return _securityName;
-			}
-		}
+		public OctetString SecurityName => _securityName;
+
 		/// <summary>
 		/// Privacy protocol used. Acceptable values are members of <see cref="PrivacyProtocols"/> enum.
 		/// </summary>
 		public PrivacyProtocols Privacy
 		{
-			get
-			{
-				return _privacyProtocol;
-			}
+			get => _privacyProtocol;
 			set
 			{
 				if (value != PrivacyProtocols.None && PrivacyProtocol.GetInstance(value) == null)
@@ -176,22 +152,14 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Privacy secret. Length of the secret is dependent on the selected privacy method.
 		/// </summary>
-		public MutableByte PrivacySecret
-		{
-			get
-			{
-				return _privacySecret;
-			}
-		}
+		public MutableByte PrivacySecret => _privacySecret;
+
 		/// <summary>
 		/// Authentication method. Acceptable values are members of <see cref="AuthenticationDigests"/> enum.
 		/// </summary>
 		public AuthenticationDigests Authentication
 		{
-			get
-			{
-				return _authenticationProtocol;
-			}
+			get => _authenticationProtocol;
 			set
 			{
 				if (value != AuthenticationDigests.None && SnmpSharpNet.Authentication.GetInstance(value) == null)
@@ -202,13 +170,8 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Authentication secret. Secret length depends on the hash algorithm selected.
 		/// </summary>
-		public MutableByte AuthenticationSecret
-		{
-			get
-			{
-				return _authenticationSecret;
-			}
-		}
+		public MutableByte AuthenticationSecret => _authenticationSecret;
+
 		/// <summary>
 		/// Get SNMP version 3 context engine id. By default, this value will be set
 		/// to the same engine id as authoritative engine id (EngineId). I haven't see a
@@ -218,48 +181,25 @@ namespace SnmpSharpNet
 		/// To use the default operation, do not set this value or, if you've already set it,
 		/// reset it to null (object.ContextEngineId.Reset()).
 		/// </summary>
-		public OctetString ContextEngineId
-		{
-			get
-			{
-				return _contextEngineId;
-			}
-		}
+		public OctetString ContextEngineId => _contextEngineId;
+
 		/// <summary>
 		/// Get SNMP version 3 context name
 		/// </summary>
-		public OctetString ContextName
-		{
-			get
-			{
-				return _contextName;
-			}
-		}
+		public OctetString ContextName => _contextName;
 
 		/// <summary>
 		/// Get SNMP version 3 maximum message size object
 		/// </summary>
-		public Integer32 MaxMessageSize
-		{
-			get
-			{
-				return _maxMessageSize;
-			}
-		}
+		public Integer32 MaxMessageSize => _maxMessageSize;
 
 		/// <summary>
 		/// Get/Set reportable flag status in the SNMP version 3 packet.
 		/// </summary>
 		public bool Reportable
 		{
-			get
-			{
-				return _reportable;
-			}
-			set
-			{
-				_reportable = value;
-			}
+			get => _reportable;
+			set => _reportable = value;
 		}
 
 
@@ -503,7 +443,7 @@ namespace SnmpSharpNet
 		/// <exception cref="SnmpInvalidVersionException">Thrown when SNMP version other then 3 is set</exception>
 		public SnmpVersion Version
 		{
-			get { return _version; }
+			get => _version;
 			set
 			{
 				if (value != SnmpVersion.Ver3)
@@ -516,10 +456,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Timeout
 		{
-			get
-			{
-				return _timeout;
-			}
+			get => _timeout;
 			set
 			{
 				if (value < 100 || value > 10000)
@@ -532,10 +469,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Retry
 		{
-			get
-			{
-				return _retry;
-			}
+			get => _retry;
 			set
 			{
 				if (value < 0 || value > 5)
@@ -546,26 +480,15 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Target IP address
 		/// </summary>
-		public IpAddress Address
-		{
-			get
-			{
-				return _address;
-			}
-		}
+		public IpAddress Address => _address;
+
 		/// <summary>
 		/// Target port number
 		/// </summary>
 		public int Port
 		{
-			get
-			{
-				return _port;
-			}
-			set
-			{
-				_port = value;
-			}
+			get => _port;
+			set => _port = value;
 		}
 		/// <summary>
 		/// Checks validity of the class. 

@@ -58,7 +58,7 @@ namespace SnmpSharpNet
 		/// </summary>
 		public System.Net.IPAddress Address
 		{
-			get { return _address; }
+			get => _address;
 			set { 
 				_address = value;
 				if (_address.AddressFamily == AddressFamily.InterNetworkV6 && !base.IsIPv6)
@@ -72,16 +72,16 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Port
 		{
-			get { return _port; }
-			set { _port = value; }
+			get => _port;
+			set => _port = value;
 		}
 		/// <summary>
 		/// Get/Set Udp agent timeout value in milliseconds
 		/// </summary>
 		public int Timeout
 		{
-			get { return _timeout; }
-			set { _timeout = value; }
+			get => _timeout;
+			set => _timeout = value;
 		}
 		/// <summary>
 		/// Get/Set Udp agent maximum retry value. Value of 0 (zero) will result in a single request
@@ -89,8 +89,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int Retry
 		{
-			get { return _retry; }
-			set { _retry = value; }
+			get => _retry;
+			set => _retry = value;
 		}
 		/// <summary>
 		/// Constructor.

@@ -88,14 +88,8 @@ namespace SnmpSharpNet
 		/// </summary>
 		public byte Type
 		{
-			get
-			{
-				return _asnType;
-			}
-			set
-			{
-				_asnType = value;
-			}
+			get => _asnType;
+			set => _asnType = value;
 		}
 		/// <summary>
 		/// Encodes the data object in the specified buffer

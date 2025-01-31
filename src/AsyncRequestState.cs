@@ -58,56 +58,56 @@ namespace SnmpSharpNet
 		/// </summary>
 		public System.Net.IPEndPoint EndPoint
 		{
-			get { return _endPoint; }
-			set { _endPoint = value; }
+			get => _endPoint;
+			set => _endPoint = value;
 		}
 		/// <summary>
 		/// Get/Set packet buffer
 		/// </summary>
 		public byte[] Packet
 		{
-			get { return _packet; }
-			set { _packet = value; }
+			get => _packet;
+			set => _packet = value;
 		}
 		/// <summary>
 		/// Get/Set packet length value
 		/// </summary>
 		public int PacketLength
 		{
-			get { return _packetLength; }
-			set { _packetLength = value; }
+			get => _packetLength;
+			set => _packetLength = value;
 		}
 		/// <summary>
 		/// Get/Set maximum retry value
 		/// </summary>
 		public int MaxRetries
 		{
-			get { return _maxRetries; }
-			set { _maxRetries = value; }
+			get => _maxRetries;
+			set => _maxRetries = value;
 		}
 		/// <summary>
 		/// Get/Set timeout value
 		/// </summary>
 		public int Timeout
 		{
-			get { return _timeout; }
-			set { _timeout = value; }
+			get => _timeout;
+			set => _timeout = value;
 		}
 		/// <summary>
 		/// Get/Set timer class
 		/// </summary>
 		public System.Threading.Timer Timer
 		{
-			get { return _timer; }
-			set { _timer = value; }
+			get => _timer;
+			set => _timer = value;
 		}
 		/// <summary>
 		/// Get/Set current retry count
 		/// </summary>
 		public int CurrentRetry
 		{
-			get { return _currentRetry; }
-			set { _currentRetry = value; }
+			get => _currentRetry;
+			set => _currentRetry = value;
 		}
 		/// <summary>
 		/// Constructor.

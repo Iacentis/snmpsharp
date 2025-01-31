@@ -30,10 +30,8 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Return system exception that caused raising of this Exception error.
 		/// </summary>
-		public System.Exception SystemException
-		{
-			get { return _systemException; }
-		}
+		public System.Exception SystemException => _systemException;
+
 		/// <summary>
 		/// Standard constructor
 		/// </summary>

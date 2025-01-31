@@ -103,13 +103,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Get byte[] buffer value. This property is internal because it exposes the internal byte array.
 		/// </summary>
-		internal byte[] Value
-		{
-			get
-			{
-				return _buffer;
-			}
-		}
+		internal byte[] Value => _buffer;
 
 		/// <summary>
 		/// Byte buffer current length

@@ -57,26 +57,20 @@ namespace SnmpSharpNet
 		/// </summary>
 		public int ErrorStatus 
 		{
-			get { return _errorStatus; }
-			set { _errorStatus = value; }
+			get => _errorStatus;
+			set => _errorStatus = value;
 		}
 		/// <summary>
 		/// Get/Set SNMP ErrorIndex value
 		/// </summary>
 		public int ErrorIndex
 		{
-			get { return _errorIndex; }
-			set { _errorIndex = value; }
+			get => _errorIndex;
+			set => _errorIndex = value;
 		}
 		/// <summary>
 		/// Get exception message
 		/// </summary>
-		public override string Message
-		{
-			get
-			{
-				return String.Format("{0}> ErrorStatus {1} ErrorIndex {2}", base.Message, _errorStatus, _errorIndex);
-			}
-		}
+		public override string Message => String.Format("{0}> ErrorStatus {1} ErrorIndex {2}", base.Message, _errorStatus, _errorIndex);
 	}
 }

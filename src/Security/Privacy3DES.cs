@@ -172,10 +172,7 @@ namespace SnmpSharpNet
 		/// TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
 		/// encryption IV.
 		/// </remarks>
-		public int MinimumKeyLength
-		{
-			get { return 32; }
-		}
+		public int MinimumKeyLength => 32;
 
 		/// <summary>
 		/// Return maximum encryption/decryption key length. For TripleDES, returned value is 32
@@ -184,18 +181,12 @@ namespace SnmpSharpNet
 		/// TripleDES protocol requires a 24 byte encryption key and additional 8 bytes are used for generating the
 		/// encryption IV.
 		/// </remarks>
-		public int MaximumKeyLength
-		{
-			get { return 32; }
-		}
+		public int MaximumKeyLength => 32;
 
 		/// <summary>
 		/// Returns the length of privacyParameters USM header field. For TripleDES, field length is 8.
 		/// </summary>
-		public int PrivacyParametersLength
-		{
-			get { return 8; }
-		}
+		public int PrivacyParametersLength => 8;
 
 		/// <summary>
 		/// Get final encrypted length
@@ -263,10 +254,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// Privacy protocol name
 		/// </summary>
-		public string Name
-		{
-			get { return "TripleDES"; }
-		}
+		public string Name => "TripleDES";
 
 		/// <summary>
 		/// Extends the encryption key if key size returned by PasswordToKey is less then minimum
@@ -303,10 +291,7 @@ namespace SnmpSharpNet
 		/// <summary>
 		/// TripleDES implementation supports extending of a short encryption key. Always returns true.
 		/// </summary>
-		public bool CanExtendShortKey
-		{
-			get { return true; }
-		}
+		public bool CanExtendShortKey => true;
 
 		/// <summary>
 		/// Convert privacy password into encryption key using packet authentication hash.
