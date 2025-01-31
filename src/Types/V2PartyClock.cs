@@ -59,7 +59,7 @@ public class V2PartyClock : UInteger32, ICloneable
     {
         var buf = new StringBuilder();
         long time = Value;
-        long tmp = 0;
+        long tmp;
         if ((tmp = time / (24 * 3600 * 100)) > 0)
         {
             buf.Append(tmp).Append("d ");
@@ -93,7 +93,6 @@ public class V2PartyClock : UInteger32, ICloneable
         if ((tmp = time / 100) > 0)
         {
             buf.Append(tmp).Append("s ");
-            time = time % 100;
         }
         else
         {

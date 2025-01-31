@@ -18,6 +18,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 
 namespace SnmpSharpNet;
@@ -26,10 +27,10 @@ namespace SnmpSharpNet;
 ///     SMI Object Identifier type implementation.
 /// </summary>
 [Serializable]
-public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
+public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
 {
     /// <summary>Internal buffer</summary>
-    protected uint[] _data;
+    private uint[] _data;
 
     /// <summary>
     ///     Gets the number of object identifiers
@@ -38,13 +39,17 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>
     ///     Returns the number of object identifiers
     /// </returns>
-    public virtual int Length
+    public int Length
     {
         get
         {
-            if (_data == null)
-                return 0;
-            return _data.Length;
+            switch (_data)
+            {
+                case null:
+                    return 0;
+                default:
+                    return _data.Length;
+            }
         }
     }
 
@@ -55,11 +60,14 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     {
         get
         {
-            if (Length == 0)
-                return true;
-            if (Length == 2 && _data[0] == 0 && _data[1] == 0)
-                return true;
-            return false;
+            switch (Length)
+            {
+                case 0:
+                case 2 when _data[0] == 0 && _data[1] == 0:
+                    return true;
+                default:
+                    return false;
+            }
         }
     }
 
@@ -92,9 +100,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>An IEnumerator  object that can be used to iterate through the collection.</returns>
     public IEnumerator<uint> GetEnumerator()
     {
-        if (_data != null)
-            return ((IEnumerable<uint>)_data).GetEnumerator();
-        return null;
+        return ((IEnumerable<uint>)_data).GetEnumerator();
     }
 
     /// <summary>
@@ -103,102 +109,64 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>An IEnumerator  object that can be used to iterate through the collection.</returns>
     IEnumerator IEnumerable.GetEnumerator()
     {
-        if (_data != null)
-            return _data.GetEnumerator();
-        return null;
+        return _data.GetEnumerator();
     }
 
     /// <summary> Add an array of identifiers to the current object.</summary>
     /// <param name="ids">The array Int32 identifiers to append to the object</param>
     /// <exception cref="OverflowException">Thrown when one of the instance IDs to add are less then zero</exception>
-    public virtual void Add(int[] ids)
+    public void Add(int[]? ids)
     {
         if (ids == null || ids.Length == 0) return;
-        if (_data != null)
+        if (ids.Length == 0) return;
+        var tmp = new uint[_data.Length + ids.Length];
+        Array.Copy(_data, 0, tmp, 0, _data.Length);
+        for (var i = 0; i < ids.Length; i++)
         {
-            if (ids != null && ids.Length != 0)
+            tmp[_data.Length + i] = ids[i] switch
             {
-                var tmp = new uint[_data.Length + ids.Length];
-                Array.Copy(_data, 0, tmp, 0, _data.Length);
-                for (var i = 0; i < ids.Length; i++)
-                {
-                    if (ids[i] < 0) throw new OverflowException("Instance value cannot be less then zero.");
-                    tmp[_data.Length + i] = (uint)ids[i];
-                }
+                < 0 => throw new OverflowException("Instance value cannot be less then zero."),
+                _ => (uint)ids[i]
+            };
+        }
 
-                _data = tmp;
-            }
-        }
-        else
-        {
-            _data = new uint[ids.Length];
-            for (var i = 0; i < ids.Length; i++)
-            {
-                if (ids[i] < 0) throw new OverflowException("Instance value cannot be less then zero.");
-                _data[i] = (uint)ids[i];
-            }
-        }
+        _data = tmp;
     }
 
     /// <summary> Add UInt32 identifiers to the current object.</summary>
     /// <param name="ids">The array of identifiers to append</param>
     /// <exception cref="OverflowException">Thrown when one of the instance IDs to add are less then zero</exception>
-    public virtual void Add(uint[] ids)
+    public void Add(uint[]? ids)
     {
         if (ids == null || ids.Length == 0) return;
-        if (_data != null)
-        {
-            if (ids != null && ids.Length != 0)
-            {
-                var tmp = new uint[_data.Length + ids.Length];
-                Array.Copy(_data, 0, tmp, 0, _data.Length);
-                Array.Copy(ids, 0, tmp, _data.Length, ids.Length);
-                _data = tmp;
-            }
-        }
-        else
-        {
-            _data = new uint[ids.Length];
-            Array.Copy(ids, _data, ids.Length);
-        }
+        if (ids.Length == 0) return;
+        var tmp = new uint[_data.Length + ids.Length];
+        Array.Copy(_data, 0, tmp, 0, _data.Length);
+        Array.Copy(ids, 0, tmp, _data.Length, ids.Length);
+        _data = tmp;
     }
 
     /// <summary>Add a single UInt32 id to the end of the object</summary>
     /// <param name="id">Id to add to the oid</param>
-    public virtual void Add(uint id)
+    public void Add(uint id)
     {
-        if (_data != null)
-        {
-            var tmp = new uint[_data.Length + 1];
-            Array.Copy(_data, 0, tmp, 0, _data.Length);
-            tmp[_data.Length] = id;
-            _data = tmp;
-        }
-        else
-        {
-            _data = new uint[1];
-            _data[0] = id;
-        }
+        var tmp = new uint[_data.Length + 1];
+        Array.Copy(_data, 0, tmp, 0, _data.Length);
+        tmp[_data.Length] = id;
+        _data = tmp;
     }
 
     /// <summary>Add a single Int32 id to the end of the object</summary>
     /// <param name="id">Id to add to the oid</param>
     /// <exception cref="OverflowException">Thrown when id value is less then zero</exception>
-    public virtual void Add(int id)
+    public void Add(int id)
     {
         if (id < 0) throw new OverflowException("Instance id is less then zero.");
-        if (_data != null)
-        {
-            var tmp = new uint[_data.Length + 1];
-            Array.Copy(_data, 0, tmp, 0, _data.Length);
-            tmp[_data.Length] = (uint)id;
-            _data = tmp;
-        }
-        else
-        {
-            _data = new uint[1];
-            _data[0] = (uint)id;
-        }
+
+        var tmp = new uint[_data.Length + 1];
+        Array.Copy(_data, 0, tmp, 0, _data.Length);
+        tmp[_data.Length] = (uint)id;
+        _data = tmp;
     }
 
     /// <summary>
@@ -208,7 +176,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="strOids">
     ///     The dotted decimal identifiers to Append
     /// </param>
-    public virtual void Add(string strOids)
+    public void Add(string strOids)
     {
         var oids = Parse(strOids);
         Add(oids);
@@ -221,7 +189,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="second">
     ///     The object to Append to self
     /// </param>
-    public virtual void Add(Oid second)
+    public void Add(Oid second)
     {
         Add(second.GetData());
     }
@@ -231,7 +199,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     ///     this library so internal attribute is applied to it.
     /// </summary>
     /// <returns>Internal unsigned integer array buffer.</returns>
-    protected uint[] GetData()
+    private uint[] GetData()
     {
         return _data;
     }
@@ -241,7 +209,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </summary>
     public void Reset()
     {
-        if (_data != null) _data = null;
+        _data = [];
     }
 
     /// <summary>
@@ -250,8 +218,8 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>Unsigned integer array representing the Oid class IDs</returns>
     public uint[] ToArray()
     {
-        if (_data == null || _data.Length == 0)
-            return null;
+        if (_data.Length == 0)
+            return _data;
         var tmp = new uint[_data.Length];
         Array.Copy(_data, 0, tmp, 0, _data.Length);
         return tmp;
@@ -263,12 +231,14 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="root">Root Oid</param>
     /// <param name="leaf">Leaf Oid</param>
     /// <returns>Returns int array of child OIDs, if there was an error or no child IDs are present, returns null.</returns>
-    public static uint[] GetChildIdentifiers(Oid root, Oid leaf)
+    public static uint[]? GetChildIdentifiers(Oid? root, Oid? leaf)
     {
         uint[] tmp;
-        if ((object)leaf == null || leaf.IsNull) return null;
+        if (leaf is null || leaf.IsNull)
+            return null;
 
-        if (((object)root == null || root.IsNull) && (object)leaf != null)
+
+        if (root is null)
         {
             tmp = new uint[leaf.Length];
             Array.Copy(leaf.GetData(), tmp, leaf.Length);
@@ -293,8 +263,12 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public static string ToString(int[] vals)
     {
         var r = "";
-        if (vals == null)
-            return r;
+        switch (vals)
+        {
+            case null:
+                return r;
+        }
+
         for (var i = 0; i < vals.Length; i++)
         {
             r += vals[i].ToString(CultureInfo.CurrentCulture);
@@ -314,8 +288,12 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public static string ToString(int[] vals, int startpos)
     {
         var r = "";
-        if (vals == null)
-            return r;
+        switch (vals)
+        {
+            case null:
+                return r;
+        }
+
         if (startpos < 0 || startpos >= vals.Length)
             throw new IndexOutOfRangeException("Requested value is out of range");
         for (var i = startpos; i < vals.Length; i++)
@@ -337,14 +315,28 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public override string ToString()
     {
         var buf = new StringBuilder();
-        if (_data == null)
-            buf.Append("0.0");
-        else
-            for (var x = 0; x < _data.Length; x++)
+        switch (_data)
+        {
+            case null:
+                buf.Append("0.0");
+                break;
+            default:
             {
-                if (x > 0) buf.Append('.');
-                buf.Append(_data[x].ToString());
+                for (var x = 0; x < _data.Length; x++)
+                {
+                    switch (x)
+                    {
+                        case > 0:
+                            buf.Append('.');
+                            break;
+                    }
+
+                    buf.Append(_data[x].ToString());
+                }
+
+                break;
             }
+        }
 
         return buf.ToString();
     }
@@ -357,12 +349,9 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </returns>
     public override int GetHashCode()
     {
-        var hash = 0;
-
-        if (_data == null) return hash;
-
-        for (var i = 0; i < _data.Length; i++) hash = hash ^ (_data[i] > int.MaxValue ? int.MaxValue : (int)_data[i]);
-        return hash;
+        return GetData() is not { Length: > 0 } data
+            ? 0
+            : data.Aggregate(0, (current, t) => current ^ (t > int.MaxValue ? int.MaxValue : (int)t));
     }
 
     /// <summary>Parse string formatted oid value into an array of integers</summary>
@@ -370,24 +359,29 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>Integer array representing the oid or null if invalid object id was passed</returns>
     private static uint[] Parse(string oidStr)
     {
-        if (oidStr is not { Length: > 0 }) return null;
+        if (oidStr is not { Length: > 0 }) return [];
         // verify correct values are the only ones present in the string
-        foreach (var c in oidStr)
-            if (!char.IsNumber(c) && c != '.')
-                return null;
+        if (oidStr.Any(c => !char.IsNumber(c) && c != '.'))
+        {
+            return [];
+        }
 
-        // check if oid starts with a '.' and remove it if it does
-        if (oidStr[0] == '.') oidStr = oidStr.Remove(0, 1);
+        oidStr = oidStr[0] switch
+        {
+            // check if oid starts with a '.' and remove it if it does
+            '.' => oidStr.Remove(0, 1),
+            _ => oidStr
+        };
+
         // split string into an array
-        var splitString = oidStr.Split(new[] { '.' }, StringSplitOptions.None);
+        var splitString = oidStr.Split(['.'], StringSplitOptions.None);
 
-        // if we didn't find any entries, return null
-        if (splitString.Length < 0)
-            return null;
-
-        var result = new List<uint>();
-        foreach (var s in splitString) result.Add(Convert.ToUInt32(s));
-        return result.ToArray();
+        return splitString.Length switch
+        {
+            // if we didn't find any entries, return null
+            < 0 => [],
+            _ => splitString.Select(s => Convert.ToUInt32(s)).ToArray()
+        };
     }
 
     /// <summary>
@@ -407,7 +401,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public Oid()
     {
         _asnType = SnmpConstants.SMI_OBJECTID;
-        _data = null;
+        _data = [];
     }
 
     /// <summary>Constructor. Initialize ObjectId value to the unsigned integer array</summary>
@@ -456,20 +450,27 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     ///     Paramater contains a value that is less then zero. This is an invalid instance
     ///     value
     /// </exception>
-    public virtual void Set(int[] value)
+    public void Set(int[]? value)
     {
-        if (value == null)
+        switch (value)
         {
-            _data = null;
-        }
-        else
-        {
-            // Verify all values are greater then or equal 0
-            foreach (var i in value)
-                if (i < 0)
-                    throw new OverflowException("OID instance value cannot be less then zero.");
-            _data = new uint[value.Length];
-            for (var i = 0; i < value.Length; i++) _data[i] = (uint)value[i];
+            case null:
+                _data = [];
+                break;
+            default:
+            {
+                // Verify all values are greater then or equal 0
+                foreach (var i in value)
+                    switch (i)
+                    {
+                        case < 0:
+                            throw new OverflowException("OID instance value cannot be less then zero.");
+                    }
+
+                _data = new uint[value.Length];
+                for (var i = 0; i < value.Length; i++) _data[i] = (uint)value[i];
+                break;
+            }
         }
     }
 
@@ -479,16 +480,17 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="value">Integer array</param>
     /// <exception cref="ArgumentNullException">Parameter is null</exception>
     /// <exception cref="ArgumentOutOfRangeException">Parameter contains less then 2 integer values</exception>
-    public virtual void Set(uint[] value)
+    public void Set(uint[]? value)
     {
-        if (value == null)
+        switch (value)
         {
-            _data = null;
-        }
-        else
-        {
-            _data = new uint[value.Length];
-            Array.Copy(value, 0, _data, 0, value.Length);
+            case null:
+                _data = [];
+                break;
+            default:
+                _data = new uint[value.Length];
+                Array.Copy(value, 0, _data, 0, value.Length);
+                break;
         }
     }
 
@@ -497,10 +499,9 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </summary>
     /// <param name="value">Oid class</param>
     /// <exception cref="ArgumentNullException">Thrown when parameter is null</exception>
-    public void Set(Oid value)
+    public void Set(Oid? value)
     {
-        if (value == null)
-            throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
         Set(value.GetData());
     }
 
@@ -511,12 +512,9 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="value">
     ///     The dotted decimal object identifier.
     /// </param>
-    public void Set(string value)
+    public void Set(string? value)
     {
-        if (value == null || value.Length == 0)
-            _data = null;
-        else
-            _data = Parse(value);
+        _data = string.IsNullOrEmpty(value) ? [] : Parse(value);
     }
 
     #endregion Set members
@@ -527,15 +525,13 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <summary>Compare Oid value with array of UInt32 integers</summary>
     /// <param name="ids">Array of integers</param>
     /// <returns>-1 if class is less then, 0 if the same or 1 if greater then the integer array value</returns>
-    public virtual int Compare(uint[] ids)
+    public int Compare(uint[]? ids)
     {
-        if (ids == null && _data == null)
-            return 0;
-        if (ids != null && _data == null)
-            return 1;
-        if (ids == null && _data != null)
-            return -1;
-        return Compare(ids, _data.Length > ids.Length ? ids.Length : _data.Length);
+        return ids switch
+        {
+            null => -1,
+            _ => Compare(ids, _data.Length > ids.Length ? ids.Length : _data.Length)
+        };
     }
 
     /// <summary>
@@ -545,16 +541,28 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="ids">Unsigned integer array to Compare with</param>
     /// <param name="dist">Number of oid instance values to compare</param>
     /// <returns>0 if equal, -1 if less then and 1 if greater then.</returns>
-    public virtual int Compare(uint[] ids, int dist)
+    public int Compare(uint[] ids, int dist)
     {
-        if (_data == null)
+        switch (_data)
         {
-            if (ids == null)
-                return 0;
-            return -1;
+            case null:
+            {
+                switch (ids)
+                {
+                    case null:
+                        return 0;
+                    default:
+                        return -1;
+                }
+            }
         }
 
-        if (ids == null) return 1;
+        switch (ids)
+        {
+            case null:
+                return 1;
+        }
+
         if (ids.Length < dist || _data.Length < dist)
         {
             if (_data.Length < ids.Length || _data.Length == ids.Length) return -1;
@@ -595,23 +603,39 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public int CompareExact(uint[] ids)
     {
         var cmpVal = Compare(ids);
-        if (cmpVal == 0)
+        switch (cmpVal)
         {
-            if (ids == null)
+            case 0:
             {
-                if (_data == null)
-                    return 0;
-                return 1;
-            }
+                switch (ids)
+                {
+                    case null:
+                    {
+                        switch (_data)
+                        {
+                            case null:
+                                return 0;
+                            default:
+                                return 1;
+                        }
+                    }
+                }
 
-            if (_data == null)
-                return -1;
-            if (_data.Length != ids.Length)
-            {
-                if (_data.Length > ids.Length)
-                    return 1;
-                if (_data.Length < ids.Length)
-                    return -1;
+                switch (_data)
+                {
+                    case null:
+                        return -1;
+                }
+
+                if (_data.Length != ids.Length)
+                {
+                    if (_data.Length > ids.Length)
+                        return 1;
+                    if (_data.Length < ids.Length)
+                        return -1;
+                }
+
+                break;
             }
         }
 
@@ -634,32 +658,30 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <summary>Compare objectId values</summary>
     /// <param name="cmp">ObjectId to Compare with</param>
     /// <returns>0 if equal, -1 if less then and 1 if greater then.</returns>
-    public virtual int Compare(Oid cmp)
+    public int Compare(Oid? cmp)
     {
-        if ((object)cmp == null)
-            return 1;
-        if (cmp.GetData() == null && _data == null)
-            return 0;
-        if (cmp.GetData() != null && _data == null)
-            return 1;
-        if (cmp.GetData() == null && _data != null)
-            return -1;
-        return Compare(cmp.GetData());
+        switch (cmp)
+        {
+            case null:
+                return 1;
+        }
+
+        var uints = cmp.GetData();
+        return Compare(uints);
     }
 
     /// <summary> Test for equality. Returns true if 'o' is an instance of an Oid and is equal to self.</summary>
     /// <param name="obj">The object to be tested for equality.</param>
     /// <returns> True if the object is an Oid and is equal to self. False otherwise.</returns>
-    public override bool Equals(object obj)
-    {
-        if (obj == null) return false;
-        if (obj is Oid) return CompareExact(((Oid)obj)._data) == 0;
-
-        if (obj is string) return CompareExact(Parse((string)obj)) == 0;
-
-        if (obj is uint[]) return CompareExact((uint[])obj) == 0;
-        return false;
-    }
+    public override bool Equals(object? obj) =>
+        obj switch
+        {
+            null => false,
+            Oid oid => CompareExact(oid._data) == 0,
+            string s => CompareExact(Parse(s)) == 0,
+            uint[] uints => CompareExact(uints) == 0,
+            _ => false
+        };
 
     /// <summary>
     ///     Compares the passed object identifier against self
@@ -674,9 +696,9 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>
     ///     True if leaf is in the tree.
     /// </returns>
-    public virtual bool IsRootOf(Oid leaf)
+    public bool IsRootOf(Oid leaf)
     {
-        return Compare(leaf._data, _data == null ? 0 : _data.Length) == 0;
+        return Compare(leaf._data, _data.Length) == 0;
     }
 
     /// <summary>
@@ -685,14 +707,13 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>1 if class is greater then argument, -1 if class value is less then argument, 0 if the same</returns>
-    public int CompareTo(object obj)
-    {
-        if (obj == null)
-            return 1;
-        if (obj is Oid)
-            return CompareExact((Oid)obj);
-        return 1;
-    }
+    public int CompareTo(object? obj) =>
+        obj switch
+        {
+            null => 1,
+            Oid oid => CompareExact(oid),
+            _ => 1
+        };
 
     #endregion Comparison methods
 
@@ -704,15 +725,12 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid">Oid class</param>
     /// <param name="ids">Unsigned integer array to add to the Oid</param>
     /// <returns>New Oid class with the two values added together</returns>
-    public static Oid operator +(Oid oid, uint[] ids)
+    public static Oid? operator +(Oid? oid, uint[]? ids)
     {
-        if ((object)oid == null && ids == null)
-            return null;
-        if (ids == null)
-            return (Oid)oid.Clone();
-        var newoid = new Oid(oid);
-        newoid.Add(ids);
-        return newoid;
+        if (oid is null && ids == null) return null;
+
+        if (ids == null) return oid?.Clone() as Oid;
+        return new Oid(oid!) { ids };
     }
 
     /// <summary>
@@ -721,15 +739,11 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid">Oid class</param>
     /// <param name="strOids">string value representing an Oid</param>
     /// <returns>New Oid class with the new oid value.</returns>
-    public static Oid operator +(Oid oid, string strOids)
+    public static Oid? operator +(Oid? oid, string? strOids)
     {
-        if ((object)oid == null && (strOids == null || strOids.Length == 0))
-            return null;
-        if (strOids == null || strOids.Length == 0)
-            return (Oid)oid.Clone();
-        var newoid = new Oid(oid);
-        newoid.Add(strOids);
-        return newoid;
+        if (string.IsNullOrEmpty(strOids)) return oid?.Clone() as Oid;
+        if (oid is null) return null;
+        return new Oid(oid) { strOids };
     }
 
     /// <summary>
@@ -738,17 +752,14 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid1">First Oid</param>
     /// <param name="oid2">Second Oid</param>
     /// <returns>New class with two Oid values added.</returns>
-    public static Oid operator +(Oid oid1, Oid oid2)
+    public static Oid? operator +(Oid? oid1, Oid? oid2)
     {
-        if ((object)oid1 == null && (object)oid2 == null)
-            return null;
-        if ((object)oid2 == null || oid2.IsNull)
-            return (Oid)oid1.Clone();
-        if ((object)oid1 == null)
-            return (Oid)oid2.Clone();
-        var newoid = new Oid(oid1);
-        newoid.Add(oid2);
-        return newoid;
+        if (oid1 is null && oid2 is null) return null;
+
+        if (oid2 is null || oid2.IsNull)
+            return oid1?.Clone() as Oid;
+        if (oid1 is null) return oid2.Clone() as Oid;
+        return new Oid(oid1) { oid2 };
     }
 
     /// <summary>
@@ -757,13 +768,9 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid1">Oid class to add id to</param>
     /// <param name="id">Id value to add to the oid</param>
     /// <returns>New Oid class with id added to the Oid class.</returns>
-    public static Oid operator +(Oid oid1, uint id)
+    public static Oid? operator +(Oid? oid1, uint id)
     {
-        if ((object)oid1 == null)
-            return null;
-        var newoid = new Oid(oid1);
-        newoid.Add(id);
-        return newoid;
+        return oid1 is null ? null : new Oid(oid1) { id };
     }
 
     /// <summary>
@@ -782,12 +789,11 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid1">First Oid class</param>
     /// <param name="oid2">Second Oid class</param>
     /// <returns>true if class values are same, otherwise false</returns>
-    public static bool operator ==(Oid oid1, Oid oid2)
+    public static bool operator ==(Oid? oid1, Oid? oid2)
     {
-        // I'm casting the oid values to Object to avoid recursive calls to this operator override.
-        if ((object)oid1 == null && (object)oid2 == null) return true;
+        if (oid1 is null && oid2 is null) return true;
 
-        if ((object)oid1 == null || (object)oid2 == null) return false;
+        if (oid1 is null || oid2 is null) return false;
         return oid1.Equals(oid2);
     }
 
@@ -799,10 +805,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>true if class values are not the same, otherwise false</returns>
     public static bool operator !=(Oid oid1, Oid oid2)
     {
-        if ((object)oid1 == null && (object)oid2 == null) return false;
-
-        if ((object)oid1 == null || (object)oid2 == null) return true;
-        return !oid1.Equals(oid2);
+        return !(oid1 == oid2);
     }
 
     /// <summary>
@@ -812,16 +815,13 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid1">First oid</param>
     /// <param name="oid2">Second oid</param>
     /// <returns>True if first oid is greater then second, otherwise false</returns>
-    public static bool operator >(Oid oid1, Oid oid2)
+    public static bool operator >(Oid? oid1, Oid? oid2)
     {
-        if ((object)oid1 == null && (object)oid2 == null) return false;
+        if (oid1 is null && oid2 is null) return false;
+        if (oid1 is null) return false;
+        if (oid2 is null) return true;
 
-        if ((object)oid1 == null) return false;
-
-        if ((object)oid2 == null) return true;
-        if (oid1.Compare(oid2) > 0)
-            return true;
-        return false;
+        return oid1.Compare(oid2) > 0;
     }
 
     /// <summary>
@@ -831,16 +831,13 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="oid1">First oid</param>
     /// <param name="oid2">Second oid</param>
     /// <returns>True if first oid is less then second, otherwise false</returns>
-    public static bool operator <(Oid oid1, Oid oid2)
+    public static bool operator <(Oid? oid1, Oid? oid2)
     {
-        if ((object)oid1 == null && (object)oid2 == null) return false;
+        if (oid1 is null && oid2 is null) return false;
+        if (oid1 is null) return true;
+        if (oid2 is null) return false;
 
-        if ((object)oid1 == null) return true;
-
-        if ((object)oid2 == null) return false;
-        if (oid1.Compare(oid2) < 0)
-            return true;
-        return false;
+        return oid1.Compare(oid2) < 0;
     }
 
     #endregion Operators
@@ -857,17 +854,17 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     {
         var tmpBuffer = new MutableByte();
         var values = _data;
-        if (values == null || values.Length < 2)
+        if (values.Length < 2)
         {
             values = new uint[2];
             values[0] = values[1] = 0;
         }
 
         // verify that it is a valid object id!
-        if (values[0] < 0 || values[0] > 2)
+        if (values[0] > 2)
             throw new SnmpException("Invalid Object Identifier");
 
-        if (values[1] < 0 || values[1] > 40)
+        if (values[1] > 40)
             throw new SnmpException("Invalid Object Identifier");
 
 
@@ -888,32 +885,41 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </summary>
     /// <param name="number">Instance value</param>
     /// <returns>Encoded instance value</returns>
-    protected byte[] encodeInstance(uint number)
+    private byte[] encodeInstance(uint number)
     {
         var result = new MutableByte();
-        if (number <= 127)
+        switch (number)
         {
-            result.Set((byte)number);
-        }
-        else
-        {
-            var val = number;
-            var tmp = new MutableByte();
-            while (val != 0)
+            case <= 127:
+                result.Set((byte)number);
+                break;
+            default:
             {
-                var b = BitConverter.GetBytes(val);
-                var bval = b[0];
-                if ((bval & 0x80) != 0) bval = (byte)(bval & ~HIGH_BIT); // clear high bit
-                val >>= 7; // shift original value by 7 bits
-                tmp.Append(bval);
-            }
+                var val = number;
+                var tmp = new MutableByte();
+                while (val != 0)
+                {
+                    var b = BitConverter.GetBytes(val);
+                    var bval = b[0];
+                    if ((bval & 0x80) != 0) bval = (byte)(bval & ~HIGH_BIT); // clear high bit
+                    val >>= 7; // shift original value by 7 bits
+                    tmp.Append(bval);
+                }
 
-            // now we need to reverse the bytes for the final encoding
-            for (var i = tmp.Length - 1; i >= 0; i--)
-                if (i > 0)
-                    result.Append((byte)(tmp[i] | HIGH_BIT));
-                else
-                    result.Append(tmp[i]);
+                // now we need to reverse the bytes for the final encoding
+                for (var i = tmp.Length - 1; i >= 0; i--)
+                    switch (i)
+                    {
+                        case > 0:
+                            result.Append((byte)(tmp[i] | HIGH_BIT));
+                            break;
+                        default:
+                            result.Append(tmp[i]);
+                            break;
+                    }
+
+                break;
+            }
         }
 
         return result;
@@ -925,8 +931,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
@@ -935,10 +940,11 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
         if (buffer.Length - offset < headerLength)
             throw new OverflowException("Buffer underflow error");
 
-        if (headerLength == 0)
+        switch (headerLength)
         {
-            _data = null;
-            return offset;
+            case 0:
+                _data = [];
+                return offset;
         }
 
         var list = new List<uint>();
@@ -959,32 +965,41 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
 
             // this is where we decode individual values
             {
-                if ((buffer[offset] & HIGH_BIT) == 0)
+                switch (buffer[offset] & HIGH_BIT)
                 {
-                    // short encoding
-                    result = buffer[offset];
-                    offset += 1;
-                    --headerLength;
-                }
-                else
-                {
-                    // long encoding
-                    var tmp = new MutableByte();
-                    var completed = false;
-                    do
+                    case 0:
+                        // short encoding
+                        result = buffer[offset];
+                        offset += 1;
+                        --headerLength;
+                        break;
+                    default:
                     {
-                        tmp.Append((byte)(buffer[offset] & ~HIGH_BIT));
-                        if ((buffer[offset] & HIGH_BIT) == 0)
-                            completed = true;
-                        offset += 1; // advance offset
-                        --headerLength; // take out the processed byte from the header length
-                    } while (!completed);
+                        // long encoding
+                        var tmp = new MutableByte();
+                        var completed = false;
+                        do
+                        {
+                            tmp.Append((byte)(buffer[offset] & ~HIGH_BIT));
+                            switch (buffer[offset] & HIGH_BIT)
+                            {
+                                case 0:
+                                    completed = true;
+                                    break;
+                            }
 
-                    // convert byte array to integer
-                    for (var i = 0; i < tmp.Length; i++)
-                    {
-                        result <<= 7;
-                        result |= tmp[i];
+                            offset += 1; // advance offset
+                            --headerLength; // take out the processed byte from the header length
+                        } while (!completed);
+
+                        // convert byte array to integer
+                        for (var i = 0; i < tmp.Length; i++)
+                        {
+                            result <<= 7;
+                            result |= tmp[i];
+                        }
+
+                        break;
                     }
                 }
             }
@@ -993,8 +1008,12 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
 
         _data = list.ToArray();
 
-        if (_data.Length == 2 && _data[0] == 0 && _data[1] == 0)
-            _data = null;
+        switch (_data.Length)
+        {
+            case 2 when _data[0] == 0 && _data[1] == 0:
+                _data = [];
+                break;
+        }
 
         return offset;
     }

@@ -124,17 +124,14 @@ public class SnmpV1Packet : SnmpPacket
     {
         var buf = new MutableByte(buffer, length);
 
-        int headerLength;
-        var offset = 0;
-
-        offset = base.decode(buffer, buffer.Length);
+        var offset = base.decode(buffer, buffer.Length);
 
         if (_protocolVersion.Value != (int)SnmpVersion.Ver1)
             throw new SnmpInvalidVersionException("Invalid protocol version");
 
         offset = _snmpCommunity.decode(buf, offset);
         var tmpOffset = offset;
-        var asnType = AsnType.ParseHeader(buf, ref tmpOffset, out headerLength);
+        var asnType = AsnType.ParseHeader(buf, ref tmpOffset, out var headerLength);
 
         // Check packet length
         if (headerLength + offset > buf.Length)
@@ -146,17 +143,8 @@ public class SnmpV1Packet : SnmpPacket
             throw new SnmpInvalidPduTypeException("Invalid SNMP operation received: " +
                                                   $"0x{asnType:x2}");
         // Now process the Protocol Data Unit
-        offset = Pdu.decode(buf, offset);
+        Pdu.decode(buf, offset);
         return length;
-    }
-
-    /// <summary>
-    ///     Replacement for the base class encode method.
-    /// </summary>
-    /// <param name="buffer">Buffer</param>
-    private new void encode(MutableByte buffer)
-    {
-        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -173,10 +161,14 @@ public class SnmpV1Packet : SnmpPacket
             Pdu.Type != PduType.Set && Pdu.Type != PduType.Response)
             throw new SnmpInvalidVersionException("Invalid SNMP PDU type while attempting to encode PDU: " +
                                                   $"0x{Pdu.Type:x2}");
-        if (Pdu.RequestId == 0)
+        switch (Pdu.RequestId)
         {
-            var rand = new Random((int)DateTime.Now.Ticks);
-            Pdu.RequestId = rand.Next();
+            case 0:
+            {
+                var rand = new Random((int)DateTime.Now.Ticks);
+                Pdu.RequestId = rand.Next();
+                break;
+            }
         }
 
         var tmpBuffer = new MutableByte();

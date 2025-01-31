@@ -74,7 +74,7 @@ public class PrivacyDES : IPrivacyProtocol
         out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         if (key == null || key.Length < MinimumKeyLength)
-            throw new ArgumentOutOfRangeException("encryptionKey", "Encryption key length has to 32 bytes or more.");
+            throw new ArgumentOutOfRangeException(nameof(key), "Encryption key length has to 32 bytes or more.");
 
         privacyParameters = GetSalt(engineBoots);
         var iv = GetIV(key, privacyParameters);
@@ -142,15 +142,16 @@ public class PrivacyDES : IPrivacyProtocol
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
-            throw new ArgumentOutOfRangeException(nameof(encryptedData), "Encrypted data buffer has to be divisible by 8.");
+            throw new ArgumentOutOfRangeException(nameof(encryptedData),
+                "Encrypted data buffer has to be divisible by 8.");
         if (encryptedData == null || encryptedData.Length == 0)
-            throw new ArgumentNullException("cryptedData");
+            throw new ArgumentNullException(nameof(encryptedData));
         if (privacyParameters == null || privacyParameters.Length != PrivacyParametersLength)
             throw new ArgumentOutOfRangeException(nameof(privacyParameters),
                 "Privacy parameters argument has to be 8 bytes long");
 
         if (key == null || key.Length < MinimumKeyLength)
-            throw new ArgumentOutOfRangeException("decryptionKey", "Decryption key has to be at least 16 bytes long.");
+            throw new ArgumentOutOfRangeException(nameof(key), "Decryption key has to be at least 16 bytes long.");
 
         var iv = new byte[8];
         for (var i = 0; i < 8; ++i) iv[i] = (byte)(key[8 + i] ^ privacyParameters[i]);
@@ -197,8 +198,13 @@ public class PrivacyDES : IPrivacyProtocol
     /// <returns>Length of encrypted byte array</returns>
     public int GetEncryptedLength(int scopedPduLength)
     {
-        if (scopedPduLength % 8 == 0) return scopedPduLength;
-        return 8 * (scopedPduLength / 8 + 1);
+        switch (scopedPduLength % 8)
+        {
+            case 0:
+                return scopedPduLength;
+            default:
+                return 8 * (scopedPduLength / 8 + 1);
+        }
     }
 
     /// <summary>
@@ -253,10 +259,16 @@ public class PrivacyDES : IPrivacyProtocol
     /// <returns>32-bit integer salt value in network byte order (big endian)</returns>
     protected int NextSalt()
     {
-        if (_salt == int.MaxValue)
-            _salt = 1;
-        else
-            _salt += 1;
+        switch (_salt)
+        {
+            case int.MaxValue:
+                _salt = 1;
+                break;
+            default:
+                _salt += 1;
+                break;
+        }
+
         return _salt;
     }
 
@@ -310,8 +322,12 @@ public class PrivacyDES : IPrivacyProtocol
     /// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
     private byte[] GetIV(byte[] privacyKey, byte[] salt)
     {
-        if (privacyKey.Length < 16)
-            throw new SnmpPrivacyException("Invalid privacy key length");
+        switch (privacyKey.Length)
+        {
+            case < 16:
+                throw new SnmpPrivacyException("Invalid privacy key length");
+        }
+
         var iv = new byte[8];
         for (var i = 0; i < iv.Length; i++) iv[i] = (byte)(salt[i] ^ privacyKey[8 + i]);
         return iv;

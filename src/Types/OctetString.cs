@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 
@@ -24,10 +25,11 @@ namespace SnmpSharpNet;
 
 /// <summary>ASN.1 OctetString type implementation</summary>
 [Serializable]
+[SuppressMessage("ReSharper", "VirtualMemberCallInConstructor")]
 public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable<OctetString>, IEnumerable<byte>
 {
     /// <summary>Data buffer</summary>
-    protected byte[] _data;
+    protected byte[] _data = [];
 
     /// <summary>Constructor</summary>
     public OctetString()
@@ -64,10 +66,15 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </param>
     public OctetString(byte[] data, bool useReference) : this()
     {
-        if (useReference)
-            SetRef(data);
-        else
-            Set(data);
+        switch (useReference)
+        {
+            case true:
+                SetRef(data);
+                break;
+            default:
+                Set(data);
+                break;
+        }
     }
 
     /// <summary>Constructor creating class from values in the supplied class.</summary>
@@ -87,16 +94,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     }
 
     /// <summary>Get length of the internal byte array. 0 if byte array is undefined or zero length.</summary>
-    public virtual int Length
-    {
-        get
-        {
-            var len = 0;
-            if (_data != null)
-                len = _data.Length;
-            return len;
-        }
-    }
+    public int Length => _data.Length;
 
     /// <summary>
     ///     Indexed access to the OctetString class data members.
@@ -136,19 +134,20 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     {
         get
         {
-            if (_data == null || _data.Length < 0)
-                return false; // empty string can't be hex :)
             var isHex = false;
             for (var i = 0; i < _data.Length; i++)
             {
                 var b = _data[i];
-                if (b < 32)
+                switch (b)
                 {
-                    if (b != 10 && b != 13 && !(b == 0x00 && _data.Length - 1 == i)) isHex = true;
-                }
-                else if (b > 127)
-                {
-                    isHex = true;
+                    case < 32:
+                    {
+                        if (b != 10 && b != 13 && !(b == 0x00 && _data.Length - 1 == i)) isHex = true;
+                        break;
+                    }
+                    case > 127:
+                        isHex = true;
+                        break;
                 }
             }
 
@@ -168,14 +167,14 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     /// <param name="other">Byte array to compare against</param>
     /// <returns>-1 if class value is greater (longer or higher value), 1 if byte array is greater or 0 if the same</returns>
-    public int CompareTo(byte[] other)
+    public int CompareTo(byte[]? other)
     {
-        if (_data == null && other != null && other.Length > 0)
-            return 1;
-        if ((other == null || other.Length == 0) && _data.Length > 0)
-            return -1;
-        if (_data == null && other == null)
-            return 0;
+        switch (other)
+        {
+            case null:
+                return -1;
+        }
+
         if (_data.Length > other.Length)
             return -1;
         if (_data.Length < other.Length)
@@ -196,9 +195,9 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     /// <param name="other">OctetString class to compare against.</param>
     /// <returns>-1 if class value is greater (longer or higher value), 1 if byte array is greater or 0 if the same</returns>
-    public int CompareTo(OctetString other)
+    public int CompareTo(OctetString? other)
     {
-        return CompareTo(other.GetData());
+        return CompareTo(other?.GetData());
     }
 
     /// <summary>
@@ -207,9 +206,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>An IEnumerator  object that can be used to iterate through the collection.</returns>
     public IEnumerator<byte> GetEnumerator()
     {
-        if (_data != null)
-            return ((IEnumerable<byte>)_data).GetEnumerator();
-        return null;
+        return ((IEnumerable<byte>)_data).GetEnumerator();
     }
 
     /// <summary>
@@ -218,9 +215,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>An IEnumerator  object that can be used to iterate through the collection.</returns>
     IEnumerator IEnumerable.GetEnumerator()
     {
-        if (_data != null)
-            return _data.GetEnumerator();
-        return null;
+        return _data.GetEnumerator();
     }
 
     /// <summary>
@@ -238,7 +233,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     public void Clear()
     {
-        _data = null;
+        _data = [];
     }
 
     /// <summary>
@@ -247,7 +242,6 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>Byte array representing the OctetString class data</returns>
     public byte[] ToArray()
     {
-        if (_data == null) return null;
         var tmp = new byte[_data.Length];
         Buffer.BlockCopy(_data, 0, tmp, 0, _data.Length);
         return tmp;
@@ -260,11 +254,18 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="value">String containing new class data</param>
     public virtual void Set(string value)
     {
-        if (value == null) _data = null;
-        if (value.Length == 0)
-            _data = null;
-        else
-            _data = Encoding.UTF8.GetBytes(value);
+        switch (value)
+        {
+            case null:
+                _data = [];
+                return;
+        }
+
+        _data = value.Length switch
+        {
+            0 => [],
+            _ => Encoding.UTF8.GetBytes(value)
+        };
     }
 
     /// <summary>
@@ -276,7 +277,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     {
         if (data is not { Length: > 0 })
         {
-            _data = null;
+            _data = [];
         }
         else
         {
@@ -323,16 +324,24 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="value">UTF8 encoded string value</param>
     public void Append(string value)
     {
-        if (_data == null)
+        switch (_data)
         {
-            Set(value);
-        }
-        else
-        {
-            if (value.Length > 0)
+            case null:
+                Set(value);
+                break;
+            default:
             {
-                var buffer = Encoding.UTF8.GetBytes(value);
-                if (buffer != null && buffer.Length > 0) Append(buffer);
+                switch (value.Length)
+                {
+                    case > 0:
+                    {
+                        var buffer = Encoding.UTF8.GetBytes(value);
+                        if (buffer.Length > 0) Append(buffer);
+                        break;
+                    }
+                }
+
+                break;
             }
         }
     }
@@ -346,16 +355,19 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     {
         if (value == null || value.Length == 0)
             throw new ArgumentNullException(nameof(value));
-        if (_data == null)
+        switch (_data)
         {
-            Set(value);
-        }
-        else
-        {
-            var tempBuffer = new byte[_data.Length + value.Length];
-            Buffer.BlockCopy(_data, 0, tempBuffer, 0, _data.Length);
-            Buffer.BlockCopy(value, 0, tempBuffer, _data.Length, value.Length);
-            _data = tempBuffer;
+            case null:
+                Set(value);
+                break;
+            default:
+            {
+                var tempBuffer = new byte[_data.Length + value.Length];
+                Buffer.BlockCopy(_data, 0, tempBuffer, 0, _data.Length);
+                Buffer.BlockCopy(value, 0, tempBuffer, _data.Length, value.Length);
+                _data = tempBuffer;
+                break;
+            }
         }
     }
 
@@ -366,10 +378,14 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </returns>
     public string ToMACAddressString()
     {
-        if (Length == 6)
-            return string.Format(CultureInfo.CurrentCulture, "{0:x2}{1:x2}.{2:x2}{3:x2}.{4:x2}{5:x2}",
-                _data[0], _data[1], _data[2], _data[3], _data[4], _data[5]);
-        return "";
+        switch (Length)
+        {
+            case 6:
+                return string.Format(CultureInfo.CurrentCulture, "{0:x2}{1:x2}.{2:x2}{3:x2}.{4:x2}{5:x2}",
+                    _data[0], _data[1], _data[2], _data[3], _data[4], _data[5]);
+            default:
+                return "";
+        }
     }
 
     /// <summary>
@@ -382,11 +398,12 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         if (_data is not { Length: > 0 }) return "";
         var asHex = IsHex;
 
-        string rs = null;
-        if (asHex)
-            rs = ToHexString();
-        else
-            rs = new string(Encoding.UTF8.GetChars(_data));
+        var rs = asHex switch
+        {
+            true => ToHexString(),
+            _ => new string(Encoding.UTF8.GetChars(_data))
+        };
+
         return rs;
     }
 
@@ -400,8 +417,13 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         for (var i = 0; i < _data.Length; ++i)
         {
             var x = _data[i] & 0xff;
-            if (x < 16)
-                b.Append('0');
+            switch (x)
+            {
+                case < 16:
+                    b.Append('0');
+                    break;
+            }
+
             b.Append(Convert.ToString(x, 16).ToUpper());
 
             if (i < _data.Length - 1)
@@ -417,30 +439,22 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     /// <param name="obj">Object of type <see cref="OctetString" /> or <see cref="System.String" /> to compare against</param>
     /// <returns>true if object content is the same, false if different or if incompatible object type</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        byte[] d = null;
-        if (obj is OctetString)
+        byte[] d;
+        switch (obj)
         {
-            var o = obj as OctetString;
-            d = o.GetData();
-        }
-        else if (obj is string)
-        {
-            d = Encoding.UTF8.GetBytes((string)obj);
-        }
-        else
-        {
-            return false; // Incompatible object type
+            case OctetString s:
+                d = s.GetData();
+                break;
+            case string s1:
+                d = Encoding.UTF8.GetBytes(s1);
+                break;
+            default:
+                return false; // Incompatible object type
         }
 
         // check for null value in comparison
-        if (d == null || _data == null)
-        {
-            if (d == null && _data == null)
-                return true; // both values are null
-            return false; // one value is not null
-        }
 
         if (d.Length != _data.Length) return false; // Objects have different length
         for (var cnt = 0; cnt < d.Length; cnt++)
@@ -456,7 +470,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>Nothing of interest</returns>
     public override int GetHashCode()
     {
-        return base.GetHashCode();
+        return GetData().GetHashCode();
     }
 
     /// <summary>
@@ -465,11 +479,13 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="str1">Source (this) string</param>
     /// <param name="str2">String to compare with</param>
     /// <returns>True if equal, otherwise false</returns>
-    public static bool operator ==(OctetString str1, OctetString str2)
+    public static bool operator ==(OctetString? str1, OctetString? str2)
     {
-        if ((object)str1 == null && (object)str2 == null)
+        if (ReferenceEquals(str1, str2))
             return true;
-        if ((object)str1 == null || (object)str2 == null)
+        if (str1 is null && str2 is null)
+            return true;
+        if (str1 is null || str2 is null)
             return false;
         return str1.Equals(str2);
     }
@@ -490,11 +506,9 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     /// <param name="oStr">OctetString to cast as byte array</param>
     /// <returns>Byte array value of the supplied OctetString</returns>
-    public static implicit operator byte[](OctetString oStr)
+    public static implicit operator byte[](OctetString? oStr)
     {
-        if (oStr == null)
-            return null;
-        return oStr.ToArray();
+        return oStr == null ? [] : oStr.ToArray();
     }
 
     /// <summary>
@@ -502,7 +516,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// </summary>
     public void Reset()
     {
-        _data = null;
+        _data = [];
     }
 
     #region Encode and decode methods
@@ -511,7 +525,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="buffer"><see cref="MutableByte" /> encoding destination.</param>
     public override void encode(MutableByte buffer)
     {
-        if (_data == null || _data.Length == 0)
+        if (_data.Length == 0)
         {
             BuildHeader(buffer, Type, 0);
         }
@@ -531,8 +545,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
@@ -541,19 +554,20 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         if (buffer.Length - offset < headerLength)
             throw new OverflowException("Data buffer is too small");
 
-        if (headerLength == 0)
+        switch (headerLength)
         {
-            // Packet contains string length == 0
-            _data = null;
-        }
-        else
-        {
-            //
-            // copy the data
-            //
-            _data = new byte[headerLength];
-            Buffer.BlockCopy(buffer, offset, _data, 0, headerLength);
-            offset += headerLength;
+            case 0:
+                // Packet contains string length == 0
+                _data = [];
+                break;
+            default:
+                //
+                // copy the data
+                //
+                _data = new byte[headerLength];
+                Buffer.BlockCopy(buffer, offset, _data, 0, headerLength);
+                offset += headerLength;
+                break;
         }
 
         return offset;

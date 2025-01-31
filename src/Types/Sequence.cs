@@ -11,7 +11,7 @@ public class Sequence : AsnType, ICloneable
     /// <summary>
     ///     data buffer
     /// </summary>
-    protected byte[] _data;
+    protected byte[] _data = [];
 
     /// <summary>
     ///     Constructor
@@ -19,14 +19,13 @@ public class Sequence : AsnType, ICloneable
     public Sequence()
     {
         _asnType = SnmpConstants.SMI_SEQUENCE;
-        _data = null;
     }
 
     /// <summary>
     ///     Constructor.
     /// </summary>
     /// <param name="value">Sequence data</param>
-    public Sequence(byte[] value)
+    public Sequence(byte[]? value)
         : this()
     {
         if (value != null && value.Length > 0)
@@ -56,14 +55,14 @@ public class Sequence : AsnType, ICloneable
     /// <param name="value">Byte array containing BER encoded sequence data</param>
     public void Set(byte[] value)
     {
-        if (value is not { Length: > 0 })
-        {
-            _data = null;
-        }
-        else
+        if (value is { Length: > 0 })
         {
             _data = new byte[value.Length];
             Buffer.BlockCopy(value, 0, _data, 0, value.Length);
+        }
+        else
+        {
+            _data = [];
         }
     }
 
@@ -74,11 +73,15 @@ public class Sequence : AsnType, ICloneable
     public override void encode(MutableByte buffer)
     {
         var dataLen = 0;
-        if (_data != null && _data.Length > 0)
+        if (_data.Length > 0)
             dataLen = _data.Length;
         BuildHeader(buffer, Type, dataLen);
-        if (dataLen > 0)
-            buffer.Append(_data);
+        switch (dataLen)
+        {
+            case > 0:
+                buffer.Append(_data);
+                break;
+        }
     }
 
     /// <summary>
@@ -89,17 +92,18 @@ public class Sequence : AsnType, ICloneable
     /// <returns>Returns offset position after the sequence header</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        _data = null;
-        var dataLen = 0;
-        int asnType = ParseHeader(buffer, ref offset, out dataLen);
+        _data = [];
+        int asnType = ParseHeader(buffer, ref offset, out var dataLen);
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
         if (offset + dataLen > buffer.Length)
             throw new OverflowException("Sequence longer then packet.");
-        if (dataLen > 0)
+        switch (dataLen)
         {
-            _data = new byte[dataLen];
-            Buffer.BlockCopy(buffer, offset, _data, 0, dataLen);
+            case > 0:
+                _data = new byte[dataLen];
+                Buffer.BlockCopy(buffer, offset, _data, 0, dataLen);
+                break;
         }
 
         return offset;

@@ -38,8 +38,10 @@ public class V2Error : AsnType, ICloneable
     ///     does nothing with the argument.
     /// </remarks>
     /// <param name="second">Second object</param>
+    // ReSharper disable once UnusedParameter.Local
     public V2Error(V2Error second)
     {
+        // do nothing
     }
 
     /// <summary>
@@ -69,8 +71,7 @@ public class V2Error : AsnType, ICloneable
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         /* Ignore type. This should be set in the inherited class. */
         if (asnType != Type)

@@ -22,7 +22,7 @@ namespace SnmpSharpNet;
 ///     Returned when end of MIB has been reached when performing GET-NEXT or GET-BULK operations.
 /// </summary>
 [Serializable]
-public class EndOfMibView : V2Error, ICloneable
+public class EndOfMibView : V2Error
 {
     /// <summary> The default class construtor.</summary>
     public EndOfMibView()
@@ -58,8 +58,7 @@ public class EndOfMibView : V2Error, ICloneable
     /// <returns>Offset after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != Type) throw new SnmpException("Invalid ASN.1 type");
 
         if (headerLength != 0)

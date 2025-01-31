@@ -73,20 +73,20 @@ public class CTarget : ITarget
     /// <summary>
     ///     Constructor
     /// </summary>
-    /// <param name="addr">Target address</param>
-    public CTarget(IPAddress addr)
+    /// <param name="address">Target address</param>
+    public CTarget(IPAddress address)
         : this()
     {
-        _address.Set(addr);
+        _address.Set(address);
     }
 
     /// <summary>
     ///     Constructor
     /// </summary>
-    /// <param name="addr">Target address</param>
+    /// <param name="address">Target address</param>
     /// <param name="community">SNMP community name to use with the target</param>
-    public CTarget(IPAddress addr, string community)
-        : this(addr)
+    public CTarget(IPAddress address, string community)
+        : this(address)
     {
         _community = community;
     }
@@ -94,11 +94,11 @@ public class CTarget : ITarget
     /// <summary>
     ///     Constructor
     /// </summary>
-    /// <param name="addr">Target address</param>
+    /// <param name="address">Target address</param>
     /// <param name="port">Taret UDP port number</param>
     /// <param name="community">SNMP community name to use with the target</param>
-    public CTarget(IPAddress addr, int port, string community)
-        : this(addr, community)
+    public CTarget(IPAddress address, int port, string community)
+        : this(address, community)
     {
         _port = port;
     }
@@ -116,21 +116,24 @@ public class CTarget : ITarget
     {
         if (packet.Version != _version)
             return false;
-        if (_version == SnmpVersion.Ver1)
+        switch (_version)
         {
-            var pkt = (SnmpV1Packet)packet;
-            pkt.Community.Set(_community);
-            return true;
+            case SnmpVersion.Ver1:
+            {
+                var pkt = (SnmpV1Packet)packet;
+                pkt.Community.Set(_community);
+                return true;
+            }
+            case SnmpVersion.Ver2:
+            {
+                var pkt = (SnmpV2Packet)packet;
+                pkt.Community.Set(_community);
+                return true;
+            }
+            case SnmpVersion.Ver3:
+            default:
+                return false;
         }
-
-        if (_version == SnmpVersion.Ver2)
-        {
-            var pkt = (SnmpV2Packet)packet;
-            pkt.Community.Set(_community);
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -142,17 +145,25 @@ public class CTarget : ITarget
     {
         if (packet.Version != _version)
             return false;
-        if (_version == SnmpVersion.Ver1)
+        switch (_version)
         {
-            var pkt = (SnmpV1Packet)packet;
-            if (pkt.Community.Equals(_community))
-                return true;
-        }
-        else if (_version == SnmpVersion.Ver2)
-        {
-            var pkt = (SnmpV2Packet)packet;
-            if (pkt.Community.Equals(_community))
-                return true;
+            case SnmpVersion.Ver1:
+            {
+                var pkt = (SnmpV1Packet)packet;
+                if (pkt.Community.Equals(_community))
+                    return true;
+                break;
+            }
+            case SnmpVersion.Ver2:
+            {
+                var pkt = (SnmpV2Packet)packet;
+                if (pkt.Community.Equals(_community))
+                    return true;
+                break;
+            }
+            case SnmpVersion.Ver3:
+            default:
+                break;
         }
 
         return false;
@@ -182,9 +193,14 @@ public class CTarget : ITarget
         get => _timeout;
         set
         {
-            if (value < 100 || value > 10000)
-                throw new OverflowException("Valid timeout value is between 100 milliseconds and 10000 milliseconds");
-            _timeout = value;
+            switch (value)
+            {
+                case < 100 or > 10000:
+                    throw new OverflowException("Valid timeout value is between 100 milliseconds and 10000 milliseconds");
+                default:
+                    _timeout = value;
+                    break;
+            }
         }
     }
 
@@ -196,9 +212,14 @@ public class CTarget : ITarget
         get => _retry;
         set
         {
-            if (value < 0 || value > 5)
-                throw new OverflowException("Valid retry value is between 0 and 5");
-            _retry = value;
+            switch (value)
+            {
+                case < 0 or > 5:
+                    throw new OverflowException("Valid retry value is between 0 and 5");
+                default:
+                    _retry = value;
+                    break;
+            }
         }
     }
 
@@ -222,13 +243,18 @@ public class CTarget : ITarget
     /// <returns>True if valid, otherwise false.</returns>
     public bool Valid()
     {
-        if (_community == null || _community.Length == 0)
-            return false;
-        if (_address == null || !_address.Valid)
-            return false;
-        if (_port == 0)
-            return false;
-        return true;
+        switch (_community.Length)
+        {
+            case 0:
+                return false;
+        }
+        switch (_address.Valid)
+        {
+            case false:
+                return false;
+            default:
+                return _port != 0;
+        }
     }
 
     #endregion

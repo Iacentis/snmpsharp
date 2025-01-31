@@ -100,10 +100,9 @@ public class SnmpV1TrapPacket : SnmpPacket
     /// <param name="length">Buffer length</param>
     public override int decode(byte[] buffer, int length)
     {
-        var offset = 0;
         var buf = new MutableByte(buffer, length);
 
-        offset = base.decode(buffer, length);
+        var offset = base.decode(buffer, length);
 
 
         // parse community
@@ -111,8 +110,7 @@ public class SnmpV1TrapPacket : SnmpPacket
 
         // look ahead to make sure this is a TRAP packet
         var tmpOffset = offset;
-        int headerLen;
-        var tmpAsnType = AsnType.ParseHeader(buffer, ref tmpOffset, out headerLen);
+        var tmpAsnType = AsnType.ParseHeader(buffer, ref tmpOffset, out _);
         if (tmpAsnType != (byte)PduType.Trap)
             throw new SnmpException($"Invalid SNMP ASN.1 type. Received: {tmpAsnType:x2}");
         // decode protocol data unit

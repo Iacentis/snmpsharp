@@ -96,9 +96,9 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// </summary>
     /// <param name="other">UInteger32 value to compare class value with.</param>
     /// <returns>True if values are the same, otherwise false</returns>
-    public int CompareTo(UInteger32 other)
+    public int CompareTo(UInteger32? other)
     {
-        return _value.CompareTo(other.Value);
+        return _value.CompareTo(other?.Value);
     }
 
     /// <summary>
@@ -108,10 +108,11 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <exception cref="ArgumentException">Argument string is length == 0</exception>
     public void Set(string value)
     {
-        if (value.Length == 0)
-            throw new ArgumentException("value", "String has to be length greater then 0");
-
-        _value = uint.Parse(value);
+        _value = value.Length switch
+        {
+            0 => throw new ArgumentException("String has to be length greater then 0", nameof(value)),
+            _ => uint.Parse(value)
+        };
     }
 
     /// <summary>
@@ -121,11 +122,13 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <exception cref="ArgumentNullException">Parameter is null.</exception>
     public void Set(AsnType value)
     {
-        if (value == null)
-            throw new ArgumentNullException(nameof(value), "Parameter is null");
-        if (value is UInteger32)
-            _value = ((UInteger32)value).Value;
-        else if (value is Integer32) _value = (uint)((Integer32)value).Value;
+        _value = value switch
+        {
+            null => throw new ArgumentNullException(nameof(value), "Parameter is null"),
+            UInteger32 integer32 => integer32.Value,
+            Integer32 integer33 => (uint)integer33.Value,
+            _ => _value
+        };
     }
 
     /// <summary>
@@ -153,9 +156,9 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// </summary>
     /// <param name="value">UInteger32 class</param>
     /// <returns>UInt32 value stored by the UInteger32 class</returns>
-    public static implicit operator uint(UInteger32 value)
+    public static implicit operator uint(UInteger32? value)
     {
-        if (value == null)
+        if (value is null)
             return 0;
         return value.Value;
     }
@@ -166,23 +169,15 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// </summary>
     /// <param name="obj">Object to compare values with</param>
     /// <returns>True if object value is the same as this class, otherwise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj == null)
-            return false;
-        if (obj is UInteger32)
+        return obj switch
         {
-            var u32 = (UInteger32)obj;
-            return _value.Equals(u32.Value);
-        }
-
-        if (obj is uint)
-        {
-            var u32 = (uint)obj;
-            return _value.Equals(u32);
-        }
-
-        return false; // last resort
+            null => false,
+            UInteger32 integer32 => _value.Equals(integer32.Value),
+            uint u32 => _value.Equals(u32),
+            _ => false
+        };
     }
 
     /// <summary>
@@ -191,13 +186,11 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
     /// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
     /// <returns>True if class values match, otherwise false</returns>
-    public static bool operator ==(UInteger32 first, UInteger32 second)
+    public static bool operator ==(UInteger32? first, UInteger32? second)
     {
-        if ((object)first == null && (object)second == null)
-            return true;
-        if ((object)first == null)
-            return false;
-        return first.Equals(second);
+        if (first is null && second is null) return true;
+
+        return first is not null && first.Equals(second);
     }
 
     /// <summary>
@@ -206,7 +199,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <param name="first">First <see cref="UInteger32" /> class value to compare</param>
     /// <param name="second">Second <see cref="UInteger32" /> class value to compare</param>
     /// <returns>True if class values do NOT match, otherwise false</returns>
-    public static bool operator !=(UInteger32 first, UInteger32 second)
+    public static bool operator !=(UInteger32? first, UInteger32? second)
     {
         return !(first == second);
     }
@@ -218,17 +211,15 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <param name="first">First class</param>
     /// <param name="second">Second class</param>
     /// <returns>True if first class value is greater then second class value, otherwise false</returns>
-    public static bool operator >(UInteger32 first, UInteger32 second)
+    public static bool operator >(UInteger32? first, UInteger32? second)
     {
-        if ((object)first == null && (object)second == null)
-            return false;
-        if ((object)first == null)
-            return false;
-        if ((object)second == null)
-            return true;
-        if (first.Value > second.Value)
-            return true;
-        return false;
+        if (first is null && second is null) return false;
+
+        if (first is null) return false;
+
+        if (second is null) return true;
+
+        return first.Value > second.Value;
     }
 
     /// <summary>
@@ -238,17 +229,15 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <param name="first">First class</param>
     /// <param name="second">Second class</param>
     /// <returns>True if first class value is less then second class value, otherwise false</returns>
-    public static bool operator <(UInteger32 first, UInteger32 second)
+    public static bool operator <(UInteger32? first, UInteger32? second)
     {
-        if ((object)first == null && (object)second == null)
-            return false;
-        if ((object)first == null)
-            return true;
-        if ((object)second == null)
-            return false;
-        if (first.Value < second.Value)
-            return true;
-        return false;
+        if (first is null && second is null) return false;
+
+        if (first is null) return true;
+
+        if (second is null) return false;
+
+        return first.Value < second.Value;
     }
 
     /// <summary>
@@ -257,7 +246,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// <returns>Int32 hash value</returns>
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return Value.GetHashCode();
     }
 
     /// <summary>
@@ -275,14 +264,9 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static UInteger32 operator +(UInteger32 first, UInteger32 second)
+    public static UInteger32 operator +(UInteger32? first, UInteger32? second)
     {
-        if (first == null && second == null)
-            return null;
-        if (first == null) return new UInteger32(second);
-        if (second == null) return new UInteger32(first);
-
-        return new UInteger32(first.Value + second.Value);
+        return new UInteger32(first?.Value ?? 0 + second?.Value ?? 0);
     }
 
     /// <summary>
@@ -300,14 +284,9 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static UInteger32 operator -(UInteger32 first, UInteger32 second)
+    public static UInteger32 operator -(UInteger32? first, UInteger32? second)
     {
-        if (first == null && second == null)
-            return null;
-        if (first == null) return new UInteger32(second);
-        if (second == null) return new UInteger32(first);
-
-        return new UInteger32(first.Value - second.Value);
+        return new UInteger32(first?.Value ?? 0 - second?.Value ?? 0);
     }
 
     #region Encode and decode methods
@@ -322,11 +301,17 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         for (var i = 3; i >= 0; i--)
             if (b[i] != 0 || tmp.Length > 0)
                 tmp.Append(b[i]);
-        // if (tmp.Length > 1 && tmp[0] == 0xff && (tmp[1] & 0x80) != 0)
-        if (tmp.Length > 0 && (tmp[0] & 0x80) != 0)
-            tmp.Prepend(0);
-        else if (tmp.Length == 0)
-            tmp.Append(0);
+        switch (tmp.Length)
+        {
+            // if (tmp.Length > 1 && tmp[0] == 0xff && (tmp[1] & 0x80) != 0)
+            case > 0 when (tmp[0] & 0x80) != 0:
+                tmp.Prepend(0);
+                break;
+            case 0:
+                tmp.Append(0);
+                break;
+        }
+
         BuildHeader(buffer, Type, tmp.Length);
         buffer.Append(tmp);
     }
@@ -348,8 +333,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         //
         // parse the header first
         //
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
@@ -358,12 +342,15 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         if (buffer.Length - offset < headerLength)
             throw new OverflowException("Buffer underflow error");
 
-        //
-        // check to see that we can actually decode
-        // the value (must fit in integer == 32-bits)
-        //
-        if (headerLength > 5)
-            throw new OverflowException("Integer too large: cannot decode");
+        switch (headerLength)
+        {
+            //
+            // check to see that we can actually decode
+            // the value (must fit in integer == 32-bits)
+            //
+            case > 5:
+                throw new OverflowException("Integer too large: cannot decode");
+        }
 
         _value = 0;
         for (var i = 0; i < headerLength; i++)

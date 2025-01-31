@@ -25,7 +25,7 @@ namespace SnmpSharpNet;
 ///     member for V2Error returns.
 /// </remarks>
 [Serializable]
-public class NoSuchInstance : V2Error, ICloneable
+public class NoSuchInstance : V2Error
 {
     /// <summary>Constructor.</summary>
     public NoSuchInstance()
@@ -55,8 +55,7 @@ public class NoSuchInstance : V2Error, ICloneable
     /// <exception cref="SnmpDecodingException">Invalid data length in ASN.1 header. Only data length 0 is accepted.</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type");
 

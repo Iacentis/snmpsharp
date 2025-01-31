@@ -79,12 +79,9 @@ public class Counter32 : UInteger32, ICloneable
     {
         var f = first.Value;
         var s = second.Value;
-        uint res = 0;
-        if (s > f)
+        var res =
             // in case of a roll-over event
-            res = uint.MaxValue - f + s;
-        else
-            res = s - f;
+            s > f ? uint.MaxValue - f + s : s - f;
         return res;
     }
 }

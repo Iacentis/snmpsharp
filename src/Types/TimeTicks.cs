@@ -110,11 +110,11 @@ public class TimeTicks : UInteger32, ICloneable
     {
         var buf = new StringBuilder();
         long time = Value;
-        long tmp = 0;
+        long tmp;
         if ((tmp = time / (24 * 3600 * 100)) > 0)
         {
             buf.Append(tmp).Append("d ");
-            time = time % (24 * 3600 * 100);
+            time %= 24 * 3600 * 100;
         }
         else
         {
@@ -124,7 +124,7 @@ public class TimeTicks : UInteger32, ICloneable
         if ((tmp = time / (3600 * 100)) > 0)
         {
             buf.Append(tmp).Append("h ");
-            time = time % (3600 * 100);
+            time %= 3600 * 100;
         }
         else
         {
@@ -134,7 +134,7 @@ public class TimeTicks : UInteger32, ICloneable
         if ((tmp = time / 6000) > 0)
         {
             buf.Append(tmp).Append("m ");
-            time = time % 6000;
+            time %= 6000;
         }
         else
         {
@@ -144,7 +144,7 @@ public class TimeTicks : UInteger32, ICloneable
         if ((tmp = time / 100) > 0)
         {
             buf.Append(tmp).Append("s ");
-            time = time % 100;
+            time %= 100;
         }
         else
         {
@@ -162,6 +162,6 @@ public class TimeTicks : UInteger32, ICloneable
     /// <returns>Hash code is the hash code of the class value.</returns>
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return Value.GetHashCode();
     }
 }

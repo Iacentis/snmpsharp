@@ -5,7 +5,7 @@ public class Snmp : UdpTransport
     /// <summary>
     ///     Internal storage for request target information.
     /// </summary>
-    protected ITarget _target;
+    protected ITarget? _target;
 
     #region Constructor(s)
 
@@ -15,7 +15,6 @@ public class Snmp : UdpTransport
     public Snmp()
         : base(false)
     {
-        _response = null;
         _target = null;
     }
 
@@ -24,7 +23,10 @@ public class Snmp : UdpTransport
     /// <summary>
     ///     Internal event to send result of the async request to.
     /// </summary>
-#pragma warning disable CS0414
-    protected event SnmpAsyncResponse _response;
-#pragma warning restore CS0414
+    protected event SnmpAsyncResponse? _response;
+
+    protected virtual void OnResponse(AsyncRequestResult result, SnmpPacket packet)
+    {
+        _response?.Invoke(result, packet);
+    }
 }

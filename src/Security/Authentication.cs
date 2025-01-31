@@ -35,15 +35,8 @@ namespace SnmpSharpNet;
 /// authenticationImplementation.authenticateOutgoingMsg(...);
 /// </code>
 /// </remarks>
-public sealed class Authentication
+public static class Authentication
 {
-    /// <summary>
-    ///     Constructor. Private to prevent the class from being instantiated.
-    /// </summary>
-    private Authentication()
-    {
-    }
-
     /// <summary>
     ///     Get instance of authentication protocol.
     /// </summary>
@@ -55,18 +48,14 @@ public sealed class Authentication
     ///     Instance of the authentication protocol or null if unrecognized authentication protocol or value
     ///     <see cref="AuthenticationDigests.None" /> is passed.
     /// </returns>
-    public static IAuthenticationDigest GetInstance(AuthenticationDigests authProtocol)
-    {
-        if (authProtocol == AuthenticationDigests.MD5)
-            return new AuthenticationMD5();
-        if (authProtocol == AuthenticationDigests.SHA1)
-            return new AuthenticationSHA1();
-        if (authProtocol == AuthenticationDigests.SHA256)
-            return new AuthenticationSHA256();
-        if (authProtocol == AuthenticationDigests.SHA384)
-            return new AuthenticationSHA384();
-        if (authProtocol == AuthenticationDigests.SHA512)
-            return new AuthenticationSHA512();
-        return null;
-    }
+    public static IAuthenticationDigest? GetInstance(AuthenticationDigests authProtocol) =>
+        authProtocol switch
+        {
+            AuthenticationDigests.MD5 => new AuthenticationMD5(),
+            AuthenticationDigests.SHA1 => new AuthenticationSHA1(),
+            AuthenticationDigests.SHA256 => new AuthenticationSHA256(),
+            AuthenticationDigests.SHA384 => new AuthenticationSHA384(),
+            AuthenticationDigests.SHA512 => new AuthenticationSHA512(),
+            _ => null
+        };
 }

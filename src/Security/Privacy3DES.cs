@@ -81,16 +81,16 @@ public class Privacy3DES : IPrivacyProtocol
         Buffer.BlockCopy(privParamHash, 0, privacyParameters, 0, 8);
         var iv = GetIV(key, privacyParameters);
 
-        byte[] encryptedData = null;
+        byte[] encryptedData;
         try
         {
-            var tdes = TripleDES.Create();
-            tdes.Mode = CipherMode.CBC;
-            tdes.Padding = PaddingMode.None;
+            var trippleDes = TripleDES.Create();
+            trippleDes.Mode = CipherMode.CBC;
+            trippleDes.Padding = PaddingMode.None;
             // normalize key - generated key is 32 bytes long, we need 24 bytes to encrypt
             var normKey = new byte[24];
             Buffer.BlockCopy(key, 0, normKey, 0, normKey.Length);
-            var transform = tdes.CreateEncryptor(normKey, iv);
+            var transform = trippleDes.CreateEncryptor(normKey, iv);
             if (length % 8 == 0)
             {
                 encryptedData = transform.TransformFinalBlock(unencryptedData, offset, length);
@@ -134,7 +134,8 @@ public class Privacy3DES : IPrivacyProtocol
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
-            throw new ArgumentOutOfRangeException(nameof(encryptedData), "Encrypted data buffer has to be divisable by 8.");
+            throw new ArgumentOutOfRangeException(nameof(encryptedData),
+                "Encrypted data buffer has to be divisable by 8.");
         if (encryptedData == null || encryptedData.Length < 8)
             throw new ArgumentOutOfRangeException(nameof(encryptedData),
                 "Encrypted data buffer is null or smaller then 8 bytes in length.");
@@ -142,25 +143,26 @@ public class Privacy3DES : IPrivacyProtocol
             throw new ArgumentOutOfRangeException(nameof(offset),
                 "Offset and length arguments point beyond the bounds of the encryptedData array.");
         if (key == null || key.Length < 32)
-            throw new ArgumentOutOfRangeException("decryptionKey",
+            throw new ArgumentOutOfRangeException(nameof(key),
                 "Minimum acceptable length of the decryption key is 32 bytes.");
         if (privacyParameters is not { Length: 8 })
-            throw new ArgumentOutOfRangeException(nameof(privacyParameters), "Privacy parameters field is not 8 bytes long.");
+            throw new ArgumentOutOfRangeException(nameof(privacyParameters),
+                "Privacy parameters field is not 8 bytes long.");
 
         var iv = GetIV(key, privacyParameters);
 
-        byte[] decryptedData = null;
+        byte[] decryptedData;
         try
         {
-            var tdes = TripleDES.Create();
-            tdes.Mode = CipherMode.CBC;
-            tdes.Padding = PaddingMode.None;
+            var tripleDes = TripleDES.Create();
+            tripleDes.Mode = CipherMode.CBC;
+            tripleDes.Padding = PaddingMode.None;
 
             // normalize key - generated key is 32 bytes long, we need 24 bytes to encrypt
             var normKey = new byte[24];
             Buffer.BlockCopy(key, 0, normKey, 0, normKey.Length);
 
-            var transform = tdes.CreateDecryptor(normKey, iv);
+            var transform = tripleDes.CreateDecryptor(normKey, iv);
             decryptedData = transform.TransformFinalBlock(encryptedData, offset, length);
         }
         catch (Exception ex)

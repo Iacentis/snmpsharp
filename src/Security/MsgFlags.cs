@@ -126,12 +126,24 @@ public class MsgFlags : AsnType, ICloneable
     public override void encode(MutableByte buffer)
     {
         byte flag = 0x00;
-        if (_authenticationFlag)
-            flag |= FLAG_AUTH;
-        if (_privacyFlag)
-            flag |= FLAG_PRIV;
-        if (_reportableFlag)
-            flag |= FLAG_REPORTABLE;
+        switch (_authenticationFlag)
+        {
+            case true:
+                flag |= FLAG_AUTH;
+                break;
+        }
+        switch (_privacyFlag)
+        {
+            case true:
+                flag |= FLAG_PRIV;
+                break;
+        }
+        switch (_reportableFlag)
+        {
+            case true:
+                flag |= FLAG_REPORTABLE;
+                break;
+        }
         var flagObject = new OctetString(flag);
         flagObject.encode(buffer);
     }
@@ -150,18 +162,20 @@ public class MsgFlags : AsnType, ICloneable
         _reportableFlag = false;
         var flagObject = new OctetString();
         offset = flagObject.decode(buffer, offset);
-        if (flagObject.Length > 0)
+        switch (flagObject.Length)
         {
-            if ((flagObject[0] & FLAG_AUTH) != 0)
-                _authenticationFlag = true;
-            if ((flagObject[0] & FLAG_PRIV) != 0)
-                _privacyFlag = true;
-            if ((flagObject[0] & FLAG_REPORTABLE) != 0)
-                _reportableFlag = true;
-        }
-        else
-        {
-            throw new SnmpDecodingException("Invalid SNMPv3 flag field.");
+            case > 0:
+            {
+                if ((flagObject[0] & FLAG_AUTH) != 0)
+                    _authenticationFlag = true;
+                if ((flagObject[0] & FLAG_PRIV) != 0)
+                    _privacyFlag = true;
+                if ((flagObject[0] & FLAG_REPORTABLE) != 0)
+                    _reportableFlag = true;
+                break;
+            }
+            default:
+                throw new SnmpDecodingException("Invalid SNMPv3 flag field.");
         }
 
         return offset;

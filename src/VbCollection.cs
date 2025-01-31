@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SnmpSharpNet;
 
@@ -65,9 +66,13 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     {
         get
         {
-            if (index < 0 && index >= _vbs.Count)
-                throw new IndexOutOfRangeException("Requested VarBind entry is outside the collection range.");
-            return _vbs[index];
+            switch (index)
+            {
+                case < 0 when index >= _vbs.Count:
+                    throw new IndexOutOfRangeException("Requested VarBind entry is outside the collection range.");
+                default:
+                    return _vbs[index];
+            }
         }
     }
 
@@ -76,14 +81,14 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// </summary>
     /// <param name="oid">Required Oid value</param>
     /// <returns>Variable binding with the Oid matching the parameter, otherwise null</returns>
-    public Vb this[Oid oid]
+    public Vb? this[Oid oid]
     {
         get
         {
             if (!ContainsOid(oid))
                 return null;
             foreach (var v in _vbs)
-                if (v.Oid.Equals(oid))
+                if (v.Oid is not null && v.Oid.Equals(oid))
                     return v;
             return null;
         }
@@ -94,12 +99,12 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// </summary>
     /// <param name="oid">Oid value in string representation</param>
     /// <returns>Variable binding with the Oid matching the parameter, otherwise null</returns>
-    public Vb this[string oid]
+    public Vb? this[string oid]
     {
         get
         {
             foreach (var v in _vbs)
-                if (v.Oid.Equals(oid))
+                if (v.Oid is not null && v.Oid.Equals(oid))
                     return v;
             return null;
         }
@@ -138,9 +143,14 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// <exception cref="IndexOutOfRangeException">Thrown when position is outside the bounds of the collection</exception>
     public void RemoveAt(int pos)
     {
-        if (pos < 0 && pos >= _vbs.Count)
-            throw new IndexOutOfRangeException("Requested VarBind entry is outside the collection range.");
-        _vbs.RemoveAt(pos);
+        switch (pos)
+        {
+            case < 0 when pos >= _vbs.Count:
+                throw new IndexOutOfRangeException("Requested VarBind entry is outside the collection range.");
+            default:
+                _vbs.RemoveAt(pos);
+                break;
+        }
     }
 
     /// <summary>
@@ -151,9 +161,14 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// <exception cref="IndexOutOfRangeException">Thrown when position is outside the bounds of the collection</exception>
     public void Insert(int pos, Vb item)
     {
-        if (pos < 0 && pos >= _vbs.Count)
-            throw new IndexOutOfRangeException("Requested VarBind position is outside the collection range.");
-        _vbs.Insert(pos, item);
+        switch (pos)
+        {
+            case < 0 when pos >= _vbs.Count:
+                throw new IndexOutOfRangeException("Requested VarBind position is outside the collection range.");
+            default:
+                _vbs.Insert(pos, item);
+                break;
+        }
     }
 
     /// <summary>
@@ -180,9 +195,9 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     ///     Add Vb with the supplied OID and value of SnmpNull to the end of the Vb collection
     /// </summary>
     /// <param name="oid">OID to assign to the new Vb</param>
-    public void Add(Oid oid)
+    public void Add(Oid? oid)
     {
-        if (oid == null)
+        if (oid is null)
             throw new ArgumentNullException(nameof(oid), "Can't create vb entry with null Oid.");
         var v = new Vb(oid);
         Add(v);
@@ -203,11 +218,11 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     ///     Add content of the enumerable collection of Variable Bindings to the end of the Vb collection.
     /// </summary>
     /// <param name="varList">Variable Binding collection.</param>
-    public void Add(IEnumerable<Vb> varList)
+    public void Add(IEnumerable<Vb>? varList)
     {
-        if (varList != null)
-            foreach (var v in varList)
-                Add(v);
+        if (varList is null) return;
+        foreach (var v in varList)
+            Add(v);
     }
 
     /// <summary>
@@ -215,14 +230,14 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     ///     end of the Vb collection
     /// </summary>
     /// <param name="oidList">Enumerable collection of OIDs</param>
-    public void Add(IEnumerable<Oid> oidList)
+    public void Add(IEnumerable<Oid>? oidList)
     {
-        if (oidList != null)
-            foreach (var o in oidList)
-            {
-                var v = new Vb(o);
-                Add(v);
-            }
+        if (oidList is null) return;
+        foreach (var o in oidList)
+        {
+            var v = new Vb(o);
+            Add(v);
+        }
     }
 
     /// <summary>
@@ -230,15 +245,7 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// </summary>
     /// <param name="oid">Oid to search for</param>
     /// <returns>True if collection contains a variable binding with the Oid match the parameter, otherwise false.</returns>
-    public bool ContainsOid(Oid oid)
-    {
-        if (oid == null)
-            return false;
-        foreach (var v in _vbs)
-            if (v.Oid.Equals(oid))
-                return true;
-        return false;
-    }
+    public bool ContainsOid(Oid? oid) => oid is not null && _vbs.Any(v => v.Oid is not null && v.Oid.Equals(oid));
 
     /// <summary>
     ///     Get array of Oid keys stored in collection
@@ -246,9 +253,7 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// <returns>Array of clone Oid keys</returns>
     public Oid[] OidArray()
     {
-        var o = new List<Oid>();
-        foreach (var v in _vbs) o.Add((Oid)v.Oid.Clone());
-        return o.ToArray();
+        return _vbs.Select(v => v.Oid?.Clone() as Oid).OfType<Oid>().ToArray();
     }
 
     /// <summary>
@@ -283,8 +288,7 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not a VarBind collection sequence type</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLen;
-        var b = ParseHeader(buffer, ref offset, out headerLen);
+        var b = ParseHeader(buffer, ref offset, out var headerLen);
         if (b != Type)
             throw new SnmpException("Invalid ASN.1 encoding for variable binding list.");
 

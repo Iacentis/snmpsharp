@@ -105,12 +105,12 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// </summary>
     /// <param name="other">Class whose value we are comparing with</param>
     /// <returns>
-    ///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
-    ///     then the class value
+    ///     less than 0 if is parameter is less then, 0 if parameter is equal and greater than 0 if parameter is greater
+    ///     than the class value
     /// </returns>
-    public int CompareTo(Counter64 other)
+    public int CompareTo(Counter64? other)
     {
-        if (other == null)
+        if (other is null)
             return -1;
         return _value.CompareTo(other.Value);
     }
@@ -121,8 +121,8 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// </summary>
     /// <param name="other">Variable to compare with</param>
     /// <returns>
-    ///     less then 0 if if parameter is less then, 0 if paramater is equal and greater then 0 if parameter is greater
-    ///     then the class value
+    ///     less than 0 if is parameter is less then, 0 if parameter is equal and greater than 0 if parameter is greater
+    ///     than the class value
     /// </returns>
     public int CompareTo(ulong other)
     {
@@ -136,31 +136,35 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <exception cref="ArgumentException">Argument is not Counter64 type.</exception>
     public void Set(AsnType value)
     {
-        var val = value as Counter64;
-        if (val != null)
+        if (value is Counter64 val)
             _value = val.Value;
         else
             throw new ArgumentException("Invalid argument type.");
     }
 
     /// <summary>
-    ///     Parse an Counter64 value from a string.
+    ///     Parse a Counter64 value from a string.
     /// </summary>
-    /// <param name="value">String containing an Counter64 value</param>
+    /// <param name="value">String containing a Counter64 value</param>
     /// <exception cref="ArgumentOutOfRangeException">Argument length is 0 (zero)</exception>
     /// <exception cref="ArgumentException">Unable to parse Counter64 value from the argument.</exception>
     public void Set(string value)
     {
-        if (value.Length <= 0)
-            throw new ArgumentOutOfRangeException(value, "String has to be length greater then 0");
+        switch (value.Length)
+        {
+            case <= 0:
+                throw new ArgumentOutOfRangeException(value, "String has to be length greater then 0");
+            default:
+                try
+                {
+                    _value = Convert.ToUInt64(value, CultureInfo.CurrentCulture);
+                }
+                catch
+                {
+                    throw new ArgumentException("Invalid argument format.");
+                }
 
-        try
-        {
-            _value = Convert.ToUInt64(value, CultureInfo.CurrentCulture);
-        }
-        catch
-        {
-            throw new ArgumentException("Invalid argument format.");
+                break;
         }
     }
 
@@ -170,7 +174,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <returns>Int32 hash of the class stored value</returns>
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return Value.GetHashCode();
     }
 
     /// <summary>
@@ -179,15 +183,15 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// </summary>
     /// <param name="obj">Object to compare values with</param>
     /// <returns>True if object value is the same as this class, otherwise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj == null)
-            return false;
-        if (obj is Counter64)
-            return _value.Equals(((Counter64)obj).Value);
-        if (obj is ulong)
-            return _value.Equals((ulong)obj);
-        return false;
+        return obj switch
+        {
+            null => false,
+            Counter64 counter64 => _value.Equals(counter64.Value),
+            ulong @ulong => _value.Equals(@ulong),
+            _ => false
+        };
     }
 
     /// <summary>
@@ -215,12 +219,11 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="first">First class value to compare</param>
     /// <param name="second">Second class value to compare</param>
     /// <returns>True if values are the same, otherwise false</returns>
-    public static bool operator ==(Counter64 first, Counter64 second)
+    public static bool operator ==(Counter64? first, Counter64? second)
     {
-        if ((object)first == null && (object)second == null)
-            return true;
-        if ((object)first == null || (object)second == null)
-            return false;
+        if (ReferenceEquals(first, second)) return true;
+        if (first is null && second is null) return true;
+        if (first is null || second is null) return false;
         return first.Equals(second);
     }
 
@@ -232,51 +235,31 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <returns>False if values are the same, otherwise true</returns>
     public static bool operator !=(Counter64 first, Counter64 second)
     {
-        if ((object)first == null && (object)second == null)
-            return false;
-        if ((object)first == null || (object)second == null)
-            return true;
-        return !first.Equals(second);
+        return !(first == second);
     }
 
     /// <summary>
     ///     Greater then operator
     /// </summary>
-    /// <remarks>Compare two Counter64 class values and return true if first class value is greater then second.</remarks>
+    /// <remarks>Compare two Counter64 class values and return true if first class value is greater than second.</remarks>
     /// <param name="first">First class</param>
     /// <param name="second">Second class</param>
-    /// <returns>True if first class value is greater then second class value, otherwise false</returns>
-    public static bool operator >(Counter64 first, Counter64 second)
+    /// <returns>True if first class value is greater than second class value, otherwise false</returns>
+    public static bool operator >(Counter64? first, Counter64? second)
     {
-        if ((object)first == null && (object)second == null)
-            return false;
-        if ((object)first == null)
-            return false;
-        if ((object)second == null)
-            return true;
-        if (first.Value > second.Value)
-            return true;
-        return false;
+        return first?.Value > second?.Value;
     }
 
     /// <summary>
-    ///     Less then operator
+    ///     Less than operator
     /// </summary>
-    /// <remarks>Compare two Counter64 class values and return true if first class value is less then second.</remarks>
+    /// <remarks>Compare two Counter64 class values and return true if first class value is less than second.</remarks>
     /// <param name="first">First class</param>
     /// <param name="second">Second class</param>
-    /// <returns>True if first class value is less then second class value, otherwise false</returns>
-    public static bool operator <(Counter64 first, Counter64 second)
+    /// <returns>True if first class value is less than second class value, otherwise false</returns>
+    public static bool operator <(Counter64? first, Counter64? second)
     {
-        if ((object)first == null && (object)second == null)
-            return false;
-        if ((object)first == null)
-            return true;
-        if ((object)second == null)
-            return false;
-        if (first.Value < second.Value)
-            return true;
-        return false;
+        return first?.Value < second?.Value;
     }
 
     /// <summary>
@@ -294,15 +277,9 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static Counter64 operator +(Counter64 first, Counter64 second)
+    public static Counter64 operator +(Counter64? first, Counter64? second)
     {
-        if (first == null && second == null)
-            return null;
-        if (first == null)
-            return new Counter64(second);
-        if (second == null)
-            return new Counter64(first);
-        return new Counter64(first.Value + second.Value);
+        return new Counter64(first?.Value ?? 0 + second?.Value ?? 0);
     }
 
     /// <summary>
@@ -320,15 +297,9 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     ///     references then null is returned. If either of the two parameters is null, the non-null objects
     ///     value is set as the value of the new object and returned.
     /// </returns>
-    public static Counter64 operator -(Counter64 first, Counter64 second)
+    public static Counter64 operator -(Counter64? first, Counter64? second)
     {
-        if (first == null && second == null)
-            return null;
-        if (first == null)
-            return new Counter64(second);
-        if (second == null)
-            return new Counter64(first);
-        return new Counter64(first.Value - second.Value);
+        return new Counter64(first?.Value ?? 0 - second?.Value ?? 0);
     }
 
     /// <summary>
@@ -341,12 +312,9 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     {
         var f = first.Value;
         var s = second.Value;
-        ulong res = 0;
-        if (s > f)
+        var res =
             // in case of a roll-over event
-            res = ulong.MaxValue - f + s;
-        else
-            res = s - f;
+            s > f ? ulong.MaxValue - f + s : s - f;
         return res;
     }
 
@@ -363,8 +331,13 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         for (var i = b.Length - 1; i >= 0; i--)
             if (b[i] != 0 || tmp.Length > 0)
                 tmp.Append(b[i]);
-        if (tmp.Length == 0)
-            tmp.Append(0); // value is 0. can't have an empty encoding
+        switch (tmp.Length)
+        {
+            case 0:
+                tmp.Append(0); // value is 0. can't have an empty encoding
+                break;
+        }
+
         BuildHeader(buffer, Type, tmp.Length);
         buffer.Append(tmp);
     }
@@ -380,8 +353,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         //
         // parse the header first
         //
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
@@ -390,17 +362,22 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         if (buffer.Length - offset < headerLength)
             throw new OverflowException("Buffer underflow error");
 
-        // check to see that we can actually decode
-        // the value (must fit in integer == 64-bits)
-        if (headerLength > 9)
-            throw new OverflowException("Integer too large: cannot decode");
+        switch (headerLength)
+        {
+            // check to see that we can actually decode
+            // the value (must fit in integer == 64-bits)
+            case > 9:
+                throw new OverflowException("Integer too large: cannot decode");
+        }
 
         var tmpBuf = new byte[8]; // we need 8 bytes to represent a UInt64
-        if (headerLength == 9)
+        switch (headerLength)
         {
-            // if length is 9 we have a padding byte added. Skip it
-            offset += 1;
-            headerLength -= 1;
+            case 9:
+                // if length is 9 we have a padding byte added. Skip it
+                offset += 1;
+                headerLength -= 1;
+                break;
         }
 
         while (headerLength > 0)

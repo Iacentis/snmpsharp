@@ -24,70 +24,70 @@ namespace SnmpSharpNet;
 public abstract class AsnType : ICloneable
 {
     /// <summary>Bool true/false value type</summary>
-    public static readonly byte BOOLEAN = 0x01;
+    public const byte BOOLEAN = 0x01;
 
     /// <summary>Signed 32-bit integer type</summary>
-    public static readonly byte INTEGER = 0x02;
+    public const byte INTEGER = 0x02;
 
     /// <summary>Bit sequence type</summary>
-    public static readonly byte BITSTRING = 0x03;
+    public const byte BITSTRING = 0x03;
 
     /// <summary>Octet (byte) value type</summary>
-    public static readonly byte OCTETSTRING = 0x04;
+    public const byte OCTETSTRING = 0x04;
 
     /// <summary>Null (no value) type</summary>
-    public static readonly byte NULL = 0x05;
+    public const byte NULL = 0x05;
 
     /// <summary>Object id type</summary>
-    public static readonly byte OBJECTID = 0x06;
+    public const byte OBJECTID = 0x06;
 
     /// <summary>Arbitrary data type</summary>
-    public static readonly byte SEQUENCE = 0x10;
+    public const byte SEQUENCE = 0x10;
 
     /// <summary>
     ///     Defined by referencing a fixed, unordered list of types,
     ///     some of which may be declared optional. Each value is an
     ///     unordered list of values, one from each component type.
     /// </summary>
-    public static readonly byte SET = 0x11;
+    public const byte SET = 0x11;
 
     /// <summary>
     ///     Generally useful, application-independent types and
     ///     construction mechanisms.
     /// </summary>
-    public static readonly byte UNIVERSAL = 0x00;
+    public const byte UNIVERSAL = 0x00;
 
     /// <summary>
     ///     Relevant to a particular application. These are defined
     ///     in standards other than ASN.1.
     /// </summary>
-    public static readonly byte APPLICATION = 0x40;
+    public const byte APPLICATION = 0x40;
 
     /// <summary>
     ///     Also relevant to a particular application, but limited by context
     /// </summary>
-    public static readonly byte CONTEXT = 0x80;
+    public const byte CONTEXT = 0x80;
 
     /// <summary>
     ///     These are types not covered by any standard but instead defined by users.
     /// </summary>
-    public static readonly byte PRIVATE = 0xC0;
+    public const byte PRIVATE = 0xC0;
 
     /// <summary> A primitive data object.</summary>
-    public static readonly byte PRIMITIVE = 0x00;
+    public const byte PRIMITIVE = 0x00;
 
     /// <summary> A constructed data object such as a set or sequence.</summary>
-    public static readonly byte CONSTRUCTOR = 0x20;
+    public const byte CONSTRUCTOR = 0x20;
 
     /// <summary>
     ///     Defines the "high bit" that is the sign extension bit for a 8-bit signed value.
     /// </summary>
-    protected static readonly byte HIGH_BIT = 0x80;
+    protected const byte HIGH_BIT = 0x80;
 
     /// <summary>
     ///     Defines the BER extension "value" that is used to mark an extension type.
     /// </summary>
-    protected static readonly byte EXTENSION_ID = 0x1F;
+    protected const byte EXTENSION_ID = 0x1F;
 
     /// <summary>
     ///     ASN.1 type byte.
@@ -133,28 +133,39 @@ public abstract class AsnType : ICloneable
     /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
     internal static void BuildLength(MutableByte mb, int asnLength)
     {
-        if (asnLength < 0)
-            throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
+        switch (asnLength)
+        {
+            case < 0:
+                throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
+        }
         var len = BitConverter.GetBytes(asnLength);
         var buf = new MutableByte();
         for (var i = 3; i >= 0; i--)
             if (len[i] != 0 || buf.Length > 0)
                 buf.Append(len[i]);
-        if (buf.Length == 0)
+        switch (buf.Length)
+        {
             // we are encoding a 0 value. Can't have a 0 byte length encoding
-            buf.Append(0);
-        // check for short form encoding
-        if (buf.Length == 1 && (buf[0] & HIGH_BIT) == 0)
-        {
-            mb.Append(buf); // done
+            case 0:
+                buf.Append(0);
+                break;
         }
-        else
+
+        switch (buf.Length)
         {
-            // long form encoding
-            var encHeader = (byte)buf.Length;
-            encHeader = (byte)(encHeader | HIGH_BIT);
-            mb.Append(encHeader);
-            mb.Append(buf);
+            // check for short form encoding
+            case 1 when (buf[0] & HIGH_BIT) == 0:
+                mb.Append(buf); // done
+                break;
+            default:
+            {
+                // long form encoding
+                var encHeader = (byte)buf.Length;
+                encHeader = (byte)(encHeader | HIGH_BIT);
+                mb.Append(encHeader);
+                mb.Append(buf);
+                break;
+            }
         }
     }
 
@@ -170,11 +181,12 @@ public abstract class AsnType : ICloneable
         if (offset == mb.Length)
             throw new OverflowException("Buffer is too short.");
         int dataLen;
-        if ((mb[offset] & HIGH_BIT) == 0)
+        switch (mb[offset] & HIGH_BIT)
         {
-            // short form encoding
-            dataLen = mb[offset++];
-            return dataLen; // we are done
+            case 0:
+                // short form encoding
+                dataLen = mb[offset++];
+                return dataLen; // we are done
         }
 
         dataLen = mb[offset++] & ~HIGH_BIT; // store byte length of the encoded length value
@@ -218,7 +230,11 @@ public abstract class AsnType : ICloneable
     /// <exception cref="SnmpException">Thrown when invalid type is encountered in the header</exception>
     internal static byte ParseHeader(byte[] mb, ref int offset, out int length)
     {
-        if (mb.Length - offset < 1) throw new OverflowException("Buffer is too short.");
+        switch (mb.Length - offset)
+        {
+            case < 1:
+                throw new OverflowException("Buffer is too short.");
+        }
 
         // ASN.1 type
         var asnType = mb[offset++];

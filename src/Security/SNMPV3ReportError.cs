@@ -35,6 +35,7 @@ public sealed class SNMPV3ReportError
     {
         foreach (var v in packet.Pdu.VbList)
         {
+            if (v.Oid is null) continue;
             if (v.Oid.Compare(SnmpConstants.usmStatsUnsupportedSecLevels) == 0)
                 return $"usmStatsUnsupportedSecLevels: {v.Value}";
 

@@ -69,7 +69,7 @@ public class PrivacyAES : IPrivacyProtocol
     {
         // check the key before doing anything else
         if (key == null || key.Length < _keyBytes)
-            throw new ArgumentOutOfRangeException("encryptionKey", "Invalid key length");
+            throw new ArgumentOutOfRangeException(nameof(key), "Invalid key length");
 
         var iv = new byte[16];
         var salt = NextSalt();
@@ -140,7 +140,7 @@ public class PrivacyAES : IPrivacyProtocol
         byte[] privacyParameters)
     {
         if (key == null || key.Length < _keyBytes)
-            throw new ArgumentOutOfRangeException("decryptionKey", "Invalid key length");
+            throw new ArgumentOutOfRangeException(nameof(key), "Invalid key length");
 
         var iv = new byte[16];
 
@@ -158,7 +158,7 @@ public class PrivacyAES : IPrivacyProtocol
         // Copy salt value to the iv array
         Buffer.BlockCopy(privacyParameters, 0, iv, 8, 8);
 
-        byte[] decryptedData = null;
+        byte[] decryptedData;
 
         // now do CFB decryption of the encrypted data
         var rm = Aes.Create();
@@ -247,7 +247,7 @@ public class PrivacyAES : IPrivacyProtocol
         while (keyLen < MinimumKeyLength)
         {
             var tmpBuf = authProtocol.PasswordToKey(lastKeyBuf, engineID);
-            if (tmpBuf == null) return null;
+
             if (tmpBuf.Length <= MinimumKeyLength - keyLen)
             {
                 Array.Copy(tmpBuf, 0, extKey, keyLen, tmpBuf.Length);
@@ -299,10 +299,16 @@ public class PrivacyAES : IPrivacyProtocol
     /// <returns>Random Int64 value</returns>
     protected long NextSalt()
     {
-        if (_salt == long.MaxValue)
-            _salt = 1;
-        else
-            _salt += 1;
+        switch (_salt)
+        {
+            case long.MaxValue:
+                _salt = 1;
+                break;
+            default:
+                _salt += 1;
+                break;
+        }
+
         return _salt;
     }
 }

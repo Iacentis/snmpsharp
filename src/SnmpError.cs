@@ -41,44 +41,48 @@ public sealed class SnmpError
     /// <returns>Short error message for the error code</returns>
     public static string ErrorMessage(int errorCode)
     {
-        if (errorCode == SnmpConstants.ErrNoError)
-            return "No error";
-        if (errorCode == SnmpConstants.ErrTooBig)
-            return "Request too big";
-        if (errorCode == SnmpConstants.ErrNoSuchName)
-            return "noSuchName";
-        if (errorCode == SnmpConstants.ErrBadValue)
-            return "badValue";
-        if (errorCode == SnmpConstants.ErrReadOnly)
-            return "readOnly";
-        if (errorCode == SnmpConstants.ErrGenError)
-            return "genericError";
-        if (errorCode == SnmpConstants.ErrNoAccess)
-            return "noAccess";
-        if (errorCode == SnmpConstants.ErrWrongType)
-            return "wrongType";
-        if (errorCode == SnmpConstants.ErrWrongLength)
-            return "wrongLength";
-        if (errorCode == SnmpConstants.ErrWrongEncoding)
-            return "wrongEncoding";
-        if (errorCode == SnmpConstants.ErrWrongValue)
-            return "wrongValue";
-        if (errorCode == SnmpConstants.ErrNoCreation)
-            return "noCreation";
-        if (errorCode == SnmpConstants.ErrInconsistentValue)
-            return "inconsistentValue";
-        if (errorCode == SnmpConstants.ErrResourceUnavailable)
-            return "resourceUnavailable";
-        if (errorCode == SnmpConstants.ErrCommitFailed)
-            return "commitFailed";
-        if (errorCode == SnmpConstants.ErrUndoFailed)
-            return "undoFailed";
-        if (errorCode == SnmpConstants.ErrAuthorizationError)
-            return "authorizationError";
-        if (errorCode == SnmpConstants.ErrNotWritable)
-            return "notWritable";
-        if (errorCode == SnmpConstants.ErrInconsistentName)
-            return "inconsistentName";
-        return $"Unknown error ({errorCode})";
+        switch (errorCode)
+        {
+            case SnmpConstants.ErrNoError:
+                return "No error";
+            case SnmpConstants.ErrTooBig:
+                return "Request too big";
+            case SnmpConstants.ErrNoSuchName:
+                return "noSuchName";
+            case SnmpConstants.ErrBadValue:
+                return "badValue";
+            case SnmpConstants.ErrReadOnly:
+                return "readOnly";
+            case SnmpConstants.ErrGenError:
+                return "genericError";
+            case SnmpConstants.ErrNoAccess:
+                return "noAccess";
+            case SnmpConstants.ErrWrongType:
+                return "wrongType";
+            case SnmpConstants.ErrWrongLength:
+                return "wrongLength";
+            case SnmpConstants.ErrWrongEncoding:
+                return "wrongEncoding";
+            case SnmpConstants.ErrWrongValue:
+                return "wrongValue";
+            case SnmpConstants.ErrNoCreation:
+                return "noCreation";
+            case SnmpConstants.ErrInconsistentValue:
+                return "inconsistentValue";
+            case SnmpConstants.ErrResourceUnavailable:
+                return "resourceUnavailable";
+            case SnmpConstants.ErrCommitFailed:
+                return "commitFailed";
+            case SnmpConstants.ErrUndoFailed:
+                return "undoFailed";
+            case SnmpConstants.ErrAuthorizationError:
+                return "authorizationError";
+            case SnmpConstants.ErrNotWritable:
+                return "notWritable";
+            case SnmpConstants.ErrInconsistentName:
+                return "inconsistentName";
+            default:
+                return $"Unknown error ({errorCode})";
+        }
     }
 }

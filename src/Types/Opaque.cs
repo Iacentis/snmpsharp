@@ -27,7 +27,7 @@ namespace SnmpSharpNet;
 ///     shall not be used for newly-defined object types
 /// </remarks>
 [Serializable]
-public class Opaque : OctetString, ICloneable
+public class Opaque : OctetString
 {
     /// <summary>Constructor</summary>
     public Opaque()

@@ -15,6 +15,7 @@
 // 
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -66,7 +67,7 @@ namespace SnmpSharpNet;
 ///     Note: internally, IpAddress class holds the value in a byte array, network ordered format.
 /// </remarks>
 [Serializable]
-public class IpAddress : OctetString, IComparable, ICloneable
+public sealed class IpAddress : OctetString, IComparable
 {
     /// <summary>
     ///     Constructs a default object with a
@@ -106,10 +107,15 @@ public class IpAddress : OctetString, IComparable, ICloneable
         if (second == null)
             throw new ArgumentException("Constructor argument cannot be null.");
 
-        if (!second.Valid)
-            _data = new byte[] { 0, 0, 0, 0 };
-        else
-            Set(second.GetData());
+        switch (second.Valid)
+        {
+            case false:
+                _data = new byte[] { 0, 0, 0, 0 };
+                break;
+            default:
+                Set(second.GetData());
+                break;
+        }
     }
 
     /// <summary>Copy constructor.</summary>
@@ -156,10 +162,11 @@ public class IpAddress : OctetString, IComparable, ICloneable
     {
         get
         {
-            if (_data != null)
-                if (_data.Length == 4)
-                    if (_data[0] != 0x00 || _data[1] != 0x00 || _data[2] != 0x00 || _data[3] != 0x00)
-                        return true;
+            switch (_data.Length)
+            {
+                case 4 when _data[0] != 0x00 || _data[1] != 0x00 || _data[2] != 0x00 || _data[3] != 0x00:
+                    return true;
+            }
 
             return false;
         }
@@ -183,36 +190,37 @@ public class IpAddress : OctetString, IComparable, ICloneable
     ///     0 if class values are the same, -1 if current class value is less then or 1 if greater then the class value
     ///     we are comparing against.
     /// </returns>
-    public int CompareTo(object obj)
+    public int CompareTo(object? obj)
     {
-        byte[] b = null;
-        if (obj == null)
-            return -1;
-        if (obj is IPAddress)
+        switch (obj)
         {
-            var ipa = (IPAddress)obj;
-            b = ipa.GetAddressBytes();
+            default:
+                return -1;
+            case IPAddress address:
+            {
+                Span<byte> span = stackalloc byte[address.AddressFamily == AddressFamily.InterNetworkV6 ? 16 : 4];
+                if (!address.TryWriteBytes(span, out _))
+                    return -1;
+                return Compare(span);
+            }
+            case byte[] bytes:
+                return Compare(bytes);
+            case uint u:
+            {
+                Span<byte> span = stackalloc byte[4];
+                FillSpan(span, u);
+                return Compare(span);
+            }
+            case IpAddress ipAddress:
+                return Compare(ipAddress.GetData());
+            case OctetString octetString:
+                return Compare(octetString.GetData());
         }
-        else if (obj is byte[])
-        {
-            b = (byte[])obj;
-        }
-        else if (obj is uint)
-        {
-            var ipa = new IpAddress((uint)obj);
-            b = ipa.ToArray();
-        }
-        else if (obj is IpAddress)
-        {
-            b = ((IpAddress)obj).ToArray();
-        }
-        else if (obj is OctetString)
-        {
-            b = ((OctetString)obj).ToArray();
-        }
+    }
 
-        if (_data == null)
-            return -1;
+    [Pure]
+    private int Compare(Span<byte> b)
+    {
         if (b.Length != _data.Length)
         {
             if (_data.Length < b.Length)
@@ -244,8 +252,7 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// <exception cref="ArgumentException">Thrown when DNS resolution of the parameter value has failed.</exception>
     public override void Set(string value)
     {
-        IPAddress ipa;
-        if (!IPAddress.TryParse(value, out ipa))
+        if (!IPAddress.TryParse(value, out var ipa))
             try
             {
                 var entry = Dns.GetHostEntry(value);
@@ -259,7 +266,8 @@ public class IpAddress : OctetString, IComparable, ICloneable
             }
             catch
             {
-                throw new ArgumentException("Unable to parse or resolve supplied value to an IP address.", nameof(value));
+                throw new ArgumentException("Unable to parse or resolve supplied value to an IP address.",
+                    nameof(value));
             }
         else
             _data = ipa.GetAddressBytes();
@@ -272,10 +280,15 @@ public class IpAddress : OctetString, IComparable, ICloneable
     public void Set(uint ipvalue)
     {
         _data = new byte[4];
-        _data[0] = (byte)ipvalue;
-        _data[1] = (byte)(ipvalue >> 8);
-        _data[2] = (byte)(ipvalue >> 16);
-        _data[3] = (byte)(ipvalue >> 24);
+        FillSpan(_data, ipvalue);
+    }
+
+    private void FillSpan(Span<byte> target, uint value)
+    {
+        target[0] = (byte)value;
+        target[1] = (byte)(value >> 8);
+        target[2] = (byte)(value >> 16);
+        target[3] = (byte)(value >> 24);
     }
 
     /// <summary>
@@ -300,15 +313,19 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// <returns>String representation of the class value.</returns>
     public override string ToString()
     {
-        if (_data == null)
-            return "";
+        switch (_data)
+        {
+            case null:
+                return "";
+        }
+
         var data = _data;
 
         var buf = new StringBuilder();
-        buf.Append(data[0] < 0 ? 256 + data[0] : data[0]).Append('.');
-        buf.Append(data[1] < 0 ? 256 + data[1] : data[1]).Append('.');
-        buf.Append(data[2] < 0 ? 256 + data[2] : data[2]).Append('.');
-        buf.Append(data[3] < 0 ? 256 + data[3] : data[3]);
+        buf.Append(data[0]).Append('.');
+        buf.Append(data[1]).Append('.');
+        buf.Append(data[2]).Append('.');
+        buf.Append(data[3]);
 
         return buf.ToString();
     }
@@ -318,11 +335,13 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// </summary>
     /// <param name="obj"><see cref="IpAddress" /> object to compare against</param>
     /// <returns>True if objects are the same, otherwise false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj == null)
-            return false;
-        return CompareTo(obj) == 0 ? true : false;
+        return obj switch
+        {
+            null => false,
+            _ => CompareTo(obj) == 0
+        };
     }
 
     /// <summary>
@@ -331,11 +350,7 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// <returns>Integer hash representing the object</returns>
     public override int GetHashCode()
     {
-        if (_data is not { Length: 4 })
-            return 0;
-        var hash = Convert.ToInt32(_data[0]) + Convert.ToInt32(_data[1]) + Convert.ToInt32(_data[2]) +
-                   Convert.ToInt32(_data[3]);
-        return hash;
+        return GetData() is not { Length: 4 } data ? 0 : HashCode.Combine(data[0], data[1], data[2], data[3]);
     }
 
     /// <summary>Decode ASN.1 encoded IP address value.</summary>
@@ -347,13 +362,9 @@ public class IpAddress : OctetString, IComparable, ICloneable
     public override int decode(byte[] buffer, int offset)
     {
         offset = base.decode(buffer, offset);
-        if (_data.Length != 4)
-        {
-            _data = null;
-            throw new OverflowException("ASN.1 decoding error. Invalid data length.");
-        }
-
-        return offset;
+        if (_data.Length == 4) return offset;
+        _data = [];
+        throw new OverflowException("ASN.1 decoding error. Invalid data length.");
     }
 
     #region Helper functions
@@ -398,7 +409,11 @@ public class IpAddress : OctetString, IComparable, ICloneable
     public int GetClass()
     {
         var octet = _data[0];
-        if ((octet & 0x80) == 0) return ClassA; // Class A
+        switch (octet & 0x80)
+        {
+            case 0:
+                return ClassA; // Class A
+        }
 
         if ((octet & 0x80) != 0 && (octet & 0x40) == 0) return ClassB; // Class B
 
@@ -463,13 +478,19 @@ public class IpAddress : OctetString, IComparable, ICloneable
     {
         var bitmask = new byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
         var ip = _data;
-        var iip = new byte[4] { 0, 0, 0, 0 };
+        byte[] iip = [0, 0, 0, 0];
         // Walk through each byte
         for (var b = 0; b < 4; b++)
+        {
             // Check each bit
-        for (var i = 0; i < bitmask.Length; i++)
-            if ((ip[b] & bitmask[i]) == 0)
-                iip[b] |= bitmask[i];
+            foreach (var t in bitmask)
+            {
+                if ((ip[b] & t) == 0)
+                {
+                    iip[b] |= t;
+                }
+            }
+        }
 
         return new IpAddress(iip);
     }
@@ -504,17 +525,17 @@ public class IpAddress : OctetString, IComparable, ICloneable
     ///     a null reference.
     /// </remarks>
     /// <returns>Network mask or null if address doesn't belong to classes A, B or C</returns>
-    public IpAddress NetworkMask()
+    public IpAddress? NetworkMask()
     {
         var cl = GetClass();
         switch (cl)
         {
             case 1:
-                return new IpAddress(new byte[] { 255, 0, 0, 0 });
+                return new IpAddress([255, 0, 0, 0]);
             case 2:
-                return new IpAddress(new byte[] { 255, 255, 0, 0 });
+                return new IpAddress([255, 255, 0, 0]);
             case 3:
-                return new IpAddress(new byte[] { 255, 255, 255, 0 });
+                return new IpAddress([255, 255, 255, 0]);
             default:
                 return null;
         }
@@ -535,9 +556,20 @@ public class IpAddress : OctetString, IComparable, ICloneable
         for (var i = 0; i < 4; i++)
         for (var b = 0; b < bitmask.Length; b++)
         {
-            if ((ip[i] & bitmask[b]) == 0)
-                if (!endMask)
-                    endMask = true;
+            switch (ip[i] & bitmask[b])
+            {
+                case 0:
+                {
+                    switch (endMask)
+                    {
+                        case false:
+                            endMask = true;
+                            break;
+                    }
+
+                    break;
+                }
+            }
 
             if ((ip[i] & bitmask[b]) != 0 && endMask) return false; // Invalid mask. bit set to 1 after 0s were found
         }
@@ -674,8 +706,12 @@ public class IpAddress : OctetString, IComparable, ICloneable
     /// <returns>true if string contains an IP address in dotted decimal format, otherwise false</returns>
     public static bool IsIP(string val)
     {
-        if (val.Length == 0 || val.Length < 7 || val.Length > 15)
-            return false;
+        switch (val.Length)
+        {
+            case 0 or < 7 or > 15:
+                return false;
+        }
+
         var validChar = true;
         var dotCount = 0;
         foreach (var c in val)
@@ -686,12 +722,20 @@ public class IpAddress : OctetString, IComparable, ICloneable
                 break;
             }
 
-            if (c == '.')
-                dotCount += 1;
+            switch (c)
+            {
+                case '.':
+                    dotCount += 1;
+                    break;
+            }
         }
 
-        if (!validChar)
-            return false;
+        switch (validChar)
+        {
+            case false:
+                return false;
+        }
+
         if (dotCount != 3)
             return false;
         var ar = val.Split('.');
@@ -700,8 +744,11 @@ public class IpAddress : OctetString, IComparable, ICloneable
         for (var i = 0; i < 4; i++)
         {
             var v = Convert.ToInt32(ar[i]);
-            if (v < 0 || v > 255)
-                return false;
+            switch (v)
+            {
+                case < 0 or > 255:
+                    return false;
+            }
         }
 
         return true;

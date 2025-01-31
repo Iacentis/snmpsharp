@@ -89,9 +89,14 @@ public class TrapAgent
         IpAddress senderIpAdress, int genericTrap, int specificTrap, uint senderUpTime,
         VbCollection varList)
     {
-        var packet = new SnmpV1TrapPacket(community);
-        packet.Pdu.Generic = genericTrap;
-        packet.Pdu.Specific = specificTrap;
+        var packet = new SnmpV1TrapPacket(community)
+        {
+            Pdu =
+            {
+                Generic = genericTrap,
+                Specific = specificTrap
+            }
+        };
         packet.Pdu.AgentAddress.Set(senderIpAdress);
         packet.Pdu.TimeStamp = senderUpTime;
         packet.Pdu.VbList.Add(varList);
@@ -125,10 +130,18 @@ public class TrapAgent
     public void SendV2Trap(IpAddress receiver, int receiverPort, string community, uint senderUpTime,
         Oid trapObjectID, VbCollection varList)
     {
-        var packet = new SnmpV2Packet(community);
-        packet.Pdu.Type = PduType.V2Trap;
-        packet.Pdu.TrapObjectID = trapObjectID;
-        packet.Pdu.TrapSysUpTime.Value = senderUpTime;
+        var packet = new SnmpV2Packet(community)
+        {
+            Pdu =
+            {
+                Type = PduType.V2Trap,
+                TrapObjectID = trapObjectID,
+                TrapSysUpTime =
+                {
+                    Value = senderUpTime
+                }
+            }
+        };
         packet.Pdu.SetVbList(varList);
         SendV2Trap(packet, receiver, receiverPort);
     }
@@ -162,8 +175,13 @@ public class TrapAgent
     public void SendV3Trap(IpAddress receiver, int receiverPort, byte[] engineId, int senderEngineBoots,
         int senderEngineTime, string senderUserName, uint senderUpTime, Oid trapObjectID, VbCollection varList)
     {
-        var packet = new SnmpV3Packet();
-        packet.Pdu.Type = PduType.V2Trap;
+        var packet = new SnmpV3Packet
+        {
+            Pdu =
+            {
+                Type = PduType.V2Trap
+            }
+        };
         packet.NoAuthNoPriv(Encoding.UTF8.GetBytes(senderUserName));
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
@@ -195,8 +213,13 @@ public class TrapAgent
         int senderEngineTime, string senderUserName, uint senderUpTime, Oid trapObjectID, VbCollection varList,
         AuthenticationDigests authDigest, byte[] authSecret)
     {
-        var packet = new SnmpV3Packet();
-        packet.Pdu.Type = PduType.V2Trap;
+        var packet = new SnmpV3Packet
+        {
+            Pdu =
+            {
+                Type = PduType.V2Trap
+            }
+        };
         packet.authNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
@@ -233,8 +256,13 @@ public class TrapAgent
         int senderEngineTime, string senderUserName, uint senderUpTime, Oid trapObjectID, VbCollection varList,
         AuthenticationDigests authDigest, byte[] authSecret, PrivacyProtocols privProtocol, byte[] privSecret)
     {
-        var packet = new SnmpV3Packet();
-        packet.Pdu.Type = PduType.V2Trap;
+        var packet = new SnmpV3Packet
+        {
+            Pdu =
+            {
+                Type = PduType.V2Trap
+            }
+        };
         packet.authPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
@@ -261,13 +289,19 @@ public class TrapAgent
     public static void SendTrap(SnmpPacket packet, IpAddress peer, int port)
     {
         var agent = new TrapAgent();
-        if (packet is SnmpV1TrapPacket)
-            agent.SendV1Trap((SnmpV1TrapPacket)packet, peer, port);
-        else if (packet is SnmpV2Packet)
-            agent.SendV2Trap((SnmpV2Packet)packet, peer, port);
-        else if (packet is SnmpV3Packet)
-            agent.SendV3Trap((SnmpV3Packet)packet, peer, port);
-        else
-            throw new SnmpException("Invalid SNMP packet type.");
+        switch (packet)
+        {
+            case SnmpV1TrapPacket trapPacket:
+                agent.SendV1Trap(trapPacket, peer, port);
+                break;
+            case SnmpV2Packet v2Packet:
+                agent.SendV2Trap(v2Packet, peer, port);
+                break;
+            case SnmpV3Packet v3Packet:
+                agent.SendV3Trap(v3Packet, peer, port);
+                break;
+            default:
+                throw new SnmpException("Invalid SNMP packet type.");
+        }
     }
 }

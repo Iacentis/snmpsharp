@@ -30,7 +30,7 @@ public class AgentParameters : IAgentParameters
     /// <summary>
     ///     SNMP community name for SNMP v1 and v2 protocol versions
     /// </summary>
-    protected readonly OctetString? _community;
+    protected readonly OctetString _community;
 
     /// <summary>
     ///     Flag that disables checking of host IP address and port number from which reply is received. If not disabled, only
@@ -61,8 +61,8 @@ public class AgentParameters : IAgentParameters
     /// <param name="second">Parameter class.</param>
     public AgentParameters(AgentParameters second)
     {
-        _version.Value = (int)second.Version;
-        _community.Set(second.Community);
+        _version = new Integer32(second._version);
+        _community = new OctetString(second.Community);
         _disableReplySourceCheck = second.DisableReplySourceCheck;
     }
 
@@ -86,7 +86,7 @@ public class AgentParameters : IAgentParameters
     public AgentParameters(OctetString community)
         : this()
     {
-        _community.Set(community);
+        _community = new OctetString(community);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class AgentParameters : IAgentParameters
     public AgentParameters(SnmpVersion version, OctetString community)
         : this(version)
     {
-        _community.Set(community);
+        _community = new(community);
     }
 
     /// <summary>
@@ -152,10 +152,13 @@ public class AgentParameters : IAgentParameters
     /// <returns>true if object is valid, otherwise false</returns>
     public bool Valid()
     {
-        if (_community != null && _community.Length > 0 && _version != null)
-            if (_version.Value == (int)SnmpVersion.Ver1 || _version.Value == (int)SnmpVersion.Ver2)
-                return true;
-        return false;
+        switch (_community.Length)
+        {
+            case <= 0:
+                return false;
+            default:
+                return _version.Value is (int)SnmpVersion.Ver1 or (int)SnmpVersion.Ver2;
+        }
     }
 
     /// <summary>
@@ -165,19 +168,16 @@ public class AgentParameters : IAgentParameters
     /// <param name="packet">Packet class to initialize</param>
     public void InitializePacket(SnmpPacket packet)
     {
-        if (packet is SnmpV1Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV1Packet)packet;
-            pkt.Community.Set(_community);
-        }
-        else if (packet is SnmpV2Packet)
-        {
-            var pkt = (SnmpV2Packet)packet;
-            pkt.Community.Set(_community);
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Invalid SNMP version.");
+            case SnmpV1Packet v1Packet:
+                v1Packet.Community.Set(_community);
+                break;
+            case SnmpV2Packet pkt:
+                pkt.Community.Set(_community);
+                break;
+            default:
+                throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 

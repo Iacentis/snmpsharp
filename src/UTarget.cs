@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace SnmpSharpNet;
@@ -225,6 +226,17 @@ public class UTarget : ITarget
     /// <summary>
     ///     Reset the class. Initialize all member values to class defaults.
     /// </summary>
+    [MemberNotNull(nameof(_address))]
+    [MemberNotNull(nameof(_engineId))]
+    [MemberNotNull(nameof(_engineBoots))]
+    [MemberNotNull(nameof(_engineTime))]
+    [MemberNotNull(nameof(_engineTimeStamp))]
+    [MemberNotNull(nameof(_privacySecret))]
+    [MemberNotNull(nameof(_authenticationSecret))]
+    [MemberNotNull(nameof(_contextEngineId))]
+    [MemberNotNull(nameof(_maxMessageSize))]
+    [MemberNotNull(nameof(_contextName))]
+    [MemberNotNull(nameof(_securityName))]
     public void Reset()
     {
         _address = new IpAddress(IPAddress.Loopback);
@@ -267,19 +279,18 @@ public class UTarget : ITarget
     /// </exception>
     public void UpdateDiscoveryValues(SnmpPacket packet)
     {
-        if (packet is SnmpV3Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV3Packet)packet;
-            _engineId.Set(pkt.USM.EngineId);
-            _engineTime.Value = pkt.USM.EngineTime;
-            _engineBoots.Value = pkt.USM.EngineBoots;
-            UpdateTimeStamp();
-            _contextEngineId.Set(pkt.ScopedPdu.ContextEngineId);
-            _contextName.Set(pkt.ScopedPdu.ContextName);
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Invalid SNMP version.");
+            case SnmpV3Packet pkt:
+                _engineId.Set(pkt.USM.EngineId);
+                _engineTime.Value = pkt.USM.EngineTime;
+                _engineBoots.Value = pkt.USM.EngineBoots;
+                UpdateTimeStamp();
+                _contextEngineId.Set(pkt.ScopedPdu.ContextEngineId);
+                _contextName.Set(pkt.ScopedPdu.ContextName);
+                break;
+            default:
+                throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
@@ -309,12 +320,15 @@ public class UTarget : ITarget
 
         var diff = DateTime.UtcNow.Subtract(_engineTimeStamp);
 
-        // if EngineTime value has not been updated in 10 * max acceptable period (150 seconds) then
-        // time is no longer valid
-        if (diff.TotalSeconds >= 150 * 10)
-            return false;
-
-        return true;
+        switch (diff.TotalSeconds)
+        {
+            // if EngineTime value has not been updated in 10 * max acceptable period (150 seconds) then
+            // time is no longer valid
+            case >= 150 * 10:
+                return false;
+            default:
+                return true;
+        }
     }
 
     /// <summary>
@@ -344,31 +358,53 @@ public class UTarget : ITarget
     /// <returns>True if packet values are correctly set, otherwise false.</returns>
     public bool PreparePacketForTransmission(SnmpPacket packet)
     {
-        if (packet is SnmpV3Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV3Packet)packet;
-            var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
-            var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
-            if (isAuth && isPriv)
-                pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
-                    _privacyProtocol);
-            else if (isAuth && !isPriv)
-                pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
-            else
-                pkt.NoAuthNoPriv(_securityName);
-            pkt.USM.EngineId.Set(_engineId);
-            pkt.USM.EngineBoots = _engineBoots.Value;
-            pkt.USM.EngineTime = GetCurrentEngineTime();
-            pkt.MaxMessageSize = _maxMessageSize.Value;
-            pkt.MsgFlags.Reportable = _reportable;
-            if (_contextEngineId.Length > 0)
-                pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
-            else
-                pkt.ScopedPdu.ContextEngineId.Set(_engineId);
-            if (_contextName.Length > 0)
-                pkt.ScopedPdu.ContextName.Set(_contextName);
-            else
-                pkt.ScopedPdu.ContextName.Reset();
+            case SnmpV3Packet pkt:
+            {
+                var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
+                var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
+                switch (isAuth)
+                {
+                    case true when isPriv:
+                        pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
+                            _privacyProtocol);
+                        break;
+                    case true when !isPriv:
+                        pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
+                        break;
+                    default:
+                        pkt.NoAuthNoPriv(_securityName);
+                        break;
+                }
+
+                pkt.USM.EngineId.Set(_engineId);
+                pkt.USM.EngineBoots = _engineBoots.Value;
+                pkt.USM.EngineTime = GetCurrentEngineTime();
+                pkt.MaxMessageSize = _maxMessageSize.Value;
+                pkt.MsgFlags.Reportable = _reportable;
+                switch (_contextEngineId.Length)
+                {
+                    case > 0:
+                        pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
+                        break;
+                    default:
+                        pkt.ScopedPdu.ContextEngineId.Set(_engineId);
+                        break;
+                }
+
+                switch (_contextName.Length)
+                {
+                    case > 0:
+                        pkt.ScopedPdu.ContextName.Set(_contextName);
+                        break;
+                    default:
+                        pkt.ScopedPdu.ContextName.Reset();
+                        break;
+                }
+
+                break;
+            }
         }
 
         return false;
@@ -398,49 +434,61 @@ public class UTarget : ITarget
     /// </exception>
     public bool ValidateReceivedPacket(SnmpPacket packet)
     {
-        if (!(packet is SnmpV3Packet))
+        if (!(packet is SnmpV3Packet pkt))
             return false;
-        var pkt = (SnmpV3Packet)packet;
 
-        // First check if this is a report packet.
-        if (pkt.Pdu.Type == PduType.Response)
+        switch (pkt.Pdu.Type)
         {
-            if (!_reportable)
-                // we do not expect report packets so dump it
-                throw new SnmpException(SnmpException.ReportOnNoReports, "Unexpected report packet received.");
-            // return false; 
-            if (pkt.MsgFlags.Authentication == false && pkt.MsgFlags.Privacy)
-                // no authentication and no privacy allowed in report packets
-                throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
-                    "Authentication and privacy combination is not supported.");
-            // return false; 
-            // the rest will not be checked, there is no point
-        }
-        else
-        {
-            if (pkt.USM.EngineId != _engineId)
-                // different engine id is not allowed
-                throw new SnmpException(SnmpException.InvalidAuthoritativeEngineId, "EngineId mismatch.");
-            // return false; 
-            if (pkt.USM.Authentication != _authenticationProtocol || pkt.USM.Privacy != _privacyProtocol)
-                // we have to have the same authentication and privacy protocol - no last minute changes
-                throw new SnmpException("Agent parameters updated after request was made.");
-            // return false; 
-            if (pkt.USM.Authentication != AuthenticationDigests.None)
-                if (pkt.USM.AuthenticationSecret != _authenticationSecret)
-                    // authentication secret has to match
-                    throw new SnmpAuthenticationException(
-                        "Authentication secret in the packet class does not match the IAgentParameter secret.");
-            // return false; 
-            if (pkt.USM.Privacy != PrivacyProtocols.None)
-                if (pkt.USM.PrivacySecret != _privacySecret)
-                    // privacy secret has to match
-                    throw new SnmpPrivacyException(
-                        "Privacy secret in the packet class does not match the IAgentParameters secret.");
-            // return false; 
-            if (pkt.USM.SecurityName != _securityName)
-                throw new SnmpException(SnmpException.InvalidSecurityName, "Security name mismatch.");
-            // return false;
+            // First check if this is a report packet.
+            case PduType.Response:
+            {
+                switch (_reportable)
+                {
+                    // we do not expect report packets so dump it
+                    case false:
+                        throw new SnmpException(SnmpException.ReportOnNoReports, "Unexpected report packet received.");
+                }
+
+                switch (pkt.MsgFlags.Authentication)
+                {
+                    // return false; 
+                    // no authentication and no privacy allowed in report packets
+                    case false when pkt.MsgFlags.Privacy:
+                        throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
+                            "Authentication and privacy combination is not supported.");
+                }
+
+                // return false; 
+                // the rest will not be checked, there is no point
+                break;
+            }
+            default:
+            {
+                if (pkt.USM.EngineId != _engineId)
+                    // different engine id is not allowed
+                    throw new SnmpException(SnmpException.InvalidAuthoritativeEngineId, "EngineId mismatch.");
+                // return false; 
+                if (pkt.USM.Authentication != _authenticationProtocol || pkt.USM.Privacy != _privacyProtocol)
+                    // we have to have the same authentication and privacy protocol - no last minute changes
+                    throw new SnmpException("Agent parameters updated after request was made.");
+                // return false; 
+                if (pkt.USM.Authentication != AuthenticationDigests.None)
+                    if (pkt.USM.AuthenticationSecret != _authenticationSecret)
+                        // authentication secret has to match
+                        throw new SnmpAuthenticationException(
+                            "Authentication secret in the packet class does not match the IAgentParameter secret.");
+                // return false; 
+                if (pkt.USM.Privacy != PrivacyProtocols.None)
+                    if (pkt.USM.PrivacySecret != _privacySecret)
+                        // privacy secret has to match
+                        throw new SnmpPrivacyException(
+                            "Privacy secret in the packet class does not match the IAgentParameters secret.");
+                // return false; 
+                if (pkt.USM.SecurityName != _securityName)
+                    throw new SnmpException(SnmpException.InvalidSecurityName, "Security name mismatch.");
+                // return false;
+                break;
+            }
         }
 
         return true;
@@ -470,9 +518,15 @@ public class UTarget : ITarget
         get => _timeout;
         set
         {
-            if (value < 100 || value > 10000)
-                throw new OverflowException("Valid timeout value is between 100 milliseconds and 10000 milliseconds");
-            _timeout = value;
+            switch (value)
+            {
+                case < 100 or > 10000:
+                    throw new OverflowException(
+                        "Valid timeout value is between 100 milliseconds and 10000 milliseconds");
+                default:
+                    _timeout = value;
+                    break;
+            }
         }
     }
 
@@ -484,9 +538,14 @@ public class UTarget : ITarget
         get => _retry;
         set
         {
-            if (value < 0 || value > 5)
-                throw new OverflowException("Valid retry value is between 0 and 5");
-            _retry = value;
+            switch (value)
+            {
+                case < 0 or > 5:
+                    throw new OverflowException("Valid retry value is between 0 and 5");
+                default:
+                    _retry = value;
+                    break;
+            }
         }
     }
 
@@ -513,17 +572,29 @@ public class UTarget : ITarget
     /// </returns>
     public bool Valid()
     {
-        if (_address == null || !_address.Valid)
+        if (!_address.Valid)
             return false;
-        if (_port == 0)
-            return false;
-        if (SecurityName.Length <= 0 && (_authenticationProtocol != AuthenticationDigests.None ||
-                                         _privacyProtocol != PrivacyProtocols.None))
+        switch (_port)
+        {
+            case 0:
+                return false;
+        }
+
+        switch (SecurityName.Length)
+        {
             // You have to supply security name when using security or privacy.
             // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
-            return false;
-        if (_authenticationProtocol == AuthenticationDigests.None && _privacyProtocol != PrivacyProtocols.None)
-            return false; // noAuthPriv mode is not valid in SNMP version 3 
+            case <= 0 when (_authenticationProtocol != AuthenticationDigests.None ||
+                            _privacyProtocol != PrivacyProtocols.None):
+                return false;
+        }
+
+        switch (_authenticationProtocol)
+        {
+            case AuthenticationDigests.None when _privacyProtocol != PrivacyProtocols.None:
+                return false; // noAuthPriv mode is not valid in SNMP version 3 
+        }
+
         if (_authenticationProtocol != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // Authentication protocol requires authentication secret
         if (_privacyProtocol != PrivacyProtocols.None && _privacySecret.Length <= 0)

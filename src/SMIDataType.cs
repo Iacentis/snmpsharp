@@ -15,6 +15,7 @@
 // 
 
 using System;
+using System.Linq;
 
 namespace SnmpSharpNet;
 
@@ -32,46 +33,34 @@ public sealed class SMIDataType
     /// </summary>
     /// <param name="asnType">SMI type code</param>
     /// <returns>Correct SMI type class instance for the data type or null if type is not recognized</returns>
-    public static AsnType GetSyntaxObject(byte asnType)
+    public static AsnType? GetSyntaxObject(byte asnType)
     {
-        if (!IsValidType(asnType))
-            return null;
-        return GetSyntaxObject((SMIDataTypeCode)asnType);
+        return !IsValidType(asnType) ? null : GetSyntaxObject((SMIDataTypeCode)asnType);
     }
 
     /// <summary>Used to create correct variable type object for the specified encoded type</summary>
     /// <param name="asnType">ASN.1 type code</param>
     /// <returns>A new object matching type supplied or null if type was not recognized.</returns>
-    public static AsnType GetSyntaxObject(SMIDataTypeCode asnType)
+    public static AsnType? GetSyntaxObject(SMIDataTypeCode asnType)
     {
-        AsnType obj = null;
-        if (asnType == SMIDataTypeCode.Integer)
-            obj = new Integer32();
-        else if (asnType == SMIDataTypeCode.Counter32)
-            obj = new Counter32();
-        else if (asnType == SMIDataTypeCode.Gauge32)
-            obj = new Gauge32();
-        else if (asnType == SMIDataTypeCode.Counter64)
-            obj = new Counter64();
-        else if (asnType == SMIDataTypeCode.TimeTicks)
-            obj = new TimeTicks();
-        else if (asnType == SMIDataTypeCode.OctetString)
-            obj = new OctetString();
-        else if (asnType == SMIDataTypeCode.Opaque)
-            obj = new Opaque();
-        else if (asnType == SMIDataTypeCode.IPAddress)
-            obj = new IpAddress();
-        else if (asnType == SMIDataTypeCode.ObjectId)
-            obj = new Oid();
-        else if (asnType == SMIDataTypeCode.PartyClock)
-            obj = new V2PartyClock();
-        else if (asnType == SMIDataTypeCode.NoSuchInstance)
-            obj = new NoSuchInstance();
-        else if (asnType == SMIDataTypeCode.NoSuchObject)
-            obj = new NoSuchObject();
-        else if (asnType == SMIDataTypeCode.EndOfMibView)
-            obj = new EndOfMibView();
-        else if (asnType == SMIDataTypeCode.Null) obj = new Null();
+        AsnType? obj = asnType switch
+        {
+            SMIDataTypeCode.Integer => new Integer32(),
+            SMIDataTypeCode.Counter32 => new Counter32(),
+            SMIDataTypeCode.Gauge32 => new Gauge32(),
+            SMIDataTypeCode.Counter64 => new Counter64(),
+            SMIDataTypeCode.TimeTicks => new TimeTicks(),
+            SMIDataTypeCode.OctetString => new OctetString(),
+            SMIDataTypeCode.Opaque => new Opaque(),
+            SMIDataTypeCode.IPAddress => new IpAddress(),
+            SMIDataTypeCode.ObjectId => new Oid(),
+            SMIDataTypeCode.PartyClock => new V2PartyClock(),
+            SMIDataTypeCode.NoSuchInstance => new NoSuchInstance(),
+            SMIDataTypeCode.NoSuchObject => new NoSuchObject(),
+            SMIDataTypeCode.EndOfMibView => new EndOfMibView(),
+            SMIDataTypeCode.Null => new Null(),
+            _ => null
+        };
 
         return obj;
     }
@@ -87,27 +76,19 @@ public sealed class SMIDataType
     /// <returns>New <see cref="AsnType" /> object.</returns>
     public static AsnType GetSyntaxObject(string name)
     {
-        AsnType obj = null;
-        if (name.ToUpper().Equals("INTEGER32") || name.ToUpper().Equals("INTEGER"))
-            obj = new Integer32();
-        else if (name.ToUpper().Equals("COUNTER32"))
-            obj = new Counter32();
-        else if (name.ToUpper().Equals("GAUGE32"))
-            obj = new Gauge32();
-        else if (name.ToUpper().Equals("COUNTER64"))
-            obj = new Counter64();
-        else if (name.ToUpper().Equals("TIMETICKS"))
-            obj = new TimeTicks();
-        else if (name.ToUpper().Equals("OCTETSTRING"))
-            obj = new OctetString();
-        else if (name.ToUpper().Equals("IPADDRESS"))
-            obj = new IpAddress();
-        else if (name.ToUpper().Equals("OID"))
-            obj = new Oid();
-        else if (name.ToUpper().Equals("NULL"))
-            obj = new Null();
-        else
-            throw new ArgumentException("Invalid value type name");
+        AsnType obj = name.ToUpper() switch
+        {
+            "INTEGER32" or "INTEGER" => new Integer32(),
+            "COUNTER32" => new Counter32(),
+            "GAUGE32" => new Gauge32(),
+            "COUNTER64" => new Counter64(),
+            "TIMETICKS" => new TimeTicks(),
+            "OCTETSTRING" => new OctetString(),
+            "IPADDRESS" => new IpAddress(),
+            "OID" => new Oid(),
+            "NULL" => new Null(),
+            _ => throw new ArgumentException("Invalid value type name")
+        };
 
         return obj;
     }
@@ -117,9 +98,9 @@ public sealed class SMIDataType
     /// </summary>
     /// <param name="type">AsnType class Type member function value.</param>
     /// <returns>String formatted name of the SMI type.</returns>
-    public static string GetTypeName(SMIDataTypeCode type)
+    public static string? GetTypeName(SMIDataTypeCode type)
     {
-        return Enum.GetName(typeof(SMIDataTypeCode), type);
+        return Enum.GetName(type);
     }
 
     /// <summary>
@@ -129,10 +110,7 @@ public sealed class SMIDataType
     /// <returns>true if valid SMI data type, otherwise false</returns>
     public static bool IsValidType(byte smiType)
     {
-        var validSMITypes = (byte[])Enum.GetValues(typeof(SMIDataTypeCode));
-        foreach (int type in validSMITypes)
-            if (type == smiType)
-                return true;
-        return false;
+        var validSMITypes = Enum.GetValues<SMIDataTypeCode>();
+        return validSMITypes.Cast<byte>().Any(type => type == smiType);
     }
 }

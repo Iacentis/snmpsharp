@@ -98,7 +98,7 @@ public class TrapPdu : AsnType, ICloneable
     ///     Initialize the class with values from another <see cref="TrapPdu" /> class.
     /// </summary>
     /// <param name="second">TrapPdu class whose values are used to initialize this class.</param>
-    public void Set(TrapPdu second)
+    public void Set(TrapPdu? second)
     {
         if (second != null)
         {
@@ -114,7 +114,7 @@ public class TrapPdu : AsnType, ICloneable
         }
         else
         {
-            throw new ArgumentException("Invalid argument type.", "value");
+            throw new ArgumentException("Invalid argument type.", nameof(second));
         }
     }
 
@@ -150,8 +150,7 @@ public class TrapPdu : AsnType, ICloneable
     /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != (byte)PduType.Trap)
             throw new SnmpException("Invalid PDU type.");
 

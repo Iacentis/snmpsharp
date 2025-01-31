@@ -60,9 +60,15 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <param name="buf">Byte array to copy into internal buffer</param>
     public MutableByte(byte[]? buf)
     {
-        if (buf == null) return;
-        _buffer = new byte[buf.Length];
-        Buffer.BlockCopy(buf, 0, _buffer, 0, buf.Length);
+        switch (buf)
+        {
+            case null:
+                return;
+            default:
+                _buffer = new byte[buf.Length];
+                Buffer.BlockCopy(buf, 0, _buffer, 0, buf.Length);
+                break;
+        }
     }
 
     /// <summary>
@@ -147,7 +153,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <returns>-1 if class is less then, 0 if equal or 1 if greater then array it's compared against</returns>
     public int CompareTo(byte[]? other)
     {
-        if (other is null) return 1;
+        switch (other)
+        {
+            case null:
+                return 1;
+        }
         if (other.Length > Length) return -1;
 
         if (other.Length < Length) return 1;
@@ -282,11 +292,16 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     {
         if (position < 0 || position >= Length)
             throw new ArgumentOutOfRangeException(nameof(position), "Index outside of the buffer scope");
-        if (buf == null) throw new ArgumentNullException(nameof(buf));
-        if (position == 0)
+        switch (buf)
         {
-            Prepend(buf);
-            return;
+            case null:
+                throw new ArgumentNullException(nameof(buf));
+        }
+        switch (position)
+        {
+            case 0:
+                Prepend(buf);
+                return;
         }
 
         var tmp = new byte[_buffer.Length + buf.Length];
@@ -305,10 +320,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     {
         if (position < 0 || position >= Length)
             throw new ArgumentOutOfRangeException(nameof(position), "Index outside of the buffer scope");
-        if (position == 0)
+        switch (position)
         {
-            Prepend(buf);
-            return;
+            case 0:
+                Prepend(buf);
+                return;
         }
 
         var tmp = new byte[_buffer.Length + 1];
@@ -324,17 +340,20 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <param name="buf">Byte array to prepend</param>
     public void Prepend(byte[] buf)
     {
-        if (Length <= 0)
+        switch (Length)
         {
-            // Don't throw an exception, just change the call to set
-            Set(buf);
-        }
-        else
-        {
-            var tmp = new byte[_buffer.Length + buf.Length];
-            Buffer.BlockCopy(buf, 0, tmp, 0, buf.Length);
-            Buffer.BlockCopy(_buffer, 0, tmp, buf.Length, _buffer.Length);
-            _buffer = tmp;
+            case <= 0:
+                // Don't throw an exception, just change the call to set
+                Set(buf);
+                break;
+            default:
+            {
+                var tmp = new byte[_buffer.Length + buf.Length];
+                Buffer.BlockCopy(buf, 0, tmp, 0, buf.Length);
+                Buffer.BlockCopy(_buffer, 0, tmp, buf.Length, _buffer.Length);
+                _buffer = tmp;
+                break;
+            }
         }
     }
 
@@ -344,17 +363,20 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <param name="buf">Byte value to prepend</param>
     public void Prepend(byte buf)
     {
-        if (Length <= 0)
+        switch (Length)
         {
-            // Don't throw an exception, just change the call to set
-            Set(buf);
-        }
-        else
-        {
-            var tmp = new byte[_buffer.Length + 1];
-            tmp[0] = buf;
-            Buffer.BlockCopy(_buffer, 0, tmp, 1, _buffer.Length);
-            _buffer = tmp;
+            case <= 0:
+                // Don't throw an exception, just change the call to set
+                Set(buf);
+                break;
+            default:
+            {
+                var tmp = new byte[_buffer.Length + 1];
+                tmp[0] = buf;
+                Buffer.BlockCopy(_buffer, 0, tmp, 1, _buffer.Length);
+                _buffer = tmp;
+                break;
+            }
         }
     }
 
@@ -365,8 +387,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
     public void RemoveBeginning(int count)
     {
-        if (Length == 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "Buffer is length 0. Unable to remove members.");
+        switch (Length)
+        {
+            case 0:
+                throw new ArgumentOutOfRangeException(nameof(count), "Buffer is length 0. Unable to remove members.");
+        }
         if (count > _buffer.Length)
             throw new ArgumentOutOfRangeException(nameof(count), "Byte count is greater then the length of the array");
         if (count == Length)
@@ -388,8 +413,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// <exception cref="ArgumentOutOfRangeException">Thrown when count points beyond the bounds of the internal byte array</exception>
     public void RemoveEnd(int count)
     {
-        if (Length == 0)
-            throw new ArgumentOutOfRangeException(nameof(count), "Buffer is length 0. Unable to remove members.");
+        switch (Length)
+        {
+            case 0:
+                throw new ArgumentOutOfRangeException(nameof(count), "Buffer is length 0. Unable to remove members.");
+        }
         if (count > _buffer.Length)
             throw new ArgumentOutOfRangeException(nameof(count), "Byte count is greater then the length of the array");
         if (count == Length)
@@ -415,28 +443,38 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     /// </exception>
     public void Remove(int start, int count)
     {
-        if (_buffer.Length == 0)
-            throw new ArgumentOutOfRangeException(nameof(start), "Byte array is empty. Unable to remove members.");
+        switch (_buffer.Length)
+        {
+            case 0:
+                throw new ArgumentOutOfRangeException(nameof(start), "Byte array is empty. Unable to remove members.");
+        }
         if (start < 0 || start >= Length)
             throw new ArgumentOutOfRangeException(nameof(start), "Start argument is beyond the bounds of the array.");
         if (count > Length || start + count > Length || count < 1)
             throw new ArgumentOutOfRangeException(nameof(count), "Length argument is beyond the bounds of the array.");
-        if (start == 0)
+        switch (start)
         {
-            RemoveBeginning(count);
-        }
-        else if (start + count == Length)
-        {
-            RemoveEnd(count);
-        }
-        else
-        {
-            var tmp = new byte[_buffer.Length - count];
-            // Copy data from the start of the existing array
-            Buffer.BlockCopy(_buffer, 0, tmp, 0, start);
-            // Copy data from the end of the existing array
-            Buffer.BlockCopy(_buffer, start + count, tmp, start, _buffer.Length - start - count);
-            _buffer = tmp;
+            case 0:
+                RemoveBeginning(count);
+                break;
+            default:
+            {
+                if (start + count == Length)
+                {
+                    RemoveEnd(count);
+                }
+                else
+                {
+                    var tmp = new byte[_buffer.Length - count];
+                    // Copy data from the start of the existing array
+                    Buffer.BlockCopy(_buffer, 0, tmp, 0, start);
+                    // Copy data from the end of the existing array
+                    Buffer.BlockCopy(_buffer, start + count, tmp, start, _buffer.Length - start - count);
+                    _buffer = tmp;
+                }
+
+                break;
+            }
         }
     }
 
@@ -505,8 +543,11 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
     public static bool operator ==(MutableByte? buf1, MutableByte? buf2)
     {
         if (ReferenceEquals(buf1, buf2)) return true;
-        if (buf1 is null && buf2 is null)
-            return true;
+        switch (buf1)
+        {
+            case null when buf2 is null:
+                return true;
+        }
         if (buf1 is null || buf2 is null)
             return false;
         return buf1.Equals(buf2);
@@ -571,9 +612,13 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
             return false; // If first one is null then it is less then second one
         if (firstClass != null && secondClass == null)
             return true;
-        if (firstClass?.CompareTo(secondClass) < 0)
-            return false;
-        return true;
+        switch (firstClass?.CompareTo(secondClass))
+        {
+            case < 0:
+                return false;
+            default:
+                return true;
+        }
     }
 
     /// <summary>
@@ -630,9 +675,17 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         for (var i = 0; i < _buffer.Length; i++)
         {
             str.Append($"{_buffer[i]:x02} ");
-            if (i > 0 && i < _buffer.Length - 1 && i % 16 == 0)
-                str.Append('\n');
-            else if (i < _buffer.Length - 1) str.Append(' ');
+            switch (i)
+            {
+                case > 0 when i < _buffer.Length - 1 && i % 16 == 0:
+                    str.Append('\n');
+                    break;
+                default:
+                {
+                    if (i < _buffer.Length - 1) str.Append(' ');
+                    break;
+                }
+            }
         }
 
         return str.ToString();
@@ -659,20 +712,26 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         for (var i = start; i < start + length; i++)
         {
             output.Append($"{_buffer[i]:x2}");
-            if (_buffer[i] > 31 && _buffer[i] < 128) dec.Append(Convert.ToChar(_buffer[i]));
-            ++pcnt;
-            if (pcnt == 16)
+            switch (_buffer[i])
             {
-                output.Append("    ");
-                output.Append(dec);
-                output.Append('\n');
-                output.Append($"{i + 1:d03}  ");
-                dec.Remove(0, dec.Length);
-                pcnt = 0;
+                case > 31 and < 128:
+                    dec.Append(Convert.ToChar(_buffer[i]));
+                    break;
             }
-            else
+            ++pcnt;
+            switch (pcnt)
             {
-                output.Append(' ');
+                case 16:
+                    output.Append("    ");
+                    output.Append(dec);
+                    output.Append('\n');
+                    output.Append($"{i + 1:d03}  ");
+                    dec.Remove(0, dec.Length);
+                    pcnt = 0;
+                    break;
+                default:
+                    output.Append(' ');
+                    break;
             }
         }
 

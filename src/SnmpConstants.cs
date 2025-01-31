@@ -127,31 +127,31 @@ public sealed class SnmpConstants
     #region SMI Type codes and type names
 
     /// <summary>Signed 32-bit integer ASN.1 data type. For implementation, see <see cref="Integer32" /></summary>
-    public static readonly byte SMI_INTEGER = (byte)(AsnType.UNIVERSAL | AsnType.INTEGER);
+    public const byte SMI_INTEGER = AsnType.UNIVERSAL | AsnType.INTEGER;
 
     /// <summary>String representation of the AsnType.INTEGER type.</summary>
-    public static readonly string SMI_INTEGER_STR = "Integer32";
+    public const string SMI_INTEGER_STR = "Integer32";
 
     /// <summary>
     ///     Data type representing a sequence of zero or more 8-bit byte values. For implementation, see
     ///     <see cref="OctetString" />
     /// </summary>
-    public static readonly byte SMI_STRING = (byte)(AsnType.UNIVERSAL | AsnType.OCTETSTRING);
+    public const byte SMI_STRING = AsnType.UNIVERSAL | AsnType.OCTETSTRING;
 
     /// <summary>String representation of the AsnType.OCTETSTRING type.</summary>
-    public static readonly string SMI_STRING_STR = "OctetString";
+    public const string SMI_STRING_STR = "OctetString";
 
     /// <summary>Object id ASN.1 type. For implementation, see <see cref="Oid" /></summary>
-    public static readonly byte SMI_OBJECTID = (byte)(AsnType.UNIVERSAL | AsnType.OBJECTID);
+    public const byte SMI_OBJECTID = AsnType.UNIVERSAL | AsnType.OBJECTID;
 
     /// <summary>String representation of the SMI_OBJECTID type.</summary>
-    public static readonly string SMI_OBJECTID_STR = "ObjectId";
+    public const string SMI_OBJECTID_STR = "ObjectId";
 
     /// <summary>Null ASN.1 value type. For implementation, see <see cref="Null" />.</summary>
-    public static readonly byte SMI_NULL = (byte)(AsnType.UNIVERSAL | AsnType.NULL);
+    public const byte SMI_NULL = AsnType.UNIVERSAL | AsnType.NULL;
 
     /// <summary>String representation of the SMI_NULL type.</summary>
-    public static readonly string SMI_NULL_STR = "NULL";
+    public const string SMI_NULL_STR = "NULL";
 
     /// <summary>
     ///     An application string is a sequence of octets
@@ -160,20 +160,20 @@ public sealed class SnmpConstants
     ///     an IP Address which is an Application String of length
     ///     four.
     /// </summary>
-    public static readonly byte SMI_APPSTRING = (byte)(AsnType.APPLICATION | 0x00);
+    public const byte SMI_APPSTRING = AsnType.APPLICATION | 0x00;
 
     /// <summary>String representation of the SMI_APPSTRING type.</summary>
-    public static readonly string SMI_APPSTRING_STR = "AppString";
+    public const string SMI_APPSTRING_STR = "AppString";
 
     /// <summary>
     ///     An IP Address is an application string of length four
     ///     and is indistinguishable from the SMI_APPSTRING value.
     ///     The address is a 32-bit quantity stored in network byte order.
     /// </summary>
-    public static readonly byte SMI_IPADDRESS = (byte)(AsnType.APPLICATION | 0x00);
+    public const byte SMI_IPADDRESS = AsnType.APPLICATION | 0x00;
 
     /// <summary>String representation of the SMI_IPADDRESS type.</summary>
-    public static readonly string SMI_IPADDRESS_STR = "IPAddress";
+    public const string SMI_IPADDRESS_STR = "IPAddress";
 
     /// <summary>
     ///     A non-negative integer that may be incremented, but not
@@ -181,49 +181,49 @@ public sealed class SnmpConstants
     ///     the range of zero to 2^32-1 (4,294,967,295). When the counter
     ///     reaches its maximum value it wraps back to zero and starts again.
     /// </summary>
-    public static readonly byte SMI_COUNTER32 = (byte)(AsnType.APPLICATION | 0x01);
+    public const byte SMI_COUNTER32 = AsnType.APPLICATION | 0x01;
 
     /// <summary>String representation of the SMI_COUNTER32 type.</summary>
-    public static readonly string SMI_COUNTER32_STR = "Counter32";
+    public const string SMI_COUNTER32_STR = "Counter32";
 
     /// <summary>
     ///     Represents a non-negative integer that may increase or
     ///     decrease with a maximum value of 2^32-1. If the maximum
     ///     value is reached the gauge stays latched until reset.
     /// </summary>
-    public static readonly byte SMI_GAUGE32 = (byte)(AsnType.APPLICATION | 0x02);
+    public const byte SMI_GAUGE32 = AsnType.APPLICATION | 0x02;
 
     /// <summary>String representation of the SMI_GAUGE32 type.</summary>
-    public static readonly string SMI_GAUGE32_STR = "Gauge32";
+    public const string SMI_GAUGE32_STR = "Gauge32";
 
     /// <summary>
     ///     Used to represent the integers in the range of 0 to 2^32-1.
     ///     This type is identical to the SMI_COUNTER32 and are
     ///     indistinguishable in ASN.1
     /// </summary>
-    public static readonly byte SMI_UNSIGNED32 = (byte)(AsnType.APPLICATION | 0x02); // same as gauge
+    public const byte SMI_UNSIGNED32 = AsnType.APPLICATION | 0x02; // same as gauge
 
     /// <summary>String representation of the SMI_UNSIGNED32 type.</summary>
-    public static readonly string SMI_UNSIGNED32_STR = "Unsigned32";
+    public const string SMI_UNSIGNED32_STR = "Unsigned32";
 
     /// <summary>
     ///     This represents a non-negative integer that counts time, modulo 2^32.
     ///     The time is represented in hundredths (1/100th) of a second.
     /// </summary>
-    public static readonly byte SMI_TIMETICKS = (byte)(AsnType.APPLICATION | 0x03);
+    public const byte SMI_TIMETICKS = AsnType.APPLICATION | 0x03;
 
     /// <summary>String representation of the SMI_TIMETICKS type.</summary>
-    public static readonly string SMI_TIMETICKS_STR = "TimeTicks";
+    public const string SMI_TIMETICKS_STR = "TimeTicks";
 
     /// <summary>
     ///     Used to support the transport of arbitrary data. The
     ///     data itself is encoded as an octet string, but may be in
     ///     any format defined by ASN.1 or another standard.
     /// </summary>
-    public static readonly byte SMI_OPAQUE = (byte)(AsnType.APPLICATION | 0x04);
+    public const byte SMI_OPAQUE = AsnType.APPLICATION | 0x04;
 
     /// <summary>String representation of the SMI_OPAQUE type.</summary>
-    public static readonly string SMI_OPAQUE_STR = "Opaque";
+    public const string SMI_OPAQUE_STR = "Opaque";
 
     /// <summary>
     ///     Defines a 64-bit unsigned counter. A counter is an integer that
@@ -232,13 +232,13 @@ public sealed class SnmpConstants
     ///     When the counter reaches it's maximum it wraps back to zero and
     ///     starts again.
     /// </summary>
-    public static readonly byte SMI_COUNTER64 = (byte)(AsnType.APPLICATION | 0x06); // SMIv2 only
+    public const byte SMI_COUNTER64 = AsnType.APPLICATION | 0x06; // SMIv2 only
 
     /// <summary>String representation of the SMI_COUNTER64 type.</summary>
-    public static readonly string SMI_COUNTER64_STR = "Counter64";
+    public const string SMI_COUNTER64_STR = "Counter64";
 
     /// <summary>String representation of the unknown SMI data type.</summary>
-    public static readonly string SMI_UNKNOWN_STR = "Unknown";
+    public const string SMI_UNKNOWN_STR = "Unknown";
 
     /// <summary>
     ///     The SNMPv2 error representing that there is No-Such-Object
@@ -246,7 +246,7 @@ public sealed class SnmpConstants
     ///     of a requested object identifier that does not exist in the
     ///     agent's tables
     /// </summary>
-    public static readonly byte SMI_NOSUCHOBJECT = (byte)(AsnType.CONTEXT | AsnType.PRIMITIVE | 0x00);
+    public const byte SMI_NOSUCHOBJECT = AsnType.CONTEXT | AsnType.PRIMITIVE | 0x00;
 
     /// <summary>
     ///     The SNMPv2 error representing that there is No-Such-Instance
@@ -254,7 +254,7 @@ public sealed class SnmpConstants
     ///     of a requested object identifier instance does not exist in the
     ///     agent's tables.
     /// </summary>
-    public static readonly byte SMI_NOSUCHINSTANCE = (byte)(AsnType.CONTEXT | AsnType.PRIMITIVE | 0x01);
+    public const byte SMI_NOSUCHINSTANCE = AsnType.CONTEXT | AsnType.PRIMITIVE | 0x01;
 
     /// <summary>
     ///     The SNMPv2 error representing the End-Of-Mib-View.
@@ -263,18 +263,18 @@ public sealed class SnmpConstants
     ///     end of the agent's mib table and there is no lexicographic
     ///     successor.
     /// </summary>
-    public static readonly byte SMI_ENDOFMIBVIEW = (byte)(AsnType.CONTEXT | AsnType.PRIMITIVE | 0x02);
+    public const byte SMI_ENDOFMIBVIEW = AsnType.CONTEXT | AsnType.PRIMITIVE | 0x02;
 
     /// <summary>
     ///     SEQUENCE Variable Binding code. Hex value: 0x30
     /// </summary>
-    public static readonly byte SMI_SEQUENCE = (byte)(AsnType.SEQUENCE | AsnType.CONSTRUCTOR);
+    public const byte SMI_SEQUENCE = AsnType.SEQUENCE | AsnType.CONSTRUCTOR;
 
     /// <summary>
     ///     Defines an SNMPv2 Party Clock. The Party Clock is currently
     ///     Obsolete, but included for backwards compatibility. Obsoleted in RFC 1902.
     /// </summary>
-    public static readonly byte SMI_PARTY_CLOCK = (byte)(AsnType.APPLICATION | 0x07);
+    public const byte SMI_PARTY_CLOCK = AsnType.APPLICATION | 0x07;
 
     #endregion
 
@@ -342,12 +342,12 @@ public sealed class SnmpConstants
     /// <summary>
     ///     Array of all SNMP version 3 REPORT packet error OIDs
     /// </summary>
-    public static Oid[] v3ErrorOids = new[]
-    {
+    public static Oid[] v3ErrorOids =
+    [
         usmStatsUnsupportedSecLevels, usmStatsNotInTimeWindows, usmStatsUnknownSecurityNames,
         usmStatsUnknownEngineIDs, usmStatsWrongDigests, usmStatsDecryptionErrors, snmpUnknownSecurityModels,
         snmpUnknownPDUHandlers
-    };
+    ];
 
     #endregion SNMP version 3 error OID values
 
@@ -356,38 +356,26 @@ public sealed class SnmpConstants
     /// <summary>Used to create correct variable type object for the specified encoded type</summary>
     /// <param name="asnType">ASN.1 type code</param>
     /// <returns>A new object matching type supplied or null if type was not recognized.</returns>
-    public static AsnType GetSyntaxObject(byte asnType)
+    public static AsnType? GetSyntaxObject(byte asnType)
     {
-        AsnType obj = null;
-        if (asnType == SMI_INTEGER)
-            obj = new Integer32();
-        else if (asnType == SMI_COUNTER32)
-            obj = new Counter32();
-        else if (asnType == SMI_GAUGE32)
-            obj = new Gauge32();
-        else if (asnType == SMI_COUNTER64)
-            obj = new Counter64();
-        else if (asnType == SMI_TIMETICKS)
-            obj = new TimeTicks();
-        else if (asnType == SMI_STRING)
-            obj = new OctetString();
-        else if (asnType == SMI_OPAQUE)
-            obj = new Opaque();
-        else if (asnType == SMI_IPADDRESS)
-            obj = new IpAddress();
-        else if (asnType == SMI_OBJECTID)
-            obj = new Oid();
-        else if (asnType == SMI_PARTY_CLOCK)
-            obj = new V2PartyClock();
-        else if (asnType == SMI_NOSUCHINSTANCE)
-            obj = new NoSuchInstance();
-        else if (asnType == SMI_NOSUCHOBJECT)
-            obj = new NoSuchObject();
-        else if (asnType == SMI_ENDOFMIBVIEW)
-            obj = new EndOfMibView();
-        else if (asnType == SMI_NULL) obj = new Null();
-
-        return obj;
+        return asnType switch
+        {
+            SMI_INTEGER => new Integer32(),
+            SMI_COUNTER32 => new Counter32(),
+            SMI_GAUGE32 => new Gauge32(),
+            SMI_COUNTER64 => new Counter64(),
+            SMI_TIMETICKS => new TimeTicks(),
+            SMI_STRING => new OctetString(),
+            SMI_OPAQUE => new Opaque(),
+            SMI_IPADDRESS => new IpAddress(),
+            SMI_OBJECTID => new Oid(),
+            SMI_PARTY_CLOCK => new V2PartyClock(),
+            SMI_NOSUCHINSTANCE => new NoSuchInstance(),
+            SMI_NOSUCHOBJECT => new NoSuchObject(),
+            SMI_ENDOFMIBVIEW => new EndOfMibView(),
+            SMI_NULL => new Null(),
+            _ => null
+        };
     }
 
     /// <summary>
@@ -406,29 +394,19 @@ public sealed class SnmpConstants
     /// <returns>New <see cref="AsnType" /> object.</returns>
     public static AsnType GetSyntaxObject(string name)
     {
-        AsnType obj = null;
-        if (name == "Integer32")
-            obj = new Integer32();
-        else if (name == "Counter32")
-            obj = new Counter32();
-        else if (name == "Gauge32")
-            obj = new Gauge32();
-        else if (name == "Counter64")
-            obj = new Counter64();
-        else if (name == "TimeTicks")
-            obj = new TimeTicks();
-        else if (name == "OctetString")
-            obj = new OctetString();
-        else if (name == "IpAddress")
-            obj = new IpAddress();
-        else if (name == "Oid")
-            obj = new Oid();
-        else if (name == "Null")
-            obj = new Null();
-        else
-            throw new ArgumentException("Invalid value type name");
-
-        return obj;
+        return name switch
+        {
+            "Integer32" => new Integer32(),
+            "Counter32" => new Counter32(),
+            "Gauge32" => new Gauge32(),
+            "Counter64" => new Counter64(),
+            "TimeTicks" => new TimeTicks(),
+            "OctetString" => new OctetString(),
+            "IpAddress" => new IpAddress(),
+            "Oid" => new Oid(),
+            "Null" => new Null(),
+            _ => throw new ArgumentException("Invalid value type name")
+        };
     }
 
     /// <summary>
@@ -438,31 +416,24 @@ public sealed class SnmpConstants
     /// <returns>String formatted name of the SMI type.</returns>
     public static string GetTypeName(byte type)
     {
-        if (type == SMI_IPADDRESS)
-            return SMI_IPADDRESS_STR;
-        if (type == SMI_APPSTRING)
-            return SMI_APPSTRING_STR;
-        if (type == SMI_COUNTER32)
-            return SMI_COUNTER32_STR;
-        if (type == SMI_COUNTER64)
-            return SMI_COUNTER64_STR;
-        if (type == SMI_GAUGE32)
-            return SMI_GAUGE32_STR;
-        if (type == SMI_INTEGER)
-            return SMI_INTEGER_STR;
-        if (type == SMI_NULL)
-            return SMI_NULL_STR;
-        if (type == SMI_OBJECTID)
-            return SMI_OBJECTID_STR;
-        if (type == SMI_OPAQUE)
-            return SMI_OPAQUE_STR;
-        if (type == SMI_STRING)
-            return SMI_STRING_STR;
-        if (type == SMI_TIMETICKS)
-            return SMI_TIMETICKS_STR;
-        if (type == SMI_UNSIGNED32)
-            return SMI_UNSIGNED32_STR;
-        return SMI_UNKNOWN_STR;
+        return type switch
+        {
+            SMI_IPADDRESS => SMI_IPADDRESS_STR,
+            // if (type == SMI_APPSTRING)
+            //     return SMI_APPSTRING_STR;
+            SMI_COUNTER32 => SMI_COUNTER32_STR,
+            SMI_COUNTER64 => SMI_COUNTER64_STR,
+            SMI_GAUGE32 => SMI_GAUGE32_STR,
+            SMI_INTEGER => SMI_INTEGER_STR,
+            SMI_NULL => SMI_NULL_STR,
+            SMI_OBJECTID => SMI_OBJECTID_STR,
+            SMI_OPAQUE => SMI_OPAQUE_STR,
+            SMI_STRING => SMI_STRING_STR,
+            SMI_TIMETICKS => SMI_TIMETICKS_STR,
+            _ => SMI_UNKNOWN_STR
+            // if (type == SMI_UNSIGNED32)
+            //     return SMI_UNSIGNED32_STR;
+        };
     }
 
     /// <summary>
@@ -474,17 +445,24 @@ public sealed class SnmpConstants
         var val = 0;
         for (var i = 0; i < data.Length; i++)
         {
-            if (val == 0) Console.Write("{0:d04} ", i);
+            switch (val)
+            {
+                case 0:
+                    Console.Write("{0:d04} ", i);
+                    break;
+            }
+
             Console.Write("{0:x2}", data[i]);
             val += 1;
-            if (val == 16)
+            switch (val)
             {
-                val = 0;
-                Console.Write("\n");
-            }
-            else
-            {
-                Console.Write(" ");
+                case 16:
+                    val = 0;
+                    Console.Write("\n");
+                    break;
+                default:
+                    Console.Write(" ");
+                    break;
             }
         }
 
@@ -499,9 +477,13 @@ public sealed class SnmpConstants
     /// <returns>true if valid SNMP version, otherwise false</returns>
     public static bool IsValidVersion(int version)
     {
-        if (version == (int)SnmpVersion.Ver1 || version == (int)SnmpVersion.Ver2 || version == (int)SnmpVersion.Ver3)
-            return true;
-        return false;
+        switch (version)
+        {
+            case (int)SnmpVersion.Ver1 or (int)SnmpVersion.Ver2 or (int)SnmpVersion.Ver3:
+                return true;
+            default:
+                return false;
+        }
     }
 
     #endregion

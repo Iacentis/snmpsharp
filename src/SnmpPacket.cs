@@ -58,7 +58,7 @@ public abstract class SnmpPacket
     /// <summary>
     ///     Get Pdu
     /// </summary>
-    public virtual Pdu Pdu => null;
+    public virtual Pdu Pdu => new Pdu();
 
     /// <summary>
     ///     Decode SNMP packet header. This class decodes the initial sequence and SNMP protocol version
@@ -74,9 +74,12 @@ public abstract class SnmpPacket
     public virtual int decode(byte[] buffer, int length)
     {
         var offset = 0;
-        if (length < 2)
+        switch (length)
+        {
             // we need at least 2 bytes
-            throw new OverflowException("Packet too small.");
+            case < 2:
+                throw new OverflowException("Packet too small.");
+        }
 
         // make sure you get the right length buffer to be able to check for over/under flow errors
         var buf = new MutableByte(buffer, length);
@@ -143,14 +146,13 @@ public abstract class SnmpPacket
     public static int GetProtocolVersion(byte[] buffer, int bufferLength)
     {
         var offset = 0;
-        var length = 0;
-        var asnType = AsnType.ParseHeader(buffer, ref offset, out length);
+        var asnType = AsnType.ParseHeader(buffer, ref offset, out var length);
         if (offset + length > bufferLength) return -1; // This is not a valid packet
 
         if (asnType != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid sequence type at the start of the SNMP packet.");
         var version = new Integer32();
-        offset = version.decode(buffer, offset);
+        version.decode(buffer, offset);
         return version.Value;
     }
 
@@ -159,15 +161,12 @@ public abstract class SnmpPacket
     /// <summary>
     ///     Packet is a report
     /// </summary>
-    public bool IsReport
-    {
-        get
+    public bool IsReport =>
+        Pdu.Type switch
         {
-            if (Pdu.Type == PduType.Response)
-                return true;
-            return false;
-        }
-    }
+            PduType.Response => true,
+            _ => false
+        };
 
     /// <summary>
     ///     Packet is a request
@@ -175,42 +174,32 @@ public abstract class SnmpPacket
     /// <remarks>
     ///     Checks if the class content is a SNMP Get, GetNext, GetBulk or Set request.
     /// </remarks>
-    public bool IsRequest
-    {
-        get
+    public bool IsRequest =>
+        Pdu.Type switch
         {
-            if (Pdu.Type == PduType.Get || Pdu.Type == PduType.GetNext ||
-                Pdu.Type == PduType.GetBulk || Pdu.Type == PduType.Set)
-                return true;
-            return false;
-        }
-    }
+            PduType.Get or PduType.GetNext or PduType.GetBulk or PduType.Set => true,
+            _ => false
+        };
 
     /// <summary>
     ///     Packet is a response
     /// </summary>
-    public bool IsResponse
-    {
-        get
+    public bool IsResponse =>
+        Pdu.Type switch
         {
-            if (Pdu.Type == PduType.Response)
-                return true;
-            return false;
-        }
-    }
+            PduType.Response => true,
+            _ => false
+        };
 
     /// <summary>
     ///     Packet is a notification
     /// </summary>
-    public bool IsNotification
-    {
-        get
+    public bool IsNotification =>
+        Pdu.Type switch
         {
-            if (Pdu.Type == PduType.Trap || Pdu.Type == PduType.V2Trap || Pdu.Type == PduType.Inform)
-                return true;
-            return false;
-        }
-    }
+            PduType.Trap or PduType.V2Trap or PduType.Inform => true,
+            _ => false
+        };
 
     #endregion
 }

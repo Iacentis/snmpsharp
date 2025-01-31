@@ -16,6 +16,7 @@
 
 using System;
 using System.Globalization;
+using System.Text;
 
 namespace SnmpSharpNet;
 
@@ -28,13 +29,13 @@ namespace SnmpSharpNet;
 ///     class to allow users to perform MAC address specific operations on OctetString values.
 /// </remarks>
 [Serializable]
-public class EthernetAddress : OctetString, ICloneable
+public class EthernetAddress : OctetString
 {
     /// <summary>
     ///     Constructor. Initialize the class to 0000.0000.0000
     /// </summary>
     public EthernetAddress()
-        : base(new byte[] { 0, 0, 0, 0, 0, 0 })
+        : base([0, 0, 0, 0, 0, 0])
     {
     }
 
@@ -47,11 +48,16 @@ public class EthernetAddress : OctetString, ICloneable
     public EthernetAddress(byte[] data)
         : base(data)
     {
-        if (data.Length < 6)
-            throw new ArgumentException("Buffer underflow error converting IP address");
-        if (data.Length > 6)
-            throw new ArgumentException("Buffer overflow error converting IP address");
-        base.Set(data);
+        switch (data.Length)
+        {
+            case < 6:
+                throw new ArgumentException("Buffer underflow error converting IP address");
+            case > 6:
+                throw new ArgumentException("Buffer overflow error converting IP address");
+            default:
+                base.Set(data);
+                break;
+        }
     }
 
     /// <summary>
@@ -74,11 +80,20 @@ public class EthernetAddress : OctetString, ICloneable
     public EthernetAddress(OctetString second)
         : this()
     {
-        if (second.Length < 6)
-            throw new ArgumentException("Buffer underflow error converting IP address");
-        if (Length > 6)
-            throw new ArgumentException("Buffer overflow error converting IP address");
-        base.Set(second);
+        switch (second.Length)
+        {
+            case < 6:
+                throw new ArgumentException("Buffer underflow error converting IP address");
+        }
+
+        switch (Length)
+        {
+            case > 6:
+                throw new ArgumentException("Buffer overflow error converting IP address");
+            default:
+                base.Set(second);
+                break;
+        }
     }
 
     /// <summary>
@@ -105,23 +120,26 @@ public class EthernetAddress : OctetString, ICloneable
     {
         if (value is not { Length: > 0 })
             throw new ArgumentException("Invalid argument. String is empty.");
-        var workString = (string)value.Clone();
+        var workString = new StringBuilder(value);
         for (var cnt = 0; cnt < value.Length; cnt++)
-            if (!char.IsNumber(workString[cnt]) && char.ToUpper(workString[cnt]) != 'A' &&
-                char.ToUpper(workString[cnt]) != 'B' && char.ToUpper(workString[cnt]) != 'C' &&
-                char.ToUpper(workString[cnt]) != 'D' && char.ToUpper(workString[cnt]) != 'E' &&
-                char.ToUpper(workString[cnt]) != 'F')
-            {
-                workString.Remove(cnt, 1);
-                cnt -= 1;
-            }
+        {
+            var character = workString[cnt];
+
+            if (char.IsNumber(character)) continue;
+            var upperChar = char.ToUpper(character);
+            if (upperChar is 'A' or 'B' or 'C' or 'D' or 'E' or 'F')
+                continue;
+            workString = workString.Remove(cnt, 1);
+            cnt -= 1;
+        }
 
         if (workString.Length != 12) throw new ArgumentException("Invalid Ethernet address format.");
         var pos = 0;
         var bufpos = 0;
+        Span<char> val = stackalloc char[2];
         while (pos + 2 < workString.Length)
         {
-            var val = workString.Substring(pos, 2);
+            workString.CopyTo(pos, val, 2);
             var v = byte.Parse(val, NumberStyles.HexNumber);
             _data[bufpos++] = v;
             pos += 2;

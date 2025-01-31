@@ -32,7 +32,7 @@ public delegate void SnmpAsyncResponse(AsyncRequestResult result, SnmpPacket pac
 ///     InternetProtocol version 4 User Datagram Protocol (IP/UDP) transport protocol
 ///     implementation for use with SNMP versions 1, 2 and 3.
 /// </remarks>
-public class UdpTarget : UdpTransport, IDisposable
+public class UdpTarget : UdpTransport
 {
     /// <summary>
     ///     SNMP request target host IP address
@@ -42,7 +42,7 @@ public class UdpTarget : UdpTransport, IDisposable
     /// <summary>
     ///     Internal storage of the agent parameters information passed to the async request member function.
     /// </summary>
-    protected IAgentParameters _agentParameters;
+    protected IAgentParameters? _agentParameters;
 
     /// <summary>
     ///     SNMP target UDP port number
@@ -102,10 +102,15 @@ public class UdpTarget : UdpTransport, IDisposable
         set
         {
             _address = value;
-            if (_address.AddressFamily == AddressFamily.InterNetworkV6 && !IsIPv6)
-                initSocket(true);
-            else if (_address.AddressFamily == AddressFamily.InterNetwork && IsIPv6)
-                initSocket(false);
+            switch (_address.AddressFamily)
+            {
+                case AddressFamily.InterNetworkV6 when !IsIPv6:
+                    initSocket(true);
+                    break;
+                case AddressFamily.InterNetwork when IsIPv6:
+                    initSocket(false);
+                    break;
+            }
         }
     }
 
@@ -172,117 +177,132 @@ public class UdpTarget : UdpTransport, IDisposable
     ///     * No data received on request. SnmpException.ErrorCode is set to SnmpException.NoDataReceived
     ///     * Invalid RequestId in reply. SnmpException.ErrorCode is set to SnmpException.InvalidRequestId
     /// </exception>
-    public SnmpPacket Request(Pdu pdu, IAgentParameters agentParameters)
+    public SnmpPacket? Request(Pdu pdu, IAgentParameters agentParameters)
     {
         byte[] outPacket;
-        if (agentParameters.Version == SnmpVersion.Ver3)
+        switch (agentParameters.Version)
         {
-            var secparams = (SecureAgentParameters)agentParameters;
-            if (secparams.Authentication != AuthenticationDigests.None && secparams.AuthenticationSecret.Length <= 0)
-                throw new SnmpAuthenticationException("Authentication password not specified.");
-            if (secparams.Privacy != PrivacyProtocols.None && secparams.PrivacySecret.Length <= 0)
-                throw new SnmpPrivacyException("Privacy password not specified.");
-            _noSourceCheck = false; // this option is not valid for SNMP v3 requests
-            var outPdu = new ScopedPdu(pdu);
-            var packet = new SnmpV3Packet(outPdu);
-            secparams.InitializePacket(packet);
-            if (secparams.HasCachedKeys)
-                outPacket = packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey);
-            else
+            case SnmpVersion.Ver3:
+            {
+                var secparams = (SecureAgentParameters)agentParameters;
+                if (secparams.Authentication != AuthenticationDigests.None &&
+                    secparams.AuthenticationSecret.Length <= 0)
+                    throw new SnmpAuthenticationException("Authentication password not specified.");
+                if (secparams.Privacy != PrivacyProtocols.None && secparams.PrivacySecret.Length <= 0)
+                    throw new SnmpPrivacyException("Privacy password not specified.");
+                _noSourceCheck = false; // this option is not valid for SNMP v3 requests
+                var outPdu = new ScopedPdu(pdu);
+                var packet = new SnmpV3Packet(outPdu);
+                secparams.InitializePacket(packet);
+                outPacket = secparams.HasCachedKeys switch
+                {
+                    true => packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey),
+                    _ => packet.encode()
+                };
+                break;
+            }
+            case SnmpVersion.Ver1:
+            {
+                var param = (AgentParameters)agentParameters;
+                if (!param.Valid())
+                    throw new SnmpException(SnmpException.InvalidIAgentParameters,
+                        "Invalid AgentParameters. Unable to process request.");
+                var packet = new SnmpV1Packet();
+                packet.Pdu.Set(pdu);
+                packet.Community.Set(param.Community);
                 outPacket = packet.encode();
-        }
-        else if (agentParameters.Version == SnmpVersion.Ver1)
-        {
-            var param = (AgentParameters)agentParameters;
-            if (!param.Valid())
-                throw new SnmpException(SnmpException.InvalidIAgentParameters,
-                    "Invalid AgentParameters. Unable to process request.");
-            var packet = new SnmpV1Packet();
-            packet.Pdu.Set(pdu);
-            packet.Community.Set(param.Community);
-            outPacket = packet.encode();
-            _noSourceCheck = param.DisableReplySourceCheck;
-        }
-        else if (agentParameters.Version == SnmpVersion.Ver2)
-        {
-            var param = (AgentParameters)agentParameters;
-            if (!param.Valid())
-                throw new SnmpException(SnmpException.InvalidIAgentParameters,
-                    "Invalid AgentParameters. Unable to process request.");
-            var packet = new SnmpV2Packet();
-            packet.Pdu.Set(pdu);
-            packet.Community.Set(param.Community);
-            _noSourceCheck = param.DisableReplySourceCheck;
-            outPacket = packet.encode();
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Unsupported SNMP version.");
+                _noSourceCheck = param.DisableReplySourceCheck;
+                break;
+            }
+            case SnmpVersion.Ver2:
+            {
+                var param = (AgentParameters)agentParameters;
+                if (!param.Valid())
+                    throw new SnmpException(SnmpException.InvalidIAgentParameters,
+                        "Invalid AgentParameters. Unable to process request.");
+                var packet = new SnmpV2Packet();
+                packet.Pdu.Set(pdu);
+                packet.Community.Set(param.Community);
+                _noSourceCheck = param.DisableReplySourceCheck;
+                outPacket = packet.encode();
+                break;
+            }
+            default:
+                throw new SnmpInvalidVersionException("Unsupported SNMP version.");
         }
 
         var inBuffer = base.Request(_address, _port, outPacket, outPacket.Length, _timeout, _retry);
 
         if (inBuffer is not { Length: > 0 })
             throw new SnmpException(SnmpException.NoDataReceived, "No data received on request.");
-        // verify packet
-        if (agentParameters.Version == SnmpVersion.Ver1)
+        switch (agentParameters.Version)
         {
-            var packet = new SnmpV1Packet();
-            var param = (AgentParameters)agentParameters;
-            packet.decode(inBuffer, inBuffer.Length);
-            if (packet.Community != param.Community)
-                // invalid community name received. Ignore the rest of the packet
-                throw new SnmpAuthenticationException("Invalid community name in reply.");
-            if (packet.Pdu.RequestId != pdu.RequestId)
-                // invalid request id. unmatched response ignored
-                throw new SnmpException(SnmpException.InvalidRequestId, "Invalid request id in reply.");
-            return packet;
-        }
-
-        if (agentParameters.Version == SnmpVersion.Ver2)
-        {
-            var packet = new SnmpV2Packet();
-            var param = (AgentParameters)agentParameters;
-            packet.decode(inBuffer, inBuffer.Length);
-            if (packet.Community != param.Community)
-                // invalid community name received. Ignore the rest of the packet
-                throw new SnmpAuthenticationException("Invalid community name in reply.");
-            if (packet.Pdu.RequestId != pdu.RequestId)
-                // invalid request id. unmatched response ignored
-                throw new SnmpException(SnmpException.InvalidRequestId, "Invalid request id in reply.");
-            return packet;
-        }
-
-        if (agentParameters.Version == SnmpVersion.Ver3)
-        {
-            var packet = new SnmpV3Packet();
-            var secparams = (SecureAgentParameters)agentParameters;
-            secparams.InitializePacket(packet);
-            if (secparams.HasCachedKeys)
-                packet.decode(inBuffer, inBuffer.Length, secparams.AuthenticationKey, secparams.PrivacyKey);
-            else
-                packet.decode(inBuffer, inBuffer.Length);
-            // first check if packet is a discovery response and process it
-            if (packet.Pdu.Type == PduType.Report && packet.Pdu.VbCount > 0 &&
-                packet.Pdu.VbList[0].Oid.Equals(SnmpConstants.usmStatsUnknownEngineIDs))
+            // verify packet
+            case SnmpVersion.Ver1:
             {
-                secparams.UpdateDiscoveryValues(packet);
+                var packet = new SnmpV1Packet();
+                var param = (AgentParameters)agentParameters;
+                packet.decode(inBuffer, inBuffer.Length);
+                if (packet.Community != param.Community)
+                    // invalid community name received. Ignore the rest of the packet
+                    throw new SnmpAuthenticationException("Invalid community name in reply.");
+                if (packet.Pdu.RequestId != pdu.RequestId)
+                    // invalid request id. unmatched response ignored
+                    throw new SnmpException(SnmpException.InvalidRequestId, "Invalid request id in reply.");
                 return packet;
             }
+            case SnmpVersion.Ver2:
+            {
+                var packet = new SnmpV2Packet();
+                var param = (AgentParameters)agentParameters;
+                packet.decode(inBuffer, inBuffer.Length);
+                if (packet.Community != param.Community)
+                    // invalid community name received. Ignore the rest of the packet
+                    throw new SnmpAuthenticationException("Invalid community name in reply.");
+                if (packet.Pdu.RequestId != pdu.RequestId)
+                    // invalid request id. unmatched response ignored
+                    throw new SnmpException(SnmpException.InvalidRequestId, "Invalid request id in reply.");
+                return packet;
+            }
+            case SnmpVersion.Ver3:
+            {
+                var packet = new SnmpV3Packet();
+                var secparams = (SecureAgentParameters)agentParameters;
+                secparams.InitializePacket(packet);
+                switch (secparams.HasCachedKeys)
+                {
+                    case true:
+                        packet.decode(inBuffer, inBuffer.Length, secparams.AuthenticationKey, secparams.PrivacyKey);
+                        break;
+                    default:
+                        packet.decode(inBuffer, inBuffer.Length);
+                        break;
+                }
 
-            if (!secparams.ValidateIncomingPacket(packet)) return null;
+                switch (packet.Pdu.Type)
+                {
+                    // first check if packet is a discovery response and process it
+                    case PduType.Report when packet.Pdu.VbCount > 0 &&
+                                             packet.Pdu.VbList[0].Oid?.Equals(SnmpConstants.usmStatsUnknownEngineIDs) ==
+                                             true:
+                        secparams.UpdateDiscoveryValues(packet);
+                        return packet;
+                }
 
-            secparams.UpdateDiscoveryValues(packet); // update time, etc. values
-            return packet;
+                if (!secparams.ValidateIncomingPacket(packet)) return null;
+
+                secparams.UpdateDiscoveryValues(packet); // update time, etc. values
+                return packet;
+            }
+            default:
+                return null;
         }
-
-        return null;
     }
 
     /// <summary>
     ///     Internal event to send result of the async request to.
     /// </summary>
-    protected event SnmpAsyncResponse _response;
+    protected event SnmpAsyncResponse? _response;
 
     /// <summary>
     ///     Make SNMP request. With this method you can make blocked SNMP version 1, 2 and 3 requests of type GET,
@@ -299,81 +319,96 @@ public class UdpTarget : UdpTransport, IDisposable
     /// </param>
     /// <param name="responseCallback">Callback that receives the result of the async operation.</param>
     /// <returns>True if async request was successfully initiated, otherwise false.</returns>
-    public bool RequestAsync(Pdu pdu, IAgentParameters agentParameters, SnmpAsyncResponse responseCallback)
+    public bool RequestAsync(Pdu pdu, IAgentParameters agentParameters, SnmpAsyncResponse? responseCallback)
     {
-        if (IsBusy) return false; // class is busy
+        switch (IsBusy)
+        {
+            case true:
+                return false; // class is busy
+        }
+
         _response = null;
         _response += responseCallback;
         _agentParameters = agentParameters;
         byte[] outPacket;
-        if (agentParameters.Version == SnmpVersion.Ver3)
+        switch (agentParameters.Version)
         {
-            var secparams = (SecureAgentParameters)agentParameters;
-            if (secparams.Authentication != AuthenticationDigests.None && secparams.AuthenticationSecret.Length <= 0)
-                // _response(AsyncRequestResult.AuthenticationError, null);
-                return false;
-            if (secparams.Privacy != PrivacyProtocols.None && secparams.PrivacySecret.Length <= 0)
-                // _response(AsyncRequestResult.PrivacyError, null);
-                return false;
-            _noSourceCheck = false; // this option is not valid for SNMP v3 requests
-            var outPdu = new ScopedPdu(pdu);
-            outPdu.ContextEngineId.Set(secparams.EngineId);
-            outPdu.ContextName.Set(secparams.ContextName);
-            var packet = new SnmpV3Packet(outPdu);
-            secparams.InitializePacket(packet);
-            try
+            case SnmpVersion.Ver3:
             {
-                if (secparams.HasCachedKeys)
-                    outPacket = packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey);
-                else
+                var secparams = (SecureAgentParameters)agentParameters;
+                if (secparams.Authentication != AuthenticationDigests.None &&
+                    secparams.AuthenticationSecret.Length <= 0)
+                    // _response(AsyncRequestResult.AuthenticationError, null);
+                    return false;
+                if (secparams.Privacy != PrivacyProtocols.None && secparams.PrivacySecret.Length <= 0)
+                    // _response(AsyncRequestResult.PrivacyError, null);
+                    return false;
+                _noSourceCheck = false; // this option is not valid for SNMP v3 requests
+                var outPdu = new ScopedPdu(pdu);
+                outPdu.ContextEngineId.Set(secparams.EngineId);
+                outPdu.ContextName.Set(secparams.ContextName);
+                var packet = new SnmpV3Packet(outPdu);
+                secparams.InitializePacket(packet);
+                try
+                {
+                    switch (secparams.HasCachedKeys)
+                    {
+                        case true:
+                            outPacket = packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey);
+                            break;
+                        default:
+                            outPacket = packet.encode();
+                            break;
+                    }
+                }
+                catch (Exception)
+                {
+                    _response?.Invoke(AsyncRequestResult.EncodeError, packet);
+                    return false;
+                }
+
+                break;
+            }
+            case (int)SnmpVersion.Ver1:
+            {
+                var param = (AgentParameters)agentParameters;
+                _noSourceCheck = param.DisableReplySourceCheck;
+                var packet = new SnmpV1Packet();
+                packet.Pdu.Set(pdu);
+                packet.Community.Set(param.Community);
+                try
+                {
                     outPacket = packet.encode();
+                }
+                catch (Exception)
+                {
+                    _response?.Invoke(AsyncRequestResult.EncodeError, packet);
+                    return false;
+                }
+
+                break;
             }
-            catch (Exception ex)
+            case SnmpVersion.Ver2:
             {
-                ex.GetType();
-                _response(AsyncRequestResult.EncodeError, packet);
-                return false;
+                var param = (AgentParameters)agentParameters;
+                _noSourceCheck = param.DisableReplySourceCheck;
+                var packet = new SnmpV2Packet();
+                packet.Pdu.Set(pdu);
+                packet.Community.Set(param.Community);
+                try
+                {
+                    outPacket = packet.encode();
+                }
+                catch (Exception)
+                {
+                    _response?.Invoke(AsyncRequestResult.EncodeError, packet);
+                    return false;
+                }
+
+                break;
             }
-        }
-        else if (agentParameters.Version == (int)SnmpVersion.Ver1)
-        {
-            var param = (AgentParameters)agentParameters;
-            _noSourceCheck = param.DisableReplySourceCheck;
-            var packet = new SnmpV1Packet();
-            packet.Pdu.Set(pdu);
-            packet.Community.Set(param.Community);
-            try
-            {
-                outPacket = packet.encode();
-            }
-            catch (Exception ex)
-            {
-                ex.GetType();
-                _response(AsyncRequestResult.EncodeError, packet);
-                return false;
-            }
-        }
-        else if (agentParameters.Version == SnmpVersion.Ver2)
-        {
-            var param = (AgentParameters)agentParameters;
-            _noSourceCheck = param.DisableReplySourceCheck;
-            var packet = new SnmpV2Packet();
-            packet.Pdu.Set(pdu);
-            packet.Community.Set(param.Community);
-            try
-            {
-                outPacket = packet.encode();
-            }
-            catch (Exception ex)
-            {
-                ex.GetType();
-                _response(AsyncRequestResult.EncodeError, packet);
-                return false;
-            }
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Unsupported SNMP version.");
+            default:
+                throw new SnmpInvalidVersionException("Unsupported SNMP version.");
         }
 
         if (!base.RequestAsync(_address, _port, outPacket, outPacket.Length, _timeout, _retry, AsyncResponse))
@@ -399,22 +434,8 @@ public class UdpTarget : UdpTransport, IDisposable
         param.SecurityName.Set("");
         param.Reportable = true;
         var pdu = new Pdu(); // just leave everything at default.
-        var inpkt = (SnmpV3Packet)Request(pdu, param);
-        if (inpkt != null)
-        {
-            if (inpkt.USM.EngineBoots == 0 && inpkt.USM.EngineTime == 0)
-            {
-                inpkt = (SnmpV3Packet)Request(pdu, param);
-                if (inpkt != null)
-                    return true;
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        return false;
+        if (Request(pdu, param) is not SnmpV3Packet inpkt) return false;
+        return inpkt.USM is not { EngineBoots: 0, EngineTime: 0 } || Request(pdu, param) is SnmpV3Packet;
     }
 
     /// <summary>
@@ -429,92 +450,100 @@ public class UdpTarget : UdpTransport, IDisposable
         return RequestAsync(p, param, callback);
     }
 
-    internal void AsyncResponse(AsyncRequestResult result, IPEndPoint peer, byte[] buffer, int buflen)
+    internal void AsyncResponse(AsyncRequestResult result, IPEndPoint? peer, byte[]? buffer, int buflen)
     {
         if (result != AsyncRequestResult.NoError)
         {
-            _response(result, null);
+            _response?.Invoke(result, null!);
         }
         else
         {
             if (buffer is not { Length: > 0 } || buflen <= 0)
             {
-                _response(AsyncRequestResult.NoDataReceived, null);
+                _response?.Invoke(AsyncRequestResult.NoDataReceived, null!);
                 return;
             }
 
-            // verify packet
-            if (_agentParameters.Version == (int)SnmpVersion.Ver1)
+            switch (_agentParameters?.Version)
             {
-                var packet = new SnmpV1Packet();
-                try
+                // verify packet
+                case (int)SnmpVersion.Ver1:
                 {
-                    packet.decode(buffer, buflen);
-                }
-                catch (Exception ex)
-                {
-                    ex.GetType();
-                    // Console.WriteLine("Exception while decoding SNMP packet: " + ex.ToString());
-                    _response(AsyncRequestResult.DecodeError, packet);
-                    return;
-                }
-
-                _response(AsyncRequestResult.NoError, packet);
-            }
-            else if (_agentParameters.Version == SnmpVersion.Ver2)
-            {
-                var packet = new SnmpV2Packet();
-                try
-                {
-                    packet.decode(buffer, buflen);
-                }
-                catch (Exception ex)
-                {
-                    ex.GetType();
-                    // Console.WriteLine("Exception while decoding SNMP packet: " + ex.ToString());
-                    // MutableByte b = new MutableByte(buffer, buflen);
-                    // Console.WriteLine("Buffer length {0}", buflen);
-                    // SnmpConstants.DumpHex(b);
-                    _response(AsyncRequestResult.DecodeError, packet);
-                    return;
-                }
-
-                _response(AsyncRequestResult.NoError, packet);
-            }
-            else if (_agentParameters.Version == SnmpVersion.Ver3)
-            {
-                var packet = new SnmpV3Packet();
-                var secparams = (SecureAgentParameters)_agentParameters;
-                secparams.InitializePacket(packet);
-                try
-                {
-                    if (secparams.HasCachedKeys)
-                        packet.decode(buffer, buflen, secparams.AuthenticationKey, secparams.PrivacyKey);
-                    else
+                    var packet = new SnmpV1Packet();
+                    try
+                    {
                         packet.decode(buffer, buflen);
-                }
-                catch
-                {
-                    _response(AsyncRequestResult.DecodeError, packet);
-                    return;
-                }
-
-                if (!secparams.ValidateIncomingPacket(packet))
-                {
-                    _response(AsyncRequestResult.AuthenticationError, packet);
-                }
-                else
-                {
-                    secparams.UpdateDiscoveryValues(packet); // update time, etc. values
-                    if (packet.USM.EngineId.Length > 0 && packet.USM.EngineBoots == 0 && packet.USM.EngineTime == 0)
+                    }
+                    catch (Exception)
                     {
-                        var p = new Pdu();
-                        RequestAsync(p, _agentParameters, _response);
+                        _response?.Invoke(AsyncRequestResult.DecodeError, packet);
+                        return;
+                    }
+
+                    _response?.Invoke(AsyncRequestResult.NoError, packet);
+                    break;
+                }
+                case SnmpVersion.Ver2:
+                {
+                    var packet = new SnmpV2Packet();
+                    try
+                    {
+                        packet.decode(buffer, buflen);
+                    }
+                    catch (Exception)
+                    {
+                        _response?.Invoke(AsyncRequestResult.DecodeError, packet);
+                        return;
+                    }
+
+                    _response?.Invoke(AsyncRequestResult.NoError, packet);
+                    break;
+                }
+                case SnmpVersion.Ver3:
+                {
+                    var packet = new SnmpV3Packet();
+                    var secparams = (SecureAgentParameters)_agentParameters;
+                    secparams.InitializePacket(packet);
+                    try
+                    {
+                        switch (secparams.HasCachedKeys)
+                        {
+                            case true:
+                                packet.decode(buffer, buflen, secparams.AuthenticationKey, secparams.PrivacyKey);
+                                break;
+                            default:
+                                packet.decode(buffer, buflen);
+                                break;
+                        }
+                    }
+                    catch
+                    {
+                        _response?.Invoke(AsyncRequestResult.DecodeError, packet);
+                        return;
+                    }
+
+                    if (!secparams.ValidateIncomingPacket(packet))
+                    {
+                        _response?.Invoke(AsyncRequestResult.AuthenticationError, packet);
                     }
                     else
                     {
-                        _response(AsyncRequestResult.NoError, packet);
+                        secparams.UpdateDiscoveryValues(packet); // update time, etc. values
+                        switch (packet.USM.EngineId.Length)
+                        {
+                            case > 0 when packet.USM is { EngineBoots: 0, EngineTime: 0 }:
+                            {
+                                var p = new Pdu();
+                                RequestAsync(p, _agentParameters, _response);
+                                break;
+                            }
+                            default:
+                                _response?.Invoke(AsyncRequestResult.NoError, packet);
+                                break;
+                        }
                     }
+
+                    break;
                 }
             }
         }

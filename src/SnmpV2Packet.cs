@@ -136,17 +136,14 @@ public class SnmpV2Packet : SnmpPacket
     {
         var buf = new MutableByte(buffer, length);
 
-        int headerLength;
-        var offset = 0;
-
-        offset = base.decode(buffer, buffer.Length);
+        var offset = base.decode(buffer, buffer.Length);
 
         if (Version != SnmpVersion.Ver2)
             throw new SnmpInvalidVersionException("Invalid protocol version");
 
         offset = _snmpCommunity.decode(buf, offset);
         var tmpOffset = offset;
-        var asnType = AsnType.ParseHeader(buf, ref tmpOffset, out headerLength);
+        var asnType = AsnType.ParseHeader(buf, ref tmpOffset, out var headerLength);
 
         // Check packet length
         if (headerLength + offset > buf.Length)
@@ -160,7 +157,7 @@ public class SnmpV2Packet : SnmpPacket
                                                   $"0x{asnType:x2}");
 
         // Now process the Protocol Data Unit
-        offset = Pdu.decode(buf, offset);
+        Pdu.decode(buf, offset);
         return length;
     }
 
@@ -223,11 +220,22 @@ public class SnmpV2Packet : SnmpPacket
         if (informPacket.Pdu.Type != PduType.Inform)
             throw new SnmpInvalidPduTypeException("Inform response can only be built for INFORM packets.");
 
-        var response = new SnmpV2Packet(informPacket.Community.ToString());
-        response.Pdu.Type = PduType.Response;
+        var response = new SnmpV2Packet(informPacket.Community.ToString())
+        {
+            Pdu =
+            {
+                Type = PduType.Response
+            }
+        };
         response.Pdu.TrapObjectID.Set(informPacket.Pdu.TrapObjectID);
         response.Pdu.TrapSysUpTime.Value = informPacket.Pdu.TrapSysUpTime.Value;
-        foreach (var v in informPacket.Pdu.VbList) response.Pdu.VbList.Add(v.Oid, v.Value);
+        foreach (var v in informPacket.Pdu.VbList)
+        {
+            if (v.Oid is null) continue;
+            if (v.Value is null) continue;
+            response.Pdu.VbList.Add(v.Oid, v.Value);
+        }
+
         response.Pdu.RequestId = informPacket.Pdu.RequestId;
 
         return response;

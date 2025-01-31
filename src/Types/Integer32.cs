@@ -122,10 +122,14 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <exception cref="ArgumentException">Argument is not Integer32 type.</exception>
     public void Set(AsnType? value)
     {
-        if (value is Integer32 val)
-            _value = val.Value;
-        else
-            throw new ArgumentException("Invalid argument type.");
+        switch (value)
+        {
+            case Integer32 val:
+                _value = val.Value;
+                break;
+            default:
+                throw new ArgumentException("Invalid argument type.");
+        }
     }
 
     /// <summary>
@@ -136,16 +140,21 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <exception cref="ArgumentException">Unable to parse Integer32 value from the argument.</exception>
     public void Set(string value)
     {
-        if (value.Length <= 0)
-            throw new ArgumentOutOfRangeException(value, "String has to be length greater then 0");
+        switch (value.Length)
+        {
+            case <= 0:
+                throw new ArgumentOutOfRangeException(value, "String has to be length greater then 0");
+            default:
+                try
+                {
+                    _value = int.Parse(value);
+                }
+                catch
+                {
+                    throw new ArgumentException("Invalid argument format.");
+                }
 
-        try
-        {
-            _value = int.Parse(value);
-        }
-        catch
-        {
-            throw new ArgumentException("Invalid argument format.");
+                break;
         }
     }
 
@@ -194,17 +203,15 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <returns>True if object value is the same as this class, otherwise false.</returns>
     public override bool Equals(object? obj)
     {
-        if (obj is Integer32 integer32)
+        switch (obj)
         {
-            return _value.Equals(integer32.Value);
+            case Integer32 integer32:
+                return _value.Equals(integer32.Value);
+            case int i32:
+                return _value.Equals(i32);
+            default:
+                return false; // last resort
         }
-
-        if (obj is int i32)
-        {
-            return _value.Equals(i32);
-        }
-
-        return false; // last resort
     }
 
     /// <summary>
@@ -293,46 +300,68 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
         var b = BitConverter.GetBytes(_value);
 
         var tmp = new MutableByte();
-        // if value is negative
-        if (val < 0)
+        switch (val)
         {
-            for (var i = 3; i >= 0; i--)
-                if (tmp.Length > 0 || b[i] != 0xff)
-                    tmp.Append(b[i]);
-
-            if (tmp.Length == 0)
-                // if the value is -1 then all bytes in an integer are 0xff and will be skipped above
-                tmp.Append(0xff);
-            // make sure value is negative
-            if ((tmp[0] & 0x80) == 0)
-                tmp.Prepend(0xff);
-        }
-        else if (val == 0)
-        {
-            // this is just a shortcut to save processing time
-            tmp.Append(0);
-        }
-        else
-        {
-            // byte[] b = BitConverter.GetBytes(val);
-            for (var i = 3; i >= 0; i--)
-                if (b[i] != 0 || tmp.Length > 0)
-                    tmp.Append(b[i]);
-            // if buffer length is 0 then value is 0, and we have to add it to the buffer
-            if (tmp.Length == 0)
+            // if value is negative
+            case < 0:
             {
+                for (var i = 3; i >= 0; i--)
+                    if (tmp.Length > 0 || b[i] != 0xff)
+                        tmp.Append(b[i]);
+
+                switch (tmp.Length)
+                {
+                    // if the value is -1 then all bytes in an integer are 0xff and will be skipped above
+                    case 0:
+                        tmp.Append(0xff);
+                        break;
+                }
+
+                switch (tmp[0] & 0x80)
+                {
+                    // make sure value is negative
+                    case 0:
+                        tmp.Prepend(0xff);
+                        break;
+                }
+                break;
+            }
+            case 0:
+                // this is just a shortcut to save processing time
                 tmp.Append(0);
-            }
-            else
+                break;
+            default:
             {
-                if ((tmp[0] & 0x80) != 0)
-                    // first bit of the first byte has to be 0 otherwise value is negative.
-                    tmp.Prepend(0);
+                // byte[] b = BitConverter.GetBytes(val);
+                for (var i = 3; i >= 0; i--)
+                    if (b[i] != 0 || tmp.Length > 0)
+                        tmp.Append(b[i]);
+                switch (tmp.Length)
+                {
+                    // if buffer length is 0 then value is 0, and we have to add it to the buffer
+                    case 0:
+                        tmp.Append(0);
+                        break;
+                    default:
+                    {
+                        if ((tmp[0] & 0x80) != 0)
+                            // first bit of the first byte has to be 0 otherwise value is negative.
+                            tmp.Prepend(0);
+                        break;
+                    }
+                }
+
+                break;
             }
         }
 
-        // check for 9 1s at the beginning of the encoded value
-        if (tmp.Length > 1 && tmp[0] == 0xff && (tmp[1] & 0x80) != 0) tmp.Prepend(0);
+        switch (tmp.Length)
+        {
+            // check for 9 1s at the beginning of the encoded value
+            case > 1 when tmp[0] == 0xff && (tmp[1] & 0x80) != 0:
+                tmp.Prepend(0);
+                break;
+        }
         BuildHeader(buffer, Type, tmp.Length);
 
         buffer.Append(tmp);
@@ -361,22 +390,32 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
 
         var isNegative = false;
 
-        if (headerLength > 5)
-            throw new OverflowException("Integer size is invalid. Unable to decode.");
-
-        if ((buffer[offset] & HIGH_BIT) != 0) isNegative = true;
-        if (buffer[offset] == 0x80 && headerLength > 2 &&
-            buffer[offset + 1] == 0xff && (buffer[offset + 2] & 0x80) != 0)
+        switch (headerLength)
         {
-            // this is a filler byte to comply with no 9 x consecutive 1s
-            offset += 1;
-            headerLength -= 1; // we've used one byte of the encoded length
+            case > 5:
+                throw new OverflowException("Integer size is invalid. Unable to decode.");
         }
 
-        if (isNegative)
-            _value = -1;
-        else
-            _value = 0;
+        if ((buffer[offset] & HIGH_BIT) != 0) isNegative = true;
+        switch (buffer[offset])
+        {
+            case 0x80 when headerLength > 2 &&
+                           buffer[offset + 1] == 0xff && (buffer[offset + 2] & 0x80) != 0:
+                // this is a filler byte to comply with no 9 x consecutive 1s
+                offset += 1;
+                headerLength -= 1; // we've used one byte of the encoded length
+                break;
+        }
+
+        switch (isNegative)
+        {
+            case true:
+                _value = -1;
+                break;
+            default:
+                _value = 0;
+                break;
+        }
         for (var i = 0; i < headerLength; i++)
         {
             _value <<= 8;

@@ -50,5 +50,5 @@ public class SnmpPrivacyException : SnmpException
     /// <summary>
     ///     Exception that caused this exception to be thrown
     /// </summary>
-    public Exception ParentException { get; }
+    public Exception? ParentException { get; }
 }

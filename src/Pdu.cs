@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SnmpSharpNet;
@@ -59,7 +60,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// </remarks>
     public Pdu()
     {
-        _vbs = null;
+        _vbs = [];
         _errorIndex = new Integer32();
         _errorStatus = new Integer32();
         _requestId = new Integer32();
@@ -81,11 +82,9 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         : this()
     {
         _asnType = (byte)pduType;
-        if (_asnType == (byte)PduType.GetBulk)
-        {
-            _errorStatus.Value = 0;
-            _errorIndex.Value = 100;
-        }
+        if (_asnType != (byte)PduType.GetBulk) return;
+        _errorStatus.Value = 0;
+        _errorIndex.Value = 100;
     }
 
     /// <summary>
@@ -127,15 +126,16 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     public Pdu(Pdu pdu)
         : this(pdu.VbList, pdu.Type, pdu.RequestId)
     {
-        if (pdu.Type == PduType.GetBulk)
+        switch (pdu.Type)
         {
-            NonRepeaters = pdu.NonRepeaters;
-            MaxRepetitions = pdu.MaxRepetitions;
-        }
-        else
-        {
-            ErrorStatus = pdu.ErrorStatus;
-            ErrorIndex = pdu.ErrorIndex;
+            case PduType.GetBulk:
+                NonRepeaters = pdu.NonRepeaters;
+                MaxRepetitions = pdu.MaxRepetitions;
+                break;
+            default:
+                ErrorStatus = pdu.ErrorStatus;
+                ErrorIndex = pdu.ErrorIndex;
+                break;
         }
     }
 
@@ -151,9 +151,13 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     {
         get
         {
-            if (Type == PduType.GetBulk)
-                throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
-            return _errorStatus.Value;
+            switch (Type)
+            {
+                case PduType.GetBulk:
+                    throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
+                default:
+                    return _errorStatus.Value;
+            }
         }
         set => _errorStatus.Value = value;
     }
@@ -171,9 +175,13 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     {
         get
         {
-            if (Type == PduType.GetBulk)
-                throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
-            return _errorIndex.Value;
+            switch (Type)
+            {
+                case PduType.GetBulk:
+                    throw new SnmpInvalidPduTypeException("ErrorStatus property is not valid for GetBulk packets.");
+                default:
+                    return _errorIndex.Value;
+            }
         }
         set => _errorIndex.Value = value;
     }
@@ -229,15 +237,26 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     {
         set
         {
-            if (Type == PduType.GetBulk)
-                _errorIndex.Value = value;
-            else
-                throw new SnmpInvalidPduTypeException("NonRepeaters property is only available in GET-BULK PDU type.");
+            switch (Type)
+            {
+                case PduType.GetBulk:
+                    _errorIndex.Value = value;
+                    break;
+                default:
+                    throw new SnmpInvalidPduTypeException(
+                        "NonRepeaters property is only available in GET-BULK PDU type.");
+            }
         }
         get
         {
-            if (Type == PduType.GetBulk) return _errorIndex.Value;
-            throw new SnmpInvalidPduTypeException("NonRepeaters property is only available in GET-BULK PDU type.");
+            switch (Type)
+            {
+                case PduType.GetBulk:
+                    return _errorIndex.Value;
+                default:
+                    throw new SnmpInvalidPduTypeException(
+                        "NonRepeaters property is only available in GET-BULK PDU type.");
+            }
         }
     }
 
@@ -254,16 +273,26 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     {
         set
         {
-            if (_asnType == (byte)PduType.GetBulk)
-                _errorStatus.Value = value;
-            else
-                throw new SnmpInvalidPduTypeException("NonRepeaters property is only available in GET-BULK PDU type.");
+            switch (_asnType)
+            {
+                case (byte)PduType.GetBulk:
+                    _errorStatus.Value = value;
+                    break;
+                default:
+                    throw new SnmpInvalidPduTypeException(
+                        "NonRepeaters property is only available in GET-BULK PDU type.");
+            }
         }
         get
         {
-            if (Type == PduType.GetBulk)
-                return _errorStatus.Value;
-            throw new SnmpInvalidPduTypeException("NonRepeaters property is only available in GET-BULK PDU type.");
+            switch (Type)
+            {
+                case PduType.GetBulk:
+                    return _errorStatus.Value;
+                default:
+                    throw new SnmpInvalidPduTypeException(
+                        "NonRepeaters property is only available in GET-BULK PDU type.");
+            }
         }
     }
 
@@ -309,29 +338,32 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <exception cref="ArgumentNullException">Thrown when received argument is null</exception>
     public void Set(AsnType value)
     {
-        if (value == null) throw new ArgumentNullException(nameof(value));
-        var pdu = value as Pdu;
-        if (pdu != null)
+        switch (value)
         {
-            Type = pdu.Type;
-            _requestId.Value = pdu.RequestId;
-            if (Type == PduType.GetBulk)
+            case null:
+                throw new ArgumentNullException(nameof(value));
+            case Pdu pdu:
             {
-                NonRepeaters = pdu.NonRepeaters;
-                MaxRepetitions = pdu.MaxRepetitions;
-            }
-            else
-            {
-                ErrorStatus = pdu.ErrorStatus;
-                ErrorIndex = pdu.ErrorIndex;
-            }
+                Type = pdu.Type;
+                _requestId.Value = pdu.RequestId;
+                switch (Type)
+                {
+                    case PduType.GetBulk:
+                        NonRepeaters = pdu.NonRepeaters;
+                        MaxRepetitions = pdu.MaxRepetitions;
+                        break;
+                    default:
+                        ErrorStatus = pdu.ErrorStatus;
+                        ErrorIndex = pdu.ErrorIndex;
+                        break;
+                }
 
-            _vbs.Clear();
-            foreach (var v in pdu.VbList) _vbs.Add((Vb)v.Clone());
-        }
-        else
-        {
-            throw new ArgumentNullException(nameof(value), "Argument is not an Oid class");
+                _vbs.Clear();
+                foreach (var v in pdu.VbList) _vbs.Add((Vb)v.Clone());
+                break;
+            }
+            default:
+                throw new ArgumentNullException(nameof(value), "Argument is not an Oid class");
         }
     }
 
@@ -360,10 +392,16 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         _vbs.Clear();
         _errorStatus.Value = 0;
         _errorIndex.Value = 0;
-        if (_requestId.Value == int.MaxValue)
-            _requestId.Value = 1;
-        else
-            _requestId.Value = _requestId.Value + 1;
+        switch (_requestId.Value)
+        {
+            case int.MaxValue:
+                _requestId.Value = 1;
+                break;
+            default:
+                _requestId.Value = _requestId.Value + 1;
+                break;
+        }
+
         _trapObjectID.Reset();
         _trapTimeStamp.Value = 0;
     }
@@ -379,10 +417,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <returns>Newly constructed GET PDU</returns>
     public static Pdu GetPdu(VbCollection vbs)
     {
-        var p = new Pdu(vbs);
-        p.Type = PduType.Get;
-        p.ErrorIndex = 0;
-        p.ErrorStatus = 0;
+        var p = new Pdu(vbs)
+        {
+            Type = PduType.Get,
+            ErrorIndex = 0,
+            ErrorStatus = 0
+        };
         return p;
     }
 
@@ -406,10 +446,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <returns>Newly constructed SET PDU</returns>
     public static Pdu SetPdu(VbCollection vbs)
     {
-        var p = new Pdu(vbs);
-        p.Type = PduType.Set;
-        p.ErrorIndex = 0;
-        p.ErrorStatus = 0;
+        var p = new Pdu(vbs)
+        {
+            Type = PduType.Set,
+            ErrorIndex = 0,
+            ErrorStatus = 0
+        };
         return p;
     }
 
@@ -433,10 +475,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <returns>Newly constructed GETNEXT PDU</returns>
     public static Pdu GetNextPdu(VbCollection vbs)
     {
-        var p = new Pdu(vbs);
-        p.Type = PduType.GetNext;
-        p.ErrorIndex = 0;
-        p.ErrorStatus = 0;
+        var p = new Pdu(vbs)
+        {
+            Type = PduType.GetNext,
+            ErrorIndex = 0,
+            ErrorStatus = 0
+        };
         return p;
     }
 
@@ -460,10 +504,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <returns>Newly constructed GETBULK PDU</returns>
     public static Pdu GetBulkPdu(VbCollection vbs)
     {
-        var p = new Pdu(vbs);
-        p.Type = PduType.GetBulk;
-        p.MaxRepetitions = 100;
-        p.NonRepeaters = 0;
+        var p = new Pdu(vbs)
+        {
+            Type = PduType.GetBulk,
+            MaxRepetitions = 100,
+            NonRepeaters = 0
+        };
         return p;
     }
 
@@ -492,7 +538,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <param name="pos">0 based VB location</param>
     public void DeleteVb(int pos)
     {
-        if (pos >= 0 && pos <= _vbs.Count) _vbs.RemoveAt(pos);
+        switch (pos)
+        {
+            case >= 0 when pos <= _vbs.Count:
+                _vbs.RemoveAt(pos);
+                break;
+        }
     }
 
     #region Internal variables
@@ -560,9 +611,13 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     {
         var tmpBuffer = new MutableByte();
 
-        // if request id is 0, get a random value
-        if (_requestId.Value == 0)
-            _requestId.SetRandom();
+        switch (_requestId.Value)
+        {
+            // if request id is 0, get a random value
+            case 0:
+                _requestId.SetRandom();
+                break;
+        }
 
         _requestId.encode(tmpBuffer);
         _errorStatus.encode(tmpBuffer);
@@ -570,37 +625,70 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
 
         // if V2TRAP PDU type, add sysUpTime and trapObjectID OIDs before encoding VarBind
 
-        if (Type == PduType.V2Trap || Type == PduType.Inform)
+        switch (Type)
         {
-            if (_vbs.Count == 0)
+            case PduType.V2Trap or PduType.Inform:
             {
-                // add sysUpTime and trapObjectID to the VbList
-                _vbs.Add(SnmpConstants.SysUpTime, _trapTimeStamp);
-                _vbs.Add(SnmpConstants.TrapObjectId, _trapObjectID);
-            }
-            else
-            {
-                // Make sure user didn't manually add sysUpTime and trapObjectID values
-                // to the pdu
-
-                // if we have more then one item in the VarBinds array check for sysUpTime
-                if (_vbs.Count > 0)
-                    // if the first Vb in the VarBinds array is not sysUpTime append it in the
-                    // encoded byte array
-                    if (!_vbs[0].Oid.Equals(SnmpConstants.SysUpTime))
+                switch (_vbs.Count)
+                {
+                    case 0:
+                        // add sysUpTime and trapObjectID to the VbList
+                        _vbs.Add(SnmpConstants.SysUpTime, _trapTimeStamp);
+                        _vbs.Add(SnmpConstants.TrapObjectId, _trapObjectID);
+                        break;
+                    default:
                     {
-                        var sysUpTimeVb = new Vb(SnmpConstants.SysUpTime, _trapTimeStamp);
-                        _vbs.Insert(0, sysUpTimeVb);
-                    }
+                        // Make sure user didn't manually add sysUpTime and trapObjectID values
+                        // to the pdu
 
-                // if we have 2 or more Vbs in the VarBinds array check for trapObjectID Vb
-                if (_vbs.Count > 1)
-                    // if second Vb in the VarBinds array is not trapObjectId encode the value
-                    if (!_vbs[1].Oid.Equals(SnmpConstants.TrapObjectId))
-                    {
-                        var trapObjectIdVb = new Vb(SnmpConstants.TrapObjectId, _trapObjectID);
-                        _vbs.Insert(1, trapObjectIdVb);
+                        switch (_vbs.Count)
+                        {
+                            // if we have more then one item in the VarBinds array check for sysUpTime
+                            // if the first Vb in the VarBinds array is not sysUpTime append it in the
+                            // encoded byte array
+                            case > 0:
+                            {
+                                var oid = _vbs[0].Oid;
+                                switch (oid is not null && oid.Equals(SnmpConstants.SysUpTime))
+                                {
+                                    case false:
+                                    {
+                                        var sysUpTimeVb = new Vb(SnmpConstants.SysUpTime, _trapTimeStamp);
+                                        _vbs.Insert(0, sysUpTimeVb);
+                                        break;
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+
+                        switch (_vbs.Count)
+                        {
+                            // if we have 2 or more Vbs in the VarBinds array check for trapObjectID Vb
+                            // if second Vb in the VarBinds array is not trapObjectId encode the value
+                            case > 1:
+                            {
+                                var oid = _vbs[1].Oid;
+                                switch (oid is not null && oid.Equals(SnmpConstants.TrapObjectId))
+                                {
+                                    case false:
+                                    {
+                                        var trapObjectIdVb = new Vb(SnmpConstants.TrapObjectId, _trapObjectID);
+                                        _vbs.Insert(1, trapObjectIdVb);
+                                        break;
+                                    }
+                                }
+
+                                break;
+                            }
+                        }
+
+                        break;
                     }
+                }
+
+                break;
             }
         }
 
@@ -627,8 +715,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <exception cref="OverflowException">Thrown when header points to more data then is available.</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (offset + headerLength > buffer.Length)
             throw new OverflowException("Insufficient data in packet");
 
@@ -649,22 +736,45 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         // decode the Variable binding collection
         offset = _vbs.decode(buffer, offset);
 
-        // if Pdu is an SNMP version 2 TRAP, remove sysUpTime and trapObjectID from the VarBinds array
-        if (Type == PduType.V2Trap || Type == PduType.Inform)
+        switch (Type)
         {
-            if (_vbs.Count > 0)
-                if (_vbs[0].Oid.Equals(SnmpConstants.SysUpTime))
+            // if Pdu is an SNMP version 2 TRAP, remove sysUpTime and trapObjectID from the VarBinds array
+            case PduType.V2Trap or PduType.Inform:
+            {
+                switch (_vbs.Count)
                 {
-                    _trapTimeStamp.Set(_vbs[0].Value);
-                    _vbs.RemoveAt(0); // remove sysUpTime
+                    case > 0:
+                    {
+                        var oid = _vbs[0].Oid;
+                        if (oid is not null && oid.Equals(SnmpConstants.SysUpTime))
+                        {
+                            var value = _vbs[0].Value;
+                            if (value != null) _trapTimeStamp.Set(value);
+                            _vbs.RemoveAt(0); // remove sysUpTime
+                        }
+
+                        break;
+                    }
                 }
 
-            if (_vbs.Count > 0)
-                if (_vbs[0].Oid.Equals(SnmpConstants.TrapObjectId))
+                switch (_vbs.Count)
                 {
-                    _trapObjectID.Set((Oid)_vbs[0].Value);
-                    _vbs.RemoveAt(0); // remove sysUpTime
+                    case > 0:
+                    {
+                        var oid = _vbs[0].Oid;
+                        var value = _vbs[0].Value as Oid;
+                        if (oid is not null && oid.Equals(SnmpConstants.TrapObjectId))
+                        {
+                            _trapObjectID.Set(value);
+                            _vbs.RemoveAt(0); // remove sysUpTime
+                        }
+
+                        break;
+                    }
                 }
+
+                break;
+            }
         }
 
         return offset;
@@ -713,12 +823,23 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
             str.Append($"ErrorStatus: {ErrorStatus}\nError Index: {ErrorIndex}\n");
         else
             str.Append($"MaxRepeaters: {MaxRepetitions}\nNonRepeaters: {NonRepeaters}\n");
-        if (Type == PduType.V2Trap || Type == PduType.Inform)
-            str.Append($"TimeStamp: {TrapSysUpTime}\nTrapOID: {TrapObjectID}\n");
+        switch (Type)
+        {
+            case PduType.V2Trap or PduType.Inform:
+                str.Append($"TimeStamp: {TrapSysUpTime}\nTrapOID: {TrapObjectID}\n");
+                break;
+        }
+
         str.Append($"VbList entries: {VbCount}\n");
-        if (VbCount > 0)
-            foreach (var v in VbList)
-                str.Append($"Vb: {v}\n");
+        switch (VbCount)
+        {
+            case > 0:
+            {
+                foreach (var v in VbList)
+                    str.Append($"Vb: {v}\n");
+                break;
+            }
+        }
 
         return str.ToString();
     }
@@ -730,21 +851,24 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     public override object Clone()
     {
         var p = new Pdu(_vbs, Type, _requestId);
-        if (Type == PduType.GetBulk)
+        switch (Type)
         {
-            p.NonRepeaters = _errorStatus;
-            p.MaxRepetitions = _errorIndex;
-        }
-        else
-        {
-            p.ErrorIndex = ErrorIndex;
-            p.ErrorStatus = ErrorStatus;
+            case PduType.GetBulk:
+                p.NonRepeaters = _errorStatus;
+                p.MaxRepetitions = _errorIndex;
+                break;
+            default:
+                p.ErrorIndex = ErrorIndex;
+                p.ErrorStatus = ErrorStatus;
+                break;
         }
 
-        if (Type == PduType.V2Trap)
+        switch (Type)
         {
-            p.TrapObjectID.Set(TrapObjectID);
-            p.TrapSysUpTime.Value = TrapSysUpTime.Value;
+            case PduType.V2Trap:
+                p.TrapObjectID.Set(TrapObjectID);
+                p.TrapSysUpTime.Value = TrapSysUpTime.Value;
+                break;
         }
 
         return p;
@@ -758,36 +882,29 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// </summary>
     /// <param name="obj">Integer32 or Pdu to compare</param>
     /// <returns>True if equal, otherwise false</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
-        if (obj == null)
-            return false;
-        if (obj is Integer32)
+        switch (obj)
         {
-            if ((Integer32)obj == _requestId)
+            case null:
+                return false;
+            case Integer32 integer32 when integer32 == _requestId:
                 return true;
-            return false;
+            case Integer32:
+            case Pdu pdu when pdu.Type != Type:
+                return false;
+            case Pdu pdu when pdu.RequestId != RequestId:
+                return false;
+            case Pdu pdu when pdu.VbCount != VbCount:
+                return false;
+            case Pdu pdu:
+            {
+                return VbList.All(v => pdu.VbList.ContainsOid(v.Oid)) &&
+                       pdu.VbList.All(v => VbList.ContainsOid(v.Oid));
+            }
+            default:
+                return false;
         }
-
-        if (obj is Pdu)
-        {
-            var p = (Pdu)obj;
-            if (p.Type != Type)
-                return false;
-            if (p.RequestId != RequestId)
-                return false;
-            if (p.VbCount != VbCount)
-                return false;
-            foreach (var v in VbList)
-                if (!p.VbList.ContainsOid(v.Oid))
-                    return false;
-            foreach (var v in p.VbList)
-                if (!VbList.ContainsOid(v.Oid))
-                    return false;
-            return true;
-        }
-
-        return false;
     }
 
     /// <summary>
@@ -816,52 +933,26 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// </summary>
     /// <param name="oid">Required Oid value</param>
     /// <returns>Variable binding with the Oid matching the parameter, otherwise null</returns>
-    public Vb this[Oid oid]
-    {
-        get
-        {
-            if (!_vbs.ContainsOid(oid))
-                return null;
-            foreach (var v in _vbs)
-                if (v.Oid.Equals(oid))
-                    return v;
-            return null;
-        }
-    }
+    public Vb? this[Oid oid] => !_vbs.ContainsOid(oid) ? null : _vbs.FirstOrDefault(v => v.Oid?.Equals(oid) == true);
 
     /// <summary>
     ///     Access variable bindings using Vb Oid value in the string format
     /// </summary>
     /// <param name="oid">Oid value in string representation</param>
     /// <returns>Variable binding with the Oid matching the parameter, otherwise null</returns>
-    public Vb this[string oid]
-    {
-        get
-        {
-            foreach (var v in _vbs)
-                if (v.Oid.Equals(oid))
-                    return v;
-            return null;
-        }
-    }
+    public Vb? this[string oid] => _vbs.FirstOrDefault(v => v.Oid?.Equals(oid) == true);
 
     /// <summary>
     ///     Get VarBind collection enumerator.
     /// </summary>
     /// <returns>Enumerator</returns>
-    public IEnumerator<Vb> GetEnumerator()
-    {
-        return _vbs.GetEnumerator();
-    }
+    public IEnumerator<Vb> GetEnumerator() => _vbs.GetEnumerator();
 
     /// <summary>
     ///     Get VarBind collection enumerator.
     /// </summary>
     /// <returns>Enumerator</returns>
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable)_vbs).GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)_vbs).GetEnumerator();
 
     #endregion
 }

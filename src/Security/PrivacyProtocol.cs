@@ -51,20 +51,15 @@ public sealed class PrivacyProtocol
     ///     Privacy protocol implementation class on success. If privacy protocol is <see cref="PrivacyProtocols.None" />
     ///     then null is returned.
     /// </returns>
-    public static IPrivacyProtocol GetInstance(PrivacyProtocols privProtocol)
-    {
-        if (privProtocol == PrivacyProtocols.None)
-            return null;
-        if (privProtocol == PrivacyProtocols.DES)
-            return new PrivacyDES();
-        if (privProtocol == PrivacyProtocols.AES128)
-            return new PrivacyAES128();
-        if (privProtocol == PrivacyProtocols.AES192)
-            return new PrivacyAES192();
-        if (privProtocol == PrivacyProtocols.AES256)
-            return new PrivacyAES256();
-        if (privProtocol == PrivacyProtocols.TripleDES)
-            return new Privacy3DES();
-        return null;
-    }
+    public static IPrivacyProtocol? GetInstance(PrivacyProtocols privProtocol) =>
+        privProtocol switch
+        {
+            PrivacyProtocols.None => null,
+            PrivacyProtocols.DES => new PrivacyDES(),
+            PrivacyProtocols.AES128 => new PrivacyAES128(),
+            PrivacyProtocols.AES192 => new PrivacyAES192(),
+            PrivacyProtocols.AES256 => new PrivacyAES256(),
+            PrivacyProtocols.TripleDES => new Privacy3DES(),
+            _ => null
+        };
 }

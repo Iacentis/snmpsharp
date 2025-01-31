@@ -58,7 +58,7 @@ internal class AsyncRequestState
     /// <summary>
     ///     Timer class
     /// </summary>
-    protected Timer _timer;
+    protected Timer? _timer;
 
     /// <summary>
     ///     Constructor.
@@ -75,6 +75,7 @@ internal class AsyncRequestState
         // current retry value is set to -1 because we do not count the first request as a retry.
         _currentRetry = -1;
         _timer = null;
+        _packet = [];
     }
 
     /// <summary>
@@ -125,7 +126,7 @@ internal class AsyncRequestState
     /// <summary>
     ///     Get/Set timer class
     /// </summary>
-    public Timer Timer
+    public Timer? Timer
     {
         get => _timer;
         set => _timer = value;

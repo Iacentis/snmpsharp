@@ -26,29 +26,29 @@ public class Vb : AsnType, ICloneable
     /// <summary>
     ///     OID of the object
     /// </summary>
-    private Oid _oid;
+    private Oid? _oid;
 
     /// <summary>
     ///     Value of the object
     /// </summary>
-    private AsnType _value;
+    private AsnType? _value;
 
     /// <summary>
     ///     Standard constructor. Initializes values to null.
     /// </summary>
     public Vb()
     {
-        _asnType = (byte)(SEQUENCE | CONSTRUCTOR);
+        _asnType = SEQUENCE | CONSTRUCTOR;
     }
 
     /// <summary>
     ///     Construct Vb with the supplied OID and Null value
     /// </summary>
     /// <param name="oid">OID</param>
-    public Vb(Oid oid)
+    public Vb(Oid? oid)
         : this()
     {
-        _oid = (Oid)oid.Clone();
+        _oid = oid?.Clone() as Oid;
         _value = new Null();
     }
 
@@ -57,10 +57,10 @@ public class Vb : AsnType, ICloneable
     /// </summary>
     /// <param name="oid">OID</param>
     /// <param name="value">Value</param>
-    public Vb(Oid oid, AsnType value)
+    public Vb(Oid? oid, AsnType? value)
         : this(oid)
     {
-        _value = (AsnType)value.Clone();
+        _value = value?.Clone() as AsnType;
     }
 
     /// <summary>
@@ -87,18 +87,18 @@ public class Vb : AsnType, ICloneable
     /// <summary>
     ///     SET/Get AsnType value of the Vb
     /// </summary>
-    public AsnType Value
+    public AsnType? Value
     {
-        set => _value = (AsnType)value.Clone();
+        set => _value = value?.Clone() as AsnType;
         get => _value;
     }
 
     /// <summary>
     ///     Get/SET OID of the Vb
     /// </summary>
-    public Oid Oid
+    public Oid? Oid
     {
-        set => _oid = (Oid)value.Clone();
+        set => _oid = value?.Clone() as Oid;
         get => _oid;
     }
 
@@ -117,8 +117,8 @@ public class Vb : AsnType, ICloneable
     /// <param name="value">Vb class to clone data from</param>
     public void Set(Vb value)
     {
-        _oid = (Oid)value.Oid.Clone();
-        _value = (Oid)value.Value.Clone();
+        _oid = value.Oid?.Clone() as Oid;
+        _value = value.Value?.Clone() as Oid;
     }
 
     /// <summary>
@@ -135,7 +135,7 @@ public class Vb : AsnType, ICloneable
     /// <returns>Format Vb string</returns>
     public override string ToString()
     {
-        return _oid.ToString() + ": (" + SnmpConstants.GetTypeName(_value.Type) + ") " + _value;
+        return _oid?.ToString() + ": (" + SnmpConstants.GetTypeName(_value?.Type ?? UNIVERSAL) + ") " + _value;
     }
 
     /// <summary>
@@ -149,10 +149,10 @@ public class Vb : AsnType, ICloneable
     {
         // encode oid to the temporary buffer
         var oidbuf = new MutableByte();
-        _oid.encode(oidbuf);
+        _oid?.encode(oidbuf);
         // encode value to a temporary buffer
         var valbuf = new MutableByte();
-        _value.encode(valbuf);
+        _value?.encode(valbuf);
 
         // calculate data content length of the vb
         var vblen = oidbuf.Length + valbuf.Length;
@@ -177,8 +177,7 @@ public class Vb : AsnType, ICloneable
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException(string.Format("Invalid ASN.1 type. Expected 0x{0:x2} received 0x{1:x2}", Type,
@@ -194,10 +193,14 @@ public class Vb : AsnType, ICloneable
         // Look ahead in the header to see the data type we need to parse
         asnType = ParseHeader(buffer, ref saveOffset, out headerLength);
         _value = SnmpConstants.GetSyntaxObject(asnType);
-        if (_value == null)
-            throw new SnmpDecodingException(
-                $"Invalid ASN.1 type encountered 0x{asnType:x2}. Unable to continue decoding.");
-        offset = _value.decode(buffer, offset);
-        return offset;
+        switch (_value)
+        {
+            case null:
+                throw new SnmpDecodingException(
+                    $"Invalid ASN.1 type encountered 0x{asnType:x2}. Unable to continue decoding.");
+            default:
+                offset = _value.decode(buffer, offset);
+                return offset;
+        }
     }
 }

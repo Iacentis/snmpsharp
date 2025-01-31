@@ -158,8 +158,7 @@ public class ScopedPdu : Pdu
     /// <exception cref="OverflowException">Thrown when buffer is too short to contain the PDU</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int length;
-        var sequenceType = ParseHeader(buffer, ref offset, out length);
+        var sequenceType = ParseHeader(buffer, ref offset, out var length);
         if (sequenceType != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid ScopedPdu sequence detected. Invalid ScopedPdu encoding.");
         // verify packet can match parsed length

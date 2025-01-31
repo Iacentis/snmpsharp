@@ -72,7 +72,7 @@ public class SecureAgentParameters : IAgentParameters
     /// <remarks>
     ///     Privacy key is set by reference.
     /// </remarks>
-    public byte[] PrivacyKey
+    public byte[]? PrivacyKey
     {
         get => _privacyKey;
         set => _privacyKey = value;
@@ -84,7 +84,7 @@ public class SecureAgentParameters : IAgentParameters
     /// <remarks>
     ///     Authentication key value is set by reference.
     /// </remarks>
-    public byte[] AuthenticationKey
+    public byte[]? AuthenticationKey
     {
         get => _authenticationKey;
         set => _authenticationKey = value;
@@ -128,13 +128,21 @@ public class SecureAgentParameters : IAgentParameters
     /// </returns>
     public bool Valid()
     {
-        if (SecurityName.Length <= 0 && (_authenticationProtocol != AuthenticationDigests.None ||
-                                         _privacyProtocol != PrivacyProtocols.None))
+        switch (SecurityName.Length)
+        {
             // You have to supply security name when using security or privacy.
             // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
-            return false;
-        if (_authenticationProtocol == AuthenticationDigests.None && _privacyProtocol != PrivacyProtocols.None)
-            return false; // noAuthPriv mode is not valid in SNMP version 3 
+            case <= 0 when (_authenticationProtocol != AuthenticationDigests.None ||
+                            _privacyProtocol != PrivacyProtocols.None):
+                return false;
+        }
+
+        switch (_authenticationProtocol)
+        {
+            case AuthenticationDigests.None when _privacyProtocol != PrivacyProtocols.None:
+                return false; // noAuthPriv mode is not valid in SNMP version 3 
+        }
+
         if (_authenticationProtocol != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // Authentication protocol requires authentication secret
         if (_privacyProtocol != PrivacyProtocols.None && _privacySecret.Length <= 0)
@@ -154,35 +162,55 @@ public class SecureAgentParameters : IAgentParameters
     /// <exception cref="SnmpInvalidVersionException">Thrown when parameter packet is not SnmpV3Packet</exception>
     public void InitializePacket(SnmpPacket packet)
     {
-        if (packet is SnmpV3Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV3Packet)packet;
-            var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
-            var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
-            if (isAuth && isPriv)
-                pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
-                    _privacyProtocol);
-            else if (isAuth && !isPriv)
-                pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
-            else
-                pkt.NoAuthNoPriv(_securityName);
-            pkt.USM.EngineId.Set(_engineId);
-            pkt.USM.EngineBoots = _engineBoots.Value;
-            pkt.USM.EngineTime = GetCurrentEngineTime();
-            pkt.MaxMessageSize = _maxMessageSize.Value;
-            pkt.MsgFlags.Reportable = _reportable;
-            if (_contextEngineId.Length > 0)
-                pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
-            else
-                pkt.ScopedPdu.ContextEngineId.Set(_engineId);
-            if (_contextName.Length > 0)
-                pkt.ScopedPdu.ContextName.Set(_contextName);
-            else
-                pkt.ScopedPdu.ContextName.Reset();
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Invalid SNMP version.");
+            case SnmpV3Packet pkt:
+            {
+                var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
+                var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
+                switch (isAuth)
+                {
+                    case true when isPriv:
+                        pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
+                            _privacyProtocol);
+                        break;
+                    case true when !isPriv:
+                        pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
+                        break;
+                    default:
+                        pkt.NoAuthNoPriv(_securityName);
+                        break;
+                }
+
+                pkt.USM.EngineId.Set(_engineId);
+                pkt.USM.EngineBoots = _engineBoots.Value;
+                pkt.USM.EngineTime = GetCurrentEngineTime();
+                pkt.MaxMessageSize = _maxMessageSize.Value;
+                pkt.MsgFlags.Reportable = _reportable;
+                switch (_contextEngineId.Length)
+                {
+                    case > 0:
+                        pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
+                        break;
+                    default:
+                        pkt.ScopedPdu.ContextEngineId.Set(_engineId);
+                        break;
+                }
+
+                switch (_contextName.Length)
+                {
+                    case > 0:
+                        pkt.ScopedPdu.ContextName.Set(_contextName);
+                        break;
+                    default:
+                        pkt.ScopedPdu.ContextName.Reset();
+                        break;
+                }
+
+                break;
+            }
+            default:
+                throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
@@ -253,21 +281,22 @@ public class SecureAgentParameters : IAgentParameters
     /// </exception>
     public void UpdateValues(SnmpPacket packet)
     {
-        if (packet is SnmpV3Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV3Packet)packet;
-            _authenticationProtocol = pkt.USM.Authentication;
-            _privacyProtocol = pkt.USM.Privacy;
-            _authenticationSecret.Set(pkt.USM.AuthenticationSecret);
-            _privacySecret.Set(pkt.USM.PrivacySecret);
-            _securityName.Set(pkt.USM.SecurityName);
-            if (pkt.MaxMessageSize < _maxMessageSize.Value)
-                _maxMessageSize.Value = pkt.MaxMessageSize;
-            UpdateDiscoveryValues(pkt);
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Invalid SNMP version.");
+            case SnmpV3Packet pkt:
+            {
+                _authenticationProtocol = pkt.USM.Authentication;
+                _privacyProtocol = pkt.USM.Privacy;
+                _authenticationSecret.Set(pkt.USM.AuthenticationSecret);
+                _privacySecret.Set(pkt.USM.PrivacySecret);
+                _securityName.Set(pkt.USM.SecurityName);
+                if (pkt.MaxMessageSize < _maxMessageSize.Value)
+                    _maxMessageSize.Value = pkt.MaxMessageSize;
+                UpdateDiscoveryValues(pkt);
+                break;
+            }
+            default:
+                throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
@@ -282,19 +311,18 @@ public class SecureAgentParameters : IAgentParameters
     /// </exception>
     public void UpdateDiscoveryValues(SnmpPacket packet)
     {
-        if (packet is SnmpV3Packet)
+        switch (packet)
         {
-            var pkt = (SnmpV3Packet)packet;
-            _engineId.Set(pkt.USM.EngineId);
-            _engineTime.Value = pkt.USM.EngineTime;
-            _engineBoots.Value = pkt.USM.EngineBoots;
-            UpdateTimeStamp();
-            _contextEngineId.Set(pkt.ScopedPdu.ContextEngineId);
-            _contextName.Set(pkt.ScopedPdu.ContextName);
-        }
-        else
-        {
-            throw new SnmpInvalidVersionException("Invalid SNMP version.");
+            case SnmpV3Packet pkt:
+                _engineId.Set(pkt.USM.EngineId);
+                _engineTime.Value = pkt.USM.EngineTime;
+                _engineBoots.Value = pkt.USM.EngineBoots;
+                UpdateTimeStamp();
+                _contextEngineId.Set(pkt.ScopedPdu.ContextEngineId);
+                _contextName.Set(pkt.ScopedPdu.ContextName);
+                break;
+            default:
+                throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
@@ -324,12 +352,15 @@ public class SecureAgentParameters : IAgentParameters
 
         var diff = DateTime.UtcNow.Subtract(_engineTimeStamp);
 
-        // if EngineTime value has not been updated in 10 * max acceptable period (150 seconds) then
-        // time is no longer valid
-        if (diff.TotalSeconds >= 150 * 10)
-            return false;
-
-        return true;
+        switch (diff.TotalSeconds)
+        {
+            // if EngineTime value has not been updated in 10 * max acceptable period (150 seconds) then
+            // time is no longer valid
+            case >= 150 * 10:
+                return false;
+            default:
+                return true;
+        }
     }
 
     /// <summary>
@@ -373,45 +404,58 @@ public class SecureAgentParameters : IAgentParameters
     /// </exception>
     public bool ValidateIncomingPacket(SnmpV3Packet packet)
     {
-        // First check if this is a report packet.
-        if (packet.Pdu.Type == PduType.Report)
+        switch (packet.Pdu.Type)
         {
-            if (!_reportable)
-                // we do not expect report packets so dump it
-                throw new SnmpException(SnmpException.ReportOnNoReports, "Unexpected report packet received.");
-            // return false; 
-            if (packet.MsgFlags.Authentication == false && packet.MsgFlags.Privacy)
-                // no authentication and no privacy allowed in report packets
-                throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
-                    "Authentication and privacy combination is not supported.");
-            // return false; 
-            // the rest will not be checked, there is no point
-        }
-        else
-        {
-            if (packet.USM.EngineId != _engineId)
-                // different engine id is not allowed
-                throw new SnmpException(SnmpException.InvalidAuthoritativeEngineId, "EngineId mismatch.");
-            // return false; 
-            if (packet.USM.Authentication != _authenticationProtocol || packet.USM.Privacy != _privacyProtocol)
-                // we have to have the same authentication and privacy protocol - no last minute changes
-                throw new SnmpException("Agent parameters updated after request was made.");
-            // return false; 
-            if (packet.USM.Authentication != AuthenticationDigests.None)
-                if (packet.USM.AuthenticationSecret != _authenticationSecret)
-                    // authentication secret has to match
-                    throw new SnmpAuthenticationException(
-                        "Authentication secret in the packet class does not match the IAgentParameter secret.");
-            // return false; 
-            if (packet.USM.Privacy != PrivacyProtocols.None)
-                if (packet.USM.PrivacySecret != _privacySecret)
-                    // privacy secret has to match
-                    throw new SnmpPrivacyException(
-                        "Privacy secret in the packet class does not match the IAgentParameters secret.");
-            // return false; 
-            if (packet.USM.SecurityName != _securityName)
-                throw new SnmpException(SnmpException.InvalidSecurityName, "Security name mismatch.");
-            // return false;
+            // First check if this is a report packet.
+            case PduType.Report:
+            {
+                switch (_reportable)
+                {
+                    // we do not expect report packets so dump it
+                    case false:
+                        throw new SnmpException(SnmpException.ReportOnNoReports, "Unexpected report packet received.");
+                }
+
+                switch (packet.MsgFlags.Authentication)
+                {
+                    // return false; 
+                    // no authentication and no privacy allowed in report packets
+                    case false when packet.MsgFlags.Privacy:
+                        throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
+                            "Authentication and privacy combination is not supported.");
+                }
+
+                // return false; 
+                // the rest will not be checked, there is no point
+                break;
+            }
+            default:
+            {
+                if (packet.USM.EngineId != _engineId)
+                    // different engine id is not allowed
+                    throw new SnmpException(SnmpException.InvalidAuthoritativeEngineId, "EngineId mismatch.");
+                // return false; 
+                if (packet.USM.Authentication != _authenticationProtocol || packet.USM.Privacy != _privacyProtocol)
+                    // we have to have the same authentication and privacy protocol - no last minute changes
+                    throw new SnmpException("Agent parameters updated after request was made.");
+                // return false; 
+                if (packet.USM.Authentication != AuthenticationDigests.None)
+                    if (packet.USM.AuthenticationSecret != _authenticationSecret)
+                        // authentication secret has to match
+                        throw new SnmpAuthenticationException(
+                            "Authentication secret in the packet class does not match the IAgentParameter secret.");
+                // return false; 
+                if (packet.USM.Privacy != PrivacyProtocols.None)
+                    if (packet.USM.PrivacySecret != _privacySecret)
+                        // privacy secret has to match
+                        throw new SnmpPrivacyException(
+                            "Privacy secret in the packet class does not match the IAgentParameters secret.");
+                // return false; 
+                if (packet.USM.SecurityName != _securityName)
+                    throw new SnmpException(SnmpException.InvalidSecurityName, "Security name mismatch.");
+                // return false;
+                break;
+            }
         }
 
         return true;
@@ -470,23 +514,16 @@ public class SecureAgentParameters : IAgentParameters
     {
         _authenticationKey = _privacyKey = null;
 
-        if (_engineId == null || _engineId.Length <= 0)
+        if (_engineId.Length <= 0)
             return;
-        if (_authenticationSecret == null || _authenticationSecret.Length <= 0)
+        if (_authenticationSecret.Length <= 0)
             return;
-        if (_authenticationProtocol != AuthenticationDigests.None)
-        {
-            var authProto = SnmpSharpNet.Authentication.GetInstance(_authenticationProtocol);
-            if (authProto != null)
-            {
-                _authenticationKey = authProto.PasswordToKey(_authenticationSecret, _engineId);
-                if (_privacyProtocol != PrivacyProtocols.None && _privacySecret != null && _privacySecret.Length > 0)
-                {
-                    var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
-                    if (privProto != null) _privacyKey = privProto.PasswordToKey(_privacySecret, _engineId, authProto);
-                }
-            }
-        }
+        var authProto = SnmpSharpNet.Authentication.GetInstance(_authenticationProtocol);
+        if (authProto is null) return;
+        _authenticationKey = authProto.PasswordToKey(_authenticationSecret, _engineId);
+        if (_privacyProtocol == PrivacyProtocols.None || _privacySecret.Length <= 0) return;
+        var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
+        _privacyKey = privProto?.PasswordToKey(_privacySecret, _engineId, authProto);
     }
 
     #region Variables
@@ -498,17 +535,17 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Authoritative engine id
     /// </summary>
-    protected OctetString _engineId;
+    protected OctetString _engineId = new();
 
     /// <summary>
     ///     Authoritative engine boots value
     /// </summary>
-    protected Integer32 _engineBoots;
+    protected Integer32 _engineBoots = new();
 
     /// <summary>
     ///     Authoritative engine time value
     /// </summary>
-    protected Integer32 _engineTime;
+    protected Integer32 _engineTime = new();
 
     /// <summary>
     ///     Time stamp when authoritative engine time value was last refreshed with data from the agent.
@@ -520,47 +557,47 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Security name value, or user name.
     /// </summary>
-    protected OctetString _securityName;
+    protected OctetString _securityName = new();
 
     /// <summary>
     ///     Privacy protocol to use. For available protocols, see <see cref="PrivacyProtocols" /> enumeration.
     /// </summary>
-    protected PrivacyProtocols _privacyProtocol;
+    protected PrivacyProtocols _privacyProtocol = PrivacyProtocols.None;
 
     /// <summary>
     ///     Authentication digest to use in authNoPriv and authPriv security combinations. For available
     ///     authentication digests, see <see cref="AuthenticationDigests" /> enumeration.
     /// </summary>
-    protected AuthenticationDigests _authenticationProtocol;
+    protected AuthenticationDigests _authenticationProtocol = AuthenticationDigests.None;
 
     /// <summary>
     ///     Privacy secret (or privacy password)
     /// </summary>
-    protected MutableByte _privacySecret;
+    protected MutableByte _privacySecret = new();
 
     /// <summary>
     ///     Authentication secret (or authentication password)
     /// </summary>
-    protected MutableByte _authenticationSecret;
+    protected MutableByte _authenticationSecret = new();
 
     /// <summary>
     ///     Context engine id. By default, this value is set to authoritative engine id value unless specifically
     ///     set to a different value here.
     /// </summary>
-    protected OctetString _contextEngineId;
+    protected OctetString _contextEngineId = new();
 
     /// <summary>
     ///     Context name. By default this value is a 0 length string (no context name). Set this value if you
     ///     require it to be defined in ScopedPdu.
     /// </summary>
-    protected OctetString _contextName;
+    protected OctetString _contextName = new();
 
     /// <summary>
     ///     Maximum message size. This value is by default set to 64KB and then updated by the maximum message
     ///     size value in the response from the agent.
     ///     This value should be the smallest message size supported by both the agent and manager.
     /// </summary>
-    protected Integer32 _maxMessageSize;
+    protected Integer32 _maxMessageSize = new();
 
     /// <summary>
     ///     Reportable option flag. Set to true by default.
@@ -573,12 +610,12 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Cached privacy key
     /// </summary>
-    protected byte[] _privacyKey;
+    protected byte[]? _privacyKey;
 
     /// <summary>
     ///     Cached authentication key
     /// </summary>
-    protected byte[] _authenticationKey;
+    protected byte[]? _authenticationKey;
 
     #endregion /* Variables */
 

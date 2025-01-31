@@ -120,7 +120,6 @@ public class AuthenticationMD5 : IAuthenticationDigest
 
         var password_index = 0;
         var count = 0;
-        var md5 = MD5.Create();
 
         var sourceBuffer = new byte[1048576];
         var buf = new byte[64];
@@ -131,13 +130,8 @@ public class AuthenticationMD5 : IAuthenticationDigest
             count += 64;
         }
 
-        var digest = md5.ComputeHash(sourceBuffer);
-
-        var tmpbuf = new MutableByte();
-        tmpbuf.Append(digest);
-        tmpbuf.Append(engineID);
-        tmpbuf.Append(digest);
-        var key = md5.ComputeHash(tmpbuf);
+        var digest = MD5.HashData(sourceBuffer);
+        var key = MD5.HashData([..digest, ..engineID, ..digest]);
 
         return key;
     }

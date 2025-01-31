@@ -74,8 +74,7 @@ public class Null : AsnType, ICloneable
     /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
     public override int decode(byte[] buffer, int offset)
     {
-        int headerLength;
-        var asnType = ParseHeader(buffer, ref offset, out headerLength);
+        var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 Type");

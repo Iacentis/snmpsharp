@@ -51,5 +51,5 @@ public class SnmpNetworkException : SnmpException
     /// <summary>
     ///     Return system exception that caused raising of this Exception error.
     /// </summary>
-    public Exception SystemException { get; }
+    public Exception? SystemException { get; }
 }
