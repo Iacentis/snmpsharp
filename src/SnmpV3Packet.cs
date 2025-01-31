@@ -130,7 +130,7 @@ public class SnmpV3Packet : SnmpPacket
     /// <summary>
     ///     Security model code. Only supported security model is UserSecurityModel (integer value 3)
     /// </summary>
-    protected Integer32 _securityModel;
+    protected readonly Integer32 _securityModel;
 
     /// <summary>
     ///     Standard constructor.

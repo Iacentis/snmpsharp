@@ -33,18 +33,18 @@ public class MsgFlags : AsnType, ICloneable
     /// <summary>
     ///     Bit value that, when set, indicates that packet has been authenticated.
     /// </summary>
-    public static byte FLAG_AUTH = 0x01;
+    public static readonly byte FLAG_AUTH = 0x01;
 
     /// <summary>
     ///     Bit value that, when set, indicates that packet has been privacy protected.
     /// </summary>
-    public static byte FLAG_PRIV = 0x02;
+    public static readonly byte FLAG_PRIV = 0x02;
 
     /// <summary>
     ///     Bit value that, when set, indicates that sender of the packet expects report packet to be sent by the agent on
     ///     errors.
     /// </summary>
-    public static byte FLAG_REPORTABLE = 0x04;
+    public static readonly byte FLAG_REPORTABLE = 0x04;
 
     /// <summary>
     ///     True if authentication is used to secure the packet, otherwise false.

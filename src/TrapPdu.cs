@@ -178,19 +178,19 @@ public class TrapPdu : AsnType, ICloneable
     #region Internal variables
 
     /// <summary>Trap enterprise Oid</summary>
-    protected Oid _enterprise;
+    protected readonly Oid _enterprise;
 
     /// <summary>The IP Address of the remote agent sending the trap.</summary>
-    protected IpAddress _agentAddr;
+    protected readonly IpAddress _agentAddr;
 
     /// <summary>Generic trap code</summary>
-    protected Integer32 _generic;
+    protected readonly Integer32 _generic;
 
     /// <summary>Specific trap code.</summary>
-    protected Integer32 _specific;
+    protected readonly Integer32 _specific;
 
     /// <summary>sysUpTime timestamp of the trap event</summary>
-    protected TimeTicks _timeStamp;
+    protected readonly TimeTicks _timeStamp;
 
     /// <summary>Variable binding list</summary>
     private VbCollection _variables;

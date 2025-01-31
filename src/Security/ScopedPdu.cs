@@ -35,12 +35,12 @@ public class ScopedPdu : Pdu
     /// <summary>
     ///     Context Engine Id variable.
     /// </summary>
-    protected OctetString _contextEngineId;
+    protected readonly OctetString _contextEngineId;
 
     /// <summary>
     ///     Context name variable
     /// </summary>
-    protected OctetString _contextName;
+    protected readonly OctetString _contextName;
 
     #endregion
 

@@ -283,12 +283,12 @@ public sealed class SnmpConstants
     /// <summary>
     ///     sysUpTime.0 OID is the first value in the VarBind array of SNMP version 2 TRAP packets
     /// </summary>
-    public static Oid SysUpTime = new(new uint[] { 1, 3, 6, 1, 2, 1, 1, 3, 0 });
+    public static readonly Oid SysUpTime = new(new uint[] { 1, 3, 6, 1, 2, 1, 1, 3, 0 });
 
     /// <summary>
     ///     trapObjectID.0 OID is the second value in the VarBind array of SNMP version 2 TRAP packets
     /// </summary>
-    public static Oid TrapObjectId = new(new uint[] { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 });
+    public static readonly Oid TrapObjectId = new(new uint[] { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 });
 
     #endregion
 
@@ -297,47 +297,47 @@ public sealed class SnmpConstants
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsUnsupportedSecLevels = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 1, 0 });
+    public static readonly Oid usmStatsUnsupportedSecLevels = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 1, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsNotInTimeWindows = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 2, 0 });
+    public static readonly Oid usmStatsNotInTimeWindows = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 2, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsUnknownSecurityNames = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 3, 0 });
+    public static readonly Oid usmStatsUnknownSecurityNames = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 3, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsUnknownEngineIDs = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 4, 0 });
+    public static readonly Oid usmStatsUnknownEngineIDs = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 4, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsWrongDigests = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 5, 0 });
+    public static readonly Oid usmStatsWrongDigests = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 5, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid usmStatsDecryptionErrors = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 6, 0 });
+    public static readonly Oid usmStatsDecryptionErrors = new(new uint[] { 1, 3, 6, 1, 6, 3, 15, 1, 1, 6, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid snmpUnknownSecurityModels = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 1, 0 });
+    public static readonly Oid snmpUnknownSecurityModels = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 1, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid snmpInvalidMsgs = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 2, 0 });
+    public static readonly Oid snmpInvalidMsgs = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 2, 0 });
 
     /// <summary>
     ///     SNMP version 3, USM error
     /// </summary>
-    public static Oid snmpUnknownPDUHandlers = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 3, 0 });
+    public static readonly Oid snmpUnknownPDUHandlers = new(new uint[] { 1, 3, 6, 1, 6, 3, 11, 2, 1, 3, 0 });
 
     /// <summary>
     ///     Array of all SNMP version 3 REPORT packet error OIDs

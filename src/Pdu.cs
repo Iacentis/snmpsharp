@@ -500,7 +500,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <summary>
     ///     Variable binding collection
     /// </summary>
-    protected VbCollection _vbs;
+    protected readonly VbCollection _vbs;
 
     /// <summary>
     ///     Error status value.
@@ -509,7 +509,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     ///     See <see cref="SnmpConstants" /> class for definition of error values. If no error
     ///     is encountered, this value is set to 0.
     /// </remarks>
-    protected Integer32 _errorStatus;
+    protected readonly Integer32 _errorStatus;
 
     /// <summary>
     ///     Error index value.
@@ -518,7 +518,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     ///     Points to the Vb sequence that caused the error. If not Vb the cause of the
     ///     error, or if there is no error, this value is 0.
     /// </remarks>
-    protected Integer32 _errorIndex;
+    protected readonly Integer32 _errorIndex;
 
     /// <summary>
     ///     Request id value.
@@ -526,13 +526,13 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <remarks>
     ///     Integer32 value that uniquely represents this request. Used to match requests and replies.
     /// </remarks>
-    protected Integer32 _requestId;
+    protected readonly Integer32 _requestId;
 
     /// <summary>
     ///     SNMPv2 trap first Vb is the trap time stamp. To create an SNMPv2 TRAP packet, set the timestamp value
     ///     in this variable
     /// </summary>
-    protected TimeTicks _trapTimeStamp;
+    protected readonly TimeTicks _trapTimeStamp;
 
     /// <summary>
     ///     SNMPv2 trap second Vb is the trap object ID.
@@ -541,7 +541,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     ///     This variable should be set to the trap OID and will be inserted
     ///     into the encoded packet.
     /// </remarks>
-    protected Oid _trapObjectID;
+    protected readonly Oid _trapObjectID;
 
     #endregion Internal variables
 

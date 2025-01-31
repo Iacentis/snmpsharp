@@ -73,12 +73,12 @@ public class SnmpV1Packet : SnmpPacket
     /// <summary>
     ///     SNMP Protocol Data Unit
     /// </summary>
-    public Pdu _pdu;
+    public readonly Pdu _pdu;
 
     /// <summary>
     ///     SNMP community name
     /// </summary>
-    protected OctetString _snmpCommunity;
+    protected readonly OctetString _snmpCommunity;
 
     /// <summary>
     ///     Standard constructor.

@@ -28,7 +28,7 @@ public abstract class SnmpPacket
     /// <summary>
     ///     SNMP protocol version
     /// </summary>
-    protected Integer32 _protocolVersion;
+    protected readonly Integer32 _protocolVersion;
 
     /// <summary>
     ///     Constructor. Sets SNMP version to SNMPV1.

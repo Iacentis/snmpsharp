@@ -50,12 +50,12 @@ public class SnmpV1TrapPacket : SnmpPacket
     /// <summary>
     ///     SNMP Protocol Data Unit
     /// </summary>
-    protected TrapPdu _pdu;
+    protected readonly TrapPdu _pdu;
 
     /// <summary>
     ///     SNMP community name
     /// </summary>
-    protected OctetString _snmpCommunity;
+    protected readonly OctetString _snmpCommunity;
 
     /// <summary>
     ///     Standard constructor.

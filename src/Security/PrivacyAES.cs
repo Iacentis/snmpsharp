@@ -25,7 +25,7 @@ public class PrivacyAES : IPrivacyProtocol
     /// <summary>
     ///     AES protocol key bytes. Valid values are 16 (for AES128), 24 (AES192) or 32 (AES256).
     /// </summary>
-    protected int _keyBytes = 16; // Default is 128bit AES protocol
+    protected readonly int _keyBytes = 16; // Default is 128bit AES protocol
 
     /// <summary>
     ///     Salt value

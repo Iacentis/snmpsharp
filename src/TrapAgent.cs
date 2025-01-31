@@ -37,7 +37,7 @@ public class TrapAgent
     /// <summary>
     ///     Internal Socket class
     /// </summary>
-    protected Socket _sock;
+    protected readonly Socket _sock;
 
     /// <summary>
     ///     Constructor.

@@ -39,12 +39,12 @@ public class SimpleSnmp
     /// <summary>
     ///     the authentication protocol used for SNMPV3
     /// </summary>
-    protected AuthenticationDigests _authDigests = AuthenticationDigests.None;
+    protected readonly AuthenticationDigests _authDigests = AuthenticationDigests.None;
 
     /// <summary>
     ///     the authentication password
     /// </summary>
-    protected string _authSecret = "";
+    protected readonly string _authSecret = "";
 
     /// <summary>
     ///     SNMP community name
@@ -54,7 +54,7 @@ public class SimpleSnmp
     /// <summary>
     ///     the SNMPV3 context name
     /// </summary>
-    protected string _contextName = "";
+    protected readonly string _contextName = "";
 
     /// <summary>
     ///     Maximum repetitions value used in SNMP GET-BULK requests
@@ -84,12 +84,12 @@ public class SimpleSnmp
     /// <summary>
     ///     the privacy protocol used for SNMPV3
     /// </summary>
-    protected PrivacyProtocols _privProtocols = PrivacyProtocols.None;
+    protected readonly PrivacyProtocols _privProtocols = PrivacyProtocols.None;
 
     /// <summary>
     ///     the privacy password
     /// </summary>
-    protected string _privSecret = "";
+    protected readonly string _privSecret = "";
 
     /// <summary>
     ///     Maximum retry count excluding the first request
@@ -104,7 +104,7 @@ public class SimpleSnmp
     /// <summary>
     ///     security name for SNMPV3 requests
     /// </summary>
-    protected string _securityName = "";
+    protected readonly string _securityName = "";
 
     /// <summary>
     ///     Flag determines if exceptions are suppressed or thrown. When exceptions are suppressed, methods

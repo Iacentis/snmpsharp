@@ -49,7 +49,7 @@ public class UdpTransport : IDisposable
     /// <summary>
     ///     Flag showing if class is using IPv6 or IPv4
     /// </summary>
-    protected bool _isIPv6;
+    protected readonly bool _isIPv6;
 
     /// <summary>
     ///     Internal variable used to disable host IP address/port number check on received SNMP reply packets. If this option

@@ -26,7 +26,7 @@ public class CTarget : ITarget
     /// <summary>
     ///     Target IP address
     /// </summary>
-    protected IpAddress _address;
+    protected readonly IpAddress _address;
 
     /// <summary>
     ///     Target port number
