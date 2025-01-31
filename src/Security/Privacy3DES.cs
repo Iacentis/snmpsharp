@@ -134,18 +134,18 @@ public class Privacy3DES : IPrivacyProtocol
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
-            throw new ArgumentOutOfRangeException("encryptedData", "Encrypted data buffer has to be divisable by 8.");
+            throw new ArgumentOutOfRangeException(nameof(encryptedData), "Encrypted data buffer has to be divisable by 8.");
         if (encryptedData == null || encryptedData.Length < 8)
-            throw new ArgumentOutOfRangeException("encryptedData",
+            throw new ArgumentOutOfRangeException(nameof(encryptedData),
                 "Encrypted data buffer is null or smaller then 8 bytes in length.");
         if (offset > encryptedData.Length || offset + length > encryptedData.Length)
-            throw new ArgumentOutOfRangeException("offset",
+            throw new ArgumentOutOfRangeException(nameof(offset),
                 "Offset and length arguments point beyond the bounds of the encryptedData array.");
         if (key == null || key.Length < 32)
             throw new ArgumentOutOfRangeException("decryptionKey",
                 "Minimum acceptable length of the decryption key is 32 bytes.");
         if (privacyParameters == null || privacyParameters.Length != 8)
-            throw new ArgumentOutOfRangeException("privacyParameters", "Privacy parameters field is not 8 bytes long.");
+            throw new ArgumentOutOfRangeException(nameof(privacyParameters), "Privacy parameters field is not 8 bytes long.");
 
         var iv = GetIV(key, privacyParameters);
 

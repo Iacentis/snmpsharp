@@ -122,7 +122,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     public void Set(AsnType value)
     {
         if (value == null)
-            throw new ArgumentNullException("value", "Parameter is null");
+            throw new ArgumentNullException(nameof(value), "Parameter is null");
         if (value is UInteger32)
             _value = ((UInteger32)value).Value;
         else if (value is Integer32) _value = (uint)((Integer32)value).Value;

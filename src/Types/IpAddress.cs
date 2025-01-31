@@ -259,7 +259,7 @@ public class IpAddress : OctetString, IComparable, ICloneable
             }
             catch
             {
-                throw new ArgumentException("Unable to parse or resolve supplied value to an IP address.", "value");
+                throw new ArgumentException("Unable to parse or resolve supplied value to an IP address.", nameof(value));
             }
         else
             _data = ipa.GetAddressBytes();

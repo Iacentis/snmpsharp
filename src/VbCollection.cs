@@ -183,7 +183,7 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     public void Add(Oid oid)
     {
         if (oid == null)
-            throw new ArgumentNullException("oid", "Can't create vb entry with null Oid.");
+            throw new ArgumentNullException(nameof(oid), "Can't create vb entry with null Oid.");
         var v = new Vb(oid);
         Add(v);
     }

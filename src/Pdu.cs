@@ -309,7 +309,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <exception cref="ArgumentNullException">Thrown when received argument is null</exception>
     public void Set(AsnType value)
     {
-        if (value == null) throw new ArgumentNullException("value");
+        if (value == null) throw new ArgumentNullException(nameof(value));
         var pdu = value as Pdu;
         if (pdu != null)
         {
@@ -331,7 +331,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         }
         else
         {
-            throw new ArgumentNullException("value", "Argument is not an Oid class");
+            throw new ArgumentNullException(nameof(value), "Argument is not an Oid class");
         }
     }
 

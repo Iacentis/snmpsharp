@@ -345,7 +345,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     public void Append(byte[] value)
     {
         if (value == null || value.Length == 0)
-            throw new ArgumentNullException("value");
+            throw new ArgumentNullException(nameof(value));
         if (_data == null)
         {
             Set(value);

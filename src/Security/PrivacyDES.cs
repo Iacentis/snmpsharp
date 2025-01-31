@@ -142,11 +142,11 @@ public class PrivacyDES : IPrivacyProtocol
         byte[] privacyParameters)
     {
         if (length % 8 != 0)
-            throw new ArgumentOutOfRangeException("encryptedData", "Encrypted data buffer has to be divisible by 8.");
+            throw new ArgumentOutOfRangeException(nameof(encryptedData), "Encrypted data buffer has to be divisible by 8.");
         if (encryptedData == null || encryptedData.Length == 0)
             throw new ArgumentNullException("cryptedData");
         if (privacyParameters == null || privacyParameters.Length != PrivacyParametersLength)
-            throw new ArgumentOutOfRangeException("privacyParameters",
+            throw new ArgumentOutOfRangeException(nameof(privacyParameters),
                 "Privacy parameters argument has to be 8 bytes long");
 
         if (key == null || key.Length < MinimumKeyLength)

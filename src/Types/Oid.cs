@@ -500,7 +500,7 @@ public class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     public void Set(Oid value)
     {
         if (value == null)
-            throw new ArgumentNullException("value");
+            throw new ArgumentNullException(nameof(value));
         Set(value.GetData());
     }
 

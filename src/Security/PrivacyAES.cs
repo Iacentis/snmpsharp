@@ -42,7 +42,7 @@ public class PrivacyAES : IPrivacyProtocol
     public PrivacyAES(int keyBytes)
     {
         if (keyBytes != 16 && keyBytes != 24 && keyBytes != 32)
-            throw new ArgumentOutOfRangeException("keyBytes", "Valid key sizes are 16, 24 and 32 bytes.");
+            throw new ArgumentOutOfRangeException(nameof(keyBytes), "Valid key sizes are 16, 24 and 32 bytes.");
         _keyBytes = keyBytes;
         // initialize salt generator
         var rand = new Random();
