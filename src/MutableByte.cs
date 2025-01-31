@@ -302,7 +302,7 @@ public class MutableByte : object, ICloneable, IComparable<MutableByte>, ICompar
         else
         {
             Array.Resize(ref _buffer, _buffer.Length + 1);
-            _buffer[_buffer.Length - 1] = buf;
+            _buffer[^1] = buf;
         }
     }
 
