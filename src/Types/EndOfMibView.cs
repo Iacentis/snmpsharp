@@ -58,6 +58,15 @@ public class EndOfMibView : V2Error
     /// <returns>Offset after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>Decode ASN.1 encoded end-of-mib-view SNMP version 2 MIB value</summary>
+    /// <param name="buffer">The encoded buffer</param>
+    /// <param name="offset">The offset of the first byte of encoded data</param>
+    /// <returns>Offset after the decoded value</returns>
+    public int decode(Span<byte> buffer, int offset)
+    {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != Type) throw new SnmpException("Invalid ASN.1 type");
 
@@ -74,6 +83,11 @@ public class EndOfMibView : V2Error
     public override void encode(MutableByte buffer)
     {
         BuildHeader(buffer, Type, 0);
+    }
+
+    public int encode(Span<byte> buffer)
+    {
+        return BuildHeader(buffer, Type, 0);
     }
 
     /// <summary>
