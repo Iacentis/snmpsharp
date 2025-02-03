@@ -346,7 +346,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="buffer">
     ///     MutableByte to append BER encoded value to.
     /// </param>
-    public void encode(Span<byte> buffer)
+    public int encode(Span<byte> buffer)
     {
         Span<byte> b = stackalloc byte[sizeof(ulong)];
         BitConverter.TryWriteBytes(b, _value);
@@ -367,6 +367,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
 
         var slice = BuildHeader(buffer, Type, tmp.Length);
         cut.CopyTo(buffer[slice..]);
+        return slice + cut.Length;
     }
 
     public static int MaxEncodedSize => MaxHeaderSize + sizeof(ulong);

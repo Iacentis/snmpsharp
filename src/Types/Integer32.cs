@@ -375,7 +375,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     ///     data.
     /// </summary>
     /// <param name="buffer">Buffer target to write the encoded data</param>
-    public void encode(Span<byte> buffer)
+    public int encode(Span<byte> buffer)
     {
         var val = _value;
         Span<byte> b = stackalloc byte[sizeof(int)];
@@ -464,6 +464,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
 
         var slice = BuildHeader(buffer, Type, length);
         encoded.CopyTo(buffer[slice..]);
+        return slice + encoded.Length;
     }
 
     public static int MaxEncodedSize => MaxHeaderSize + sizeof(int);
