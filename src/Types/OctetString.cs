@@ -536,6 +536,21 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
         }
     }
 
+
+    /// <summary>BER encode OctetString variable.</summary>
+    /// <param name="buffer"><see cref="MutableByte" /> encoding destination.</param>
+    public int encode(Span<byte> buffer)
+    {
+        if (_data.Length == 0)
+        {
+            return BuildHeader(buffer, Type, 0);
+        }
+
+        var slice = BuildHeader(buffer, Type, _data.Length);
+        _data.CopyTo(buffer[slice..]);
+        return slice + _data.Length;
+    }
+
     /// <summary>
     ///     Decode OctetString from the BER format.
     /// </summary>
@@ -544,6 +559,18 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>
+    ///     Decode OctetString from the BER format.
+    /// </summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">Offset in the <see cref="MutableByte" /> to start the decoding from</param>
+    /// <returns>Buffer position after the decoded value</returns>
+    /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
+    public int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
@@ -564,8 +591,8 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
                 //
                 // copy the data
                 //
-                _data = new byte[headerLength];
-                Buffer.BlockCopy(buffer, offset, _data, 0, headerLength);
+                Array.Resize(ref _data, headerLength);
+                buffer.Slice(offset, headerLength).CopyTo(_data);
                 offset += headerLength;
                 break;
         }
