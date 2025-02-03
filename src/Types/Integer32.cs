@@ -375,7 +375,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     ///     data.
     /// </summary>
     /// <param name="buffer">Buffer target to write the encoded data</param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         var val = _value;
         Span<byte> b = stackalloc byte[sizeof(int)];
@@ -490,7 +490,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <param name="buffer">Buffer holding BER encoded data</param>
     /// <param name="offset">Offset in the buffer to start parsing from</param>
     /// <returns>Buffer position after the decoded value</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first
@@ -540,6 +540,8 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
 
         return offset;
     }
+
+    public override int ByteLength => encode(stackalloc byte[MaxEncodedSize]);
 
     #endregion encode and decode methods
 }

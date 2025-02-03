@@ -346,7 +346,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="buffer">
     ///     MutableByte to append BER encoded value to.
     /// </param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         Span<byte> b = stackalloc byte[sizeof(ulong)];
         BitConverter.TryWriteBytes(b, _value);
@@ -389,7 +389,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="buffer">The encoded ASN.1 data</param>
     /// <param name="offset">Offset to start value decoding from.</param>
     /// <returns>Offset after the parsed value.</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first
@@ -432,6 +432,8 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
 
         return offset;
     }
+
+    public override int ByteLength => encode(stackalloc byte[MaxEncodedSize]);
 
     #endregion
 }

@@ -34,8 +34,8 @@ public class Integer32Tests
     [Arguments(int.MinValue)]
     public async Task EncodedToDecode(int a)
     {
-        Span<byte> buffer = stackalloc byte[Integer32.MaxEncodedSize];
         var initial = new Integer32(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Integer32();
         @new.decode(buffer, 0);

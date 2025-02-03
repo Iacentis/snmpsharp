@@ -308,5 +308,53 @@ public class VbCollection : AsnType, IEnumerable<Vb>
         return offset;
     }
 
+    public override int encode(Span<byte> buffer)
+    {
+        Span<byte> tmp = stackalloc byte[MemberByteLength()];
+        var written = 0;
+        foreach (var v in _vbs) written += v.encode(tmp[written..]);
+        var slice = BuildHeader(buffer, Type, tmp.Length);
+        tmp[..written].CopyTo(buffer[slice..]);
+        return written + slice;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var len = MemberByteLength();
+            return len + HeaderSize(len);
+        }
+    }
+
+    private int MemberByteLength()
+    {
+        var len = 0;
+        foreach (var v in _vbs) len += v.ByteLength;
+        return len;
+    }
+
+    public override int decode(Span<byte> buffer, int offset)
+    {
+        var b = ParseHeader(buffer, ref offset, out var headerLen);
+        if (b != Type)
+            throw new SnmpException("Invalid ASN.1 encoding for variable binding list.");
+
+        _vbs.Clear();
+
+        var oldOffset = offset;
+        while (headerLen > 0)
+        {
+            var vb = new Vb();
+            offset = vb.decode(buffer, offset);
+
+            headerLen -= offset - oldOffset;
+            oldOffset = offset;
+            _vbs.Add(vb);
+        }
+
+        return offset;
+    }
+
     #endregion
 }

@@ -62,7 +62,7 @@ public class V2Error : AsnType, ICloneable
         BuildHeader(buffer, Type, 0);
     }
 
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         return BuildHeader(buffer, Type, 0);
     }
@@ -86,7 +86,7 @@ public class V2Error : AsnType, ICloneable
     ///     receive the new offset to the byte immediately following the decoded value.
     /// </param>
     /// <returns>Buffer position after the decoded value</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 

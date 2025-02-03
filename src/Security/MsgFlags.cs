@@ -132,18 +132,21 @@ public class MsgFlags : AsnType, ICloneable
                 flag |= FLAG_AUTH;
                 break;
         }
+
         switch (_privacyFlag)
         {
             case true:
                 flag |= FLAG_PRIV;
                 break;
         }
+
         switch (_reportableFlag)
         {
             case true:
                 flag |= FLAG_REPORTABLE;
                 break;
         }
+
         var flagObject = new OctetString(flag);
         flagObject.encode(buffer);
     }
@@ -155,6 +158,42 @@ public class MsgFlags : AsnType, ICloneable
     /// <param name="offset">Offset within the buffer to start decoding process</param>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int encode(Span<byte> buffer)
+    {
+        byte flag = 0x00;
+        switch (_authenticationFlag)
+        {
+            case true:
+                flag |= FLAG_AUTH;
+                break;
+        }
+
+        switch (_privacyFlag)
+        {
+            case true:
+                flag |= FLAG_PRIV;
+                break;
+        }
+
+        switch (_reportableFlag)
+        {
+            case true:
+                flag |= FLAG_REPORTABLE;
+                break;
+        }
+
+        var slice = BuildHeader(buffer, OCTETSTRING, 1);
+        buffer[slice] = flag;
+        return slice + 1;
+    }
+
+    public override int ByteLength => base.ByteLength + 1;
+
+    public override int decode(Span<byte> buffer, int offset)
     {
         // reset class values
         _authenticationFlag = false;

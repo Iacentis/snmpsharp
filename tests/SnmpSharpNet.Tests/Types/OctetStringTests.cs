@@ -18,8 +18,8 @@ public class OctetStringTests
     [Arguments("yooooo")]
     public async Task EncodedToDecode(string a)
     {
-        Span<byte> buffer = stackalloc byte[a.Length + 8];
         var initial = new OctetString(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new OctetString();
         @new.decode(buffer, 0);

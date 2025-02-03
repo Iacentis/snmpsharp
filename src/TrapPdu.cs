@@ -150,6 +150,48 @@ public class TrapPdu : AsnType, ICloneable
     /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
     public override int decode(byte[] buffer, int offset)
     {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int encode(Span<byte> buffer)
+    {
+        Span<byte> trapBuffer = stackalloc byte[MemberByteLength()];
+        // encode the enterprise id & address
+        var written = _enterprise.encode(trapBuffer);
+
+        written += _agentAddr.encode(trapBuffer);
+
+        written += _generic.encode(trapBuffer);
+
+        written += _specific.encode(trapBuffer);
+
+        written += _timeStamp.encode(trapBuffer);
+
+        written += _variables.encode(trapBuffer);
+
+        var slice = BuildHeader(buffer, (byte)PduType.Trap, written);
+        trapBuffer[..written].CopyTo(buffer[slice..]);
+        return written + slice;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var mbl = MemberByteLength();
+            var header = HeaderSize(mbl);
+            return header + mbl;
+        }
+    }
+
+    private int MemberByteLength()
+    {
+        return _enterprise.ByteLength + _agentAddr.ByteLength + _generic.ByteLength + _specific.ByteLength +
+               _timeStamp.ByteLength + _variables.ByteLength;
+    }
+
+    public override int decode(Span<byte> buffer, int offset)
+    {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != (byte)PduType.Trap)
             throw new SnmpException("Invalid PDU type.");

@@ -61,7 +61,7 @@ public class Null : AsnType, ICloneable
         BuildHeader(buffer, Type, 0);
     }
 
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         return BuildHeader(buffer, Type, 0);
     }
@@ -93,7 +93,7 @@ public class Null : AsnType, ICloneable
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not null</exception>
     /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 

@@ -520,7 +520,7 @@ public class SecureAgentParameters : IAgentParameters
             return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authenticationProtocol);
         if (authProto is null) return;
-        _authenticationKey = authProto.PasswordToKey(_authenticationSecret, _engineId);
+        _authenticationKey = authProto.PasswordToKey(_authenticationSecret.Value, _engineId.ToArray());
         if (_privacyProtocol == PrivacyProtocols.None || _privacySecret.Length <= 0) return;
         var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
         _privacyKey = privProto?.PasswordToKey(_privacySecret, _engineId, authProto);

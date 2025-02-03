@@ -177,11 +177,43 @@ public class Vb : AsnType, ICloneable
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
     {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int encode(Span<byte> buffer)
+    {
+        // encode oid to the temporary buffer
+        Span<byte> tmp = stackalloc byte[MemberByteLength()];
+        var written = _oid?.encode(tmp) ?? 0;
+        // encode value to a temporary buffer
+        written += _value?.encode(tmp[written..]) ?? 0;
+
+        // calculate data content length of the vb
+        // encode vb header at the end of the result
+        var slice = BuildHeader(buffer, Type, written);
+        // add values to the encoded arrays to the end of the result
+        tmp[..written].CopyTo(buffer[slice..]);
+        return slice + written;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var mbl = MemberByteLength();
+            var header = HeaderSize(mbl);
+            return header + mbl;
+        }
+    }
+
+    private int MemberByteLength() => (_oid?.ByteLength ?? 0) + (_value?.ByteLength ?? 0);
+
+    public override int decode(Span<byte> buffer, int offset)
+    {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
-            throw new SnmpException(string.Format("Invalid ASN.1 type. Expected 0x{0:x2} received 0x{1:x2}", Type,
-                asnType));
+            throw new SnmpException($"Invalid ASN.1 type. Expected 0x{Type:x2} received 0x{asnType:x2}");
 
         // verify the length
         if (buffer.Length - offset < headerLength)

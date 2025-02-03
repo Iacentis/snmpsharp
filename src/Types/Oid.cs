@@ -886,7 +886,7 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="buffer">
     ///     Buffer to append the encoded information to.
     /// </param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         var values = _data.AsSpan();
         var upperLimitLength = (values.Length - 1 /*first two values are merged*/) * sizeof(uint);
@@ -1029,12 +1029,12 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <param name="buffer">BER encoded buffer</param>
     /// <param name="offset">The offset location to begin decoding</param>
     /// <returns>Buffer position after the decoded value</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
         if (asnType != Type)
-            throw new SnmpException("Invalid ASN.1 type.");
+            throw new SnmpException($"Invalid ASN.1 type {asnType}, expected {Type}.");
 
         // check for sufficient data
         if (buffer.Length - offset < headerLength)
@@ -1117,4 +1117,6 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     }
 
     #endregion Encode & Decode
+
+    public override int ByteLength => encode(stackalloc byte[_data.Length + MaxHeaderSize]);
 }

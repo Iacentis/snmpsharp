@@ -41,12 +41,12 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="engineId">SNMP agent authoritative engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(byte[] authenticationSecret, byte[] engineId, byte[] wholeMessage)
+    public byte[] authenticate(Span<byte> authenticationSecret, Span<byte> engineId, Span<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
         var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage);
+        var hash = md5.ComputeHash(wholeMessage.ToArray());
         // copy "authentication lenght" bytes of the hash into the wholeMessage
         Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
         return result;
@@ -58,11 +58,11 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="authKey">Pre-generated authentication key</param>
     /// <param name="wholeMessage">Message being authenticated</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(byte[] authKey, byte[] wholeMessage)
+    public byte[] authenticate(Span<byte> authKey, Span<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
-        var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage);
+        var md5 = new HMACMD5(authKey.ToArray());
+        var hash = md5.ComputeHash(wholeMessage.ToArray());
         // copy "authentication lenght" bytes of the hash into the wholeMessage
         Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
         return result;
@@ -78,15 +78,15 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
-    public bool authenticateIncomingMsg(byte[] userPassword, byte[] engineId, byte[] authenticationParameters,
-        MutableByte wholeMessage)
+    public bool authenticateIncomingMsg(Span<byte> userPassword, Span<byte> engineId,
+        Span<byte> authenticationParameters,
+        Span<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
         var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage, 0, wholeMessage.Length);
-        var myhash = new MutableByte(hash, authenticationLength);
-        if (myhash.Equals(authenticationParameters)) return true;
-        return false;
+        var hash = md5.ComputeHash(wholeMessage.ToArray(), 0, wholeMessage.Length);
+        var myhash = hash.AsSpan(0, authenticationLength);
+        return myhash.SequenceEqual(authenticationParameters);
     }
 
     /// <summary>
@@ -96,13 +96,13 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
     /// <param name="wholeMessage">Entire packet being authenticated</param>
     /// <returns>True on authentication success, otherwise false</returns>
-    public bool authenticateIncomingMsg(byte[] authKey, byte[] authenticationParameters, MutableByte wholeMessage)
+    public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
+        Span<byte> wholeMessage)
     {
-        var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage, 0, wholeMessage.Length);
-        var myhash = new MutableByte(hash, authenticationLength);
-        if (myhash.Equals(authenticationParameters)) return true;
-        return false;
+        var md5 = new HMACMD5(authKey.ToArray());
+        var hash = md5.ComputeHash(wholeMessage.ToArray(), 0, wholeMessage.Length);
+        var myhash = hash.AsSpan(0, authenticationLength);
+        return myhash.SequenceEqual(authenticationParameters);
     }
 
     /// <summary>
@@ -112,10 +112,10 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="engineID">Authoritative engine id</param>
     /// <returns>Localized authentication key</returns>
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
-    public byte[] PasswordToKey(byte[] userPassword, byte[] engineID)
+    public byte[] PasswordToKey(Span<byte> userPassword, Span<byte> engineID)
     {
         // key length has to be at least 8 bytes long (RFC3414)
-        if (userPassword == null || userPassword.Length < 8)
+        if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
 
         var password_index = 0;
@@ -158,10 +158,10 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <param name="offset">Compute hash from the source buffer offset</param>
     /// <param name="count">Compute hash for source data length</param>
     /// <returns>Hash value</returns>
-    public byte[] ComputeHash(byte[] data, int offset, int count)
+    public byte[] ComputeHash(Span<byte> data, int offset, int count)
     {
         var md5 = MD5.Create();
-        var res = md5.ComputeHash(data, offset, count);
+        var res = md5.ComputeHash(data.ToArray(), offset, count);
         md5.Clear();
         return res;
     }

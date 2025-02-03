@@ -539,7 +539,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
 
     /// <summary>BER encode OctetString variable.</summary>
     /// <param name="buffer"><see cref="MutableByte" /> encoding destination.</param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         if (_data.Length == 0)
         {
@@ -570,7 +570,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <param name="offset">Offset in the <see cref="MutableByte" /> to start the decoding from</param>
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
@@ -599,6 +599,8 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
 
         return offset;
     }
+
+    public override int ByteLength => encode(stackalloc byte[_data.Length + MaxHeaderSize]);
 
     #endregion Encode and decode methods
 }

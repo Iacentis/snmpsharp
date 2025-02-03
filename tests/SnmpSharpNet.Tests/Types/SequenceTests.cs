@@ -18,8 +18,8 @@ public class SequenceTests
     [Test]
     public async Task EncodedToDecode()
     {
-        Span<byte> buffer = stackalloc byte[30];
         var initial = new Sequence([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Sequence();
         @new.decode(buffer, 0);

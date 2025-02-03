@@ -22,8 +22,8 @@ public class OidTests
     [Arguments("1.3.2.4.1123123123.5111.6.8")]
     public async Task EncodedToDecode(string a)
     {
-        Span<byte> buffer = stackalloc byte[a.Length + 8];
         var initial = new Oid(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Oid();
         @new.decode(buffer, 0);

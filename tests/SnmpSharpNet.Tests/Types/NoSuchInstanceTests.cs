@@ -15,8 +15,8 @@ public class NoSuchInstanceTests
     [Test]
     public async Task EncodedToDecodeMutable()
     {
-        Span<byte> buffer = stackalloc byte[UInteger32.MaxEncodedSize];
         var initial = new NoSuchInstance();
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new NoSuchInstance();
         @new.decode(buffer, 0);

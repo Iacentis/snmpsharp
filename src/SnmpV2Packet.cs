@@ -167,8 +167,6 @@ public class SnmpV2Packet : SnmpPacket
     /// <returns>BER encoded SNMP packet.</returns>
     public override byte[] encode()
     {
-        var buf = new MutableByte();
-
         if (Pdu.Type != PduType.Get && Pdu.Type != PduType.GetNext &&
             Pdu.Type != PduType.Set && Pdu.Type != PduType.V2Trap &&
             Pdu.Type != PduType.Response && Pdu.Type != PduType.GetBulk &&
@@ -176,21 +174,23 @@ public class SnmpV2Packet : SnmpPacket
             throw new SnmpInvalidPduTypeException("Invalid SNMP PDU type while attempting to encode PDU: " +
                                                   $"0x{Pdu.Type:x2}");
 
+        var length = _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
+        var header = AsnType.HeaderSize(length);
+        var result = new byte[length + AsnType.HeaderSize(length)];
+        var buf = result.AsSpan(header, length);
         // snmp version
-        _protocolVersion.encode(buf);
+        var written = _protocolVersion.encode(buf);
 
         // community string
-        _snmpCommunity.encode(buf);
+        written += _snmpCommunity.encode(buf[written..]);
 
         // pdu
-        _pdu.encode(buf);
+        written += Pdu.encode(buf[written..]);
 
         // wrap the packet into a sequence
-        var tmpBuf = new MutableByte();
-        AsnType.BuildHeader(tmpBuf, SnmpConstants.SMI_SEQUENCE, buf.Length);
-
-        buf.Prepend(tmpBuf);
-        return buf;
+        // wrap the packet into a sequence
+        AsnType.BuildHeader(result.AsSpan(0, header), SnmpConstants.SMI_SEQUENCE, written);
+        return result;
     }
 
     #endregion

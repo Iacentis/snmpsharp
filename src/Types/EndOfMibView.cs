@@ -65,7 +65,7 @@ public class EndOfMibView : V2Error
     /// <param name="buffer">The encoded buffer</param>
     /// <param name="offset">The offset of the first byte of encoded data</param>
     /// <returns>Offset after the decoded value</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != Type) throw new SnmpException("Invalid ASN.1 type");
@@ -85,7 +85,7 @@ public class EndOfMibView : V2Error
         BuildHeader(buffer, Type, 0);
     }
 
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         return BuildHeader(buffer, Type, 0);
     }

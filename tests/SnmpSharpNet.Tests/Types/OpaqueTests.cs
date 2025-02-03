@@ -18,8 +18,8 @@ public class OpaqueTests
     [Arguments("1.3.2.4.1.5.6.8")]
     public async Task EncodedToDecode(string a)
     {
-        Span<byte> buffer = stackalloc byte[50];
         var initial = new Opaque(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Opaque();
         @new.decode(buffer, 0);

@@ -120,21 +120,19 @@ public class SnmpV1Packet : SnmpPacket
     /// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
     /// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
     /// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
-    public override int decode(byte[] buffer, int length)
+    public override int decode(Span<byte> buffer, int length)
     {
-        var buf = new MutableByte(buffer, length);
-
         var offset = base.decode(buffer, buffer.Length);
 
         if (_protocolVersion.Value != (int)SnmpVersion.Ver1)
             throw new SnmpInvalidVersionException("Invalid protocol version");
 
-        offset = _snmpCommunity.decode(buf, offset);
+        offset = _snmpCommunity.decode(buffer, offset);
         var tmpOffset = offset;
-        var asnType = AsnType.ParseHeader(buf.Value, ref tmpOffset, out var headerLength);
+        var asnType = AsnType.ParseHeader(buffer, ref tmpOffset, out var headerLength);
 
         // Check packet length
-        if (headerLength + offset > buf.Length)
+        if (headerLength + offset > buffer.Length)
             throw new OverflowException("Insufficient data in packet");
 
 
@@ -143,7 +141,7 @@ public class SnmpV1Packet : SnmpPacket
             throw new SnmpInvalidPduTypeException("Invalid SNMP operation received: " +
                                                   $"0x{asnType:x2}");
         // Now process the Protocol Data Unit
-        Pdu.decode(buf, offset);
+        Pdu.decode(buffer, offset);
         return length;
     }
 
@@ -171,23 +169,21 @@ public class SnmpV1Packet : SnmpPacket
             }
         }
 
-        var tmpBuffer = new MutableByte();
+        var length = _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
+        var header = AsnType.HeaderSize(length);
+        var result = new byte[length + AsnType.HeaderSize(length)];
+        var buf = result.AsSpan(header, length);
         // snmp version
-        _protocolVersion.encode(tmpBuffer);
+        var written = _protocolVersion.encode(buf);
 
         // community string
-        _snmpCommunity.encode(tmpBuffer);
+        written += _snmpCommunity.encode(buf[written..]);
 
         // pdu
-        Pdu.encode(tmpBuffer);
-
-        var buf = new MutableByte();
-
+        written += Pdu.encode(buf[written..]);
         // wrap the packet into a sequence
-        AsnType.BuildHeader(buf, SnmpConstants.SMI_SEQUENCE, tmpBuffer.Length);
-
-        buf.Append(tmpBuffer);
-        return buf;
+        AsnType.BuildHeader(result.AsSpan(0, header), SnmpConstants.SMI_SEQUENCE, written);
+        return result;
     }
 
     /// <summary>

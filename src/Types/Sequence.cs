@@ -88,7 +88,7 @@ public class Sequence : AsnType, ICloneable
     ///     BER encode sequence
     /// </summary>
     /// <param name="buffer">Target buffer</param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         var dataLen = 0;
         if (_data.Length > 0)
@@ -115,7 +115,7 @@ public class Sequence : AsnType, ICloneable
     /// <param name="buffer">Source data buffer</param>
     /// <param name="offset">Offset within the buffer to start parsing from</param>
     /// <returns>Returns offset position after the sequence header</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         int asnType = ParseHeader(buffer, ref offset, out var dataLen);
         if (asnType != Type)
@@ -135,4 +135,6 @@ public class Sequence : AsnType, ICloneable
 
         return offset;
     }
+
+    public override int ByteLength => encode(stackalloc byte[_data.Length + MaxHeaderSize]);
 }

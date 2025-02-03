@@ -21,8 +21,8 @@ public class Counter64Tests
     [Arguments(ulong.MaxValue)]
     public async Task EncodedToDecode(ulong a)
     {
-        Span<byte> buffer = stackalloc byte[Counter64.MaxEncodedSize];
         var initial = new Counter64(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Counter64();
         @new.decode(buffer, 0);

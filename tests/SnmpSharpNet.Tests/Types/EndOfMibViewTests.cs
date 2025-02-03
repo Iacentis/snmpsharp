@@ -16,8 +16,8 @@ public class EndOfMibViewTests
     [Test]
     public async Task EncodedToDecode()
     {
-        Span<byte> buffer = stackalloc byte[10];
         var initial = new EndOfMibView();
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new EndOfMibView();
         @new.decode(buffer, 0);

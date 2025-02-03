@@ -202,7 +202,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         if (_authentication == AuthenticationDigests.None) return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication)!;
-        var authParam = authProto.authenticate(AuthenticationSecret, EngineId.ToArray(), wholePacket);
+        var authParam = authProto.authenticate(AuthenticationSecret.Value, EngineId.ToArray(), wholePacket.Value);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -214,11 +214,11 @@ public class UserSecurityModel : AsnType, ICloneable
     /// </summary>
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholePacket">SNMP version 3 BER encoded packet.</param>
-    public void Authenticate(byte[] authKey, ref MutableByte wholePacket)
+    public void Authenticate(byte[] authKey, Span<byte> wholePacket)
     {
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
         if (authProto == null) return;
-        var authParam = authProto.authenticate(authKey, wholePacket);
+        var authParam = authProto.authenticate(authKey, wholePacket.ToArray());
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -233,8 +233,9 @@ public class UserSecurityModel : AsnType, ICloneable
 
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
         if (authProto != null)
-            return authProto.authenticateIncomingMsg(AuthenticationSecret, EngineId, AuthenticationParameters,
-                wholePacket);
+            return authProto.authenticateIncomingMsg(AuthenticationSecret.Value, EngineId.ToArray(),
+                AuthenticationParameters.ToArray(),
+                wholePacket.Value);
 
         return false; // Nothing to authenticate
     }
@@ -245,11 +246,12 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholePacket">Received BER encoded SNMP version 3 packet</param>
     /// <returns>True if packet is successfully authenticated, otherwise false.</returns>
-    public bool IsAuthentic(byte[] authKey, MutableByte wholePacket)
+    public bool IsAuthentic(byte[] authKey, Span<byte> wholePacket)
     {
         if (_authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
-        return authProto != null && authProto.authenticateIncomingMsg(authKey, AuthenticationParameters, wholePacket);
+        return authProto != null &&
+               authProto.authenticateIncomingMsg(authKey, AuthenticationParameters.ToArray(), wholePacket.ToArray());
         // Nothing to authenticate
     }
 
@@ -261,6 +263,7 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <param name="buffer">Buffer to store encoded USM security model header</param>
     public override void encode(MutableByte buffer)
     {
+        EnsureAuthParameters();
         var tmp = new MutableByte();
         // First encode all the values that will form the sequence
         EngineId.encode(tmp);
@@ -269,6 +272,60 @@ public class UserSecurityModel : AsnType, ICloneable
         // encode engine time
         _engineTime.encode(tmp);
         _securityName.encode(tmp);
+        AuthenticationParameters.encode(tmp);
+        _privacyParameters.encode(tmp);
+        var tmp1 = new MutableByte();
+
+        BuildHeader(tmp1, SnmpConstants.SMI_SEQUENCE, tmp.Length);
+        tmp1.Append(tmp);
+
+        BuildHeader(buffer, OCTETSTRING, tmp1.Length);
+
+        buffer.Append(tmp1);
+    }
+
+    /// <summary>
+    ///     Decode USM portion of the SNMP version 3 packet.
+    /// </summary>
+    /// <param name="buffer">Received SNMP packet BER encoded</param>
+    /// <param name="offset">Offset within the buffer to start decoding USM information</param>
+    /// <returns>Buffer position after the decoded value</returns>
+    /// <exception cref="SnmpDecodingException">Thrown when decoding enountered invalid data type in USM information</exception>
+    /// <exception cref="OverflowException">Thrown when packet is too small to contain information length specified in header</exception>
+    public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int encode(Span<byte> buffer)
+    {
+        EnsureAuthParameters();
+
+        Span<byte> tmp = stackalloc byte[MemberByteLength];
+        var written = 0;
+        // First encode all the values that will form the sequence
+        written += EngineId.encode(tmp);
+        // Encode engine boots
+        written += _engineBoots.encode(tmp[written..]);
+        // encode engine time
+        written += _engineTime.encode(tmp[written..]);
+        written += _securityName.encode(tmp[written..]);
+        written += AuthenticationParameters.encode(tmp[written..]);
+        written += _privacyParameters.encode(tmp[written..]);
+
+        Span<byte> tmp1 = stackalloc byte[written + MaxHeaderSize];
+
+        var slice = BuildHeader(tmp1, SnmpConstants.SMI_SEQUENCE, tmp.Length);
+        tmp.CopyTo(tmp1[slice..]);
+        tmp1 = tmp1[..(slice + tmp.Length)];
+
+        slice = BuildHeader(buffer, OCTETSTRING, tmp1.Length);
+        tmp1.CopyTo(buffer[slice..]);
+        return slice + tmp1.Length;
+    }
+
+    private void EnsureAuthParameters()
+    {
         if (_authentication != AuthenticationDigests.None)
         {
             switch (AuthenticationParameters.Length)
@@ -289,7 +346,6 @@ public class UserSecurityModel : AsnType, ICloneable
             AuthenticationParameters.Reset();
         }
 
-        AuthenticationParameters.encode(tmp);
         if (_privacy != PrivacyProtocols.None)
         {
             switch (_privacyParameters.Length)
@@ -321,27 +377,25 @@ public class UserSecurityModel : AsnType, ICloneable
         {
             _privacyParameters.Reset();
         }
-
-        _privacyParameters.encode(tmp);
-        var tmp1 = new MutableByte();
-
-        BuildHeader(tmp1, SnmpConstants.SMI_SEQUENCE, tmp.Length);
-        tmp1.Append(tmp);
-
-        BuildHeader(buffer, OCTETSTRING, tmp1.Length);
-
-        buffer.Append(tmp1);
     }
 
-    /// <summary>
-    ///     Decode USM portion of the SNMP version 3 packet.
-    /// </summary>
-    /// <param name="buffer">Received SNMP packet BER encoded</param>
-    /// <param name="offset">Offset within the buffer to start decoding USM information</param>
-    /// <returns>Buffer position after the decoded value</returns>
-    /// <exception cref="SnmpDecodingException">Thrown when decoding enountered invalid data type in USM information</exception>
-    /// <exception cref="OverflowException">Thrown when packet is too small to contain information length specified in header</exception>
-    public override int decode(byte[] buffer, int offset)
+    public override int ByteLength
+    {
+        get
+        {
+            var mbl = MemberByteLength;
+            var firstHeader = HeaderSize(mbl);
+            var secondHeader = HeaderSize(mbl + firstHeader);
+            return mbl + firstHeader + secondHeader;
+        }
+    }
+
+    private int MemberByteLength =>
+        EngineId.ByteLength + _engineBoots.ByteLength + _engineTime.ByteLength +
+        _securityName.ByteLength + AuthenticationParameters.ByteLength +
+        _privacyParameters.ByteLength;
+
+    public override int decode(Span<byte> buffer, int offset)
     {
         // Grab the octet string header
         var type = ParseHeader(buffer, ref offset, out var len);
@@ -396,19 +450,15 @@ public class UserSecurityModel : AsnType, ICloneable
         if ((_authentication != AuthenticationDigests.None || _privacy != PrivacyProtocols.None) &&
             _securityName.Length <= 0)
             return false; // Have to provide a user name when using authentication or privacy
-        switch (_authentication)
-        {
-            case AuthenticationDigests.None when _privacy != PrivacyProtocols.None:
-                return false; // noAuthPriv is not supported by SNMP version 3
-        }
+        if (_authentication == AuthenticationDigests.None &&
+            _privacy != PrivacyProtocols.None) return false; // noAuthPriv is not supported by SNMP version 3
 
         // check that secrets are properly configured
         if (_authentication != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // authentication configured without a secret
-        if (_privacy != PrivacyProtocols.None && _privacySecret.Length <= 0)
-            return false; // privacy configured without a secret
+        return _privacy == PrivacyProtocols.None || _privacySecret.Length > 0;
+        // privacy configured without a secret
         // no point in checking the rest since discovery process is done with all other values being null or 0
-        return true;
     }
 
     /// <summary>

@@ -318,7 +318,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
 
     /// <summary>BER encode class value.</summary>
     /// <param name="buffer">Target buffer. Value is appended to the end of it.</param>
-    public int encode(Span<byte> buffer)
+    public override int encode(Span<byte> buffer)
     {
         Span<byte> b = stackalloc byte[sizeof(uint)];
         BitConverter.TryWriteBytes(b, _value);
@@ -347,6 +347,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     }
 
     public static int MaxEncodedSize => MaxHeaderSize + sizeof(uint) + 1;
+    public override int ByteLength => encode(stackalloc byte[MaxEncodedSize]);
 
     /// <summary>Decode BER encoded value</summary>
     /// <remarks>
@@ -377,7 +378,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     ///     immediately after the value we decoded.
     /// </param>
     /// <returns>Buffer position after the decoded value</returns>
-    public int decode(Span<byte> buffer, int offset)
+    public override int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first

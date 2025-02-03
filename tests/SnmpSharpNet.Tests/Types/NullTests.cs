@@ -16,8 +16,8 @@ public class NullTests
     [Test]
     public async Task EncodedToDecode()
     {
-        Span<byte> buffer = stackalloc byte[10];
         var initial = new Null();
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Null();
         @new.decode(buffer, 0);

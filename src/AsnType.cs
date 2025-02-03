@@ -126,6 +126,22 @@ public abstract class AsnType : ICloneable
     public abstract int decode(byte[] buffer, int offset);
 
     /// <summary>
+    ///     Encodes the data object in the specified buffer
+    /// </summary>
+    /// <param name="buffer">The buffer to write the encoded information</param>
+    public abstract int encode(Span<byte> buffer);
+
+    /// <summary>
+    ///     Decodes the ASN.1 buffer and sets the values in the AsnType object.
+    /// </summary>
+    /// <param name="buffer">The encoded data buffer</param>
+    /// <param name="offset">The offset of the first valid byte.</param>
+    /// <returns>
+    ///     New offset pointing to the byte after the last decoded position
+    /// </returns>
+    public abstract int decode(Span<byte> buffer, int offset);
+
+    /// <summary>
     ///     Append BER encoded length to the <see cref="MutableByte" />
     /// </summary>
     /// <param name="mb">MutableArray to append BER encoded length to</param>
@@ -268,30 +284,31 @@ public abstract class AsnType : ICloneable
 
     internal static int MaxHeaderSize => 2 + sizeof(int);
     internal static int HeaderSize(int asnLength) => BuildHeader(stackalloc byte[MaxHeaderSize], 0, asnLength);
+    public virtual int ByteLength => HeaderSize(0);
 
     /// <summary>
     ///     Parse ASN.1 header.
     /// </summary>
-    /// <param name="mb">BER encoded data</param>
+    /// <param name="buffer">BER encoded data</param>
     /// <param name="offset">Offset in the packet to start parsing the header from</param>
     /// <param name="length">Length of the data in the section starting with parsed header</param>
     /// <returns>ASN.1 type of the header</returns>
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
     /// <exception cref="SnmpException">Thrown when invalid type is encountered in the header</exception>
-    internal static byte ParseHeader(Span<byte> mb, ref int offset, out int length)
+    internal static byte ParseHeader(Span<byte> buffer, ref int offset, out int length)
     {
-        switch (mb.Length - offset)
+        switch (buffer.Length - offset)
         {
             case < 1:
                 throw new OverflowException("Buffer is too short.");
         }
 
         // ASN.1 type
-        var asnType = mb[offset++];
+        var asnType = buffer[offset++];
         if ((asnType & EXTENSION_ID) == EXTENSION_ID) throw new SnmpException("Invalid SNMP header type");
 
         // length
-        length = ParseLength(mb, ref offset);
+        length = ParseLength(buffer, ref offset);
         return asnType;
     }
 }

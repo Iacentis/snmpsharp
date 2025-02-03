@@ -41,12 +41,12 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="engineId">SNMP agent authoritative engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(byte[] authenticationSecret, byte[] engineId, byte[] wholeMessage)
+    public byte[] authenticate(Span<byte> authenticationSecret, Span<byte> engineId, Span<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
         var sha = new HMACSHA1(authKey);
-        var hash = sha.ComputeHash(wholeMessage);
+        var hash = sha.ComputeHash(wholeMessage.ToArray());
         // copy "authentication lenght" bytes of the hash into the wholeMessage
         for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
         sha.Clear(); // release resources
@@ -59,12 +59,12 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(byte[] authKey, byte[] wholeMessage)
+    public byte[] authenticate(Span<byte> authKey, Span<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
 
-        var sha = new HMACSHA1(authKey);
-        var hash = sha.ComputeHash(wholeMessage);
+        var sha = new HMACSHA1(authKey.ToArray());
+        var hash = sha.ComputeHash(wholeMessage.ToArray());
         // copy "authentication lenght" bytes of the hash into the wholeMessage
         for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
         sha.Clear(); // release resources
@@ -82,15 +82,16 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
-    public bool authenticateIncomingMsg(byte[] userPassword, byte[] engineId, byte[] authenticationParameters,
-        MutableByte wholeMessage)
+    public bool authenticateIncomingMsg(Span<byte> userPassword, Span<byte> engineId,
+        Span<byte> authenticationParameters,
+        Span<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
         var sha = new HMACSHA1(authKey);
-        var hash = sha.ComputeHash(wholeMessage);
-        var myhash = new MutableByte(hash, authenticationLength);
+        var hash = sha.ComputeHash(wholeMessage.ToArray());
+        var myhash = hash.AsSpan(0, authenticationLength);
         sha.Clear(); // release resources
-        if (myhash.Equals(authenticationParameters)) return true;
+        if (myhash.SequenceEqual(authenticationParameters)) return true;
         return false;
     }
 
@@ -101,13 +102,14 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
     /// <param name="wholeMessage">Entire packet being authenticated</param>
     /// <returns>True on authentication success, otherwise false</returns>
-    public bool authenticateIncomingMsg(byte[] authKey, byte[] authenticationParameters, MutableByte wholeMessage)
+    public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
+        Span<byte> wholeMessage)
     {
-        var sha = new HMACSHA1(authKey);
-        var hash = sha.ComputeHash(wholeMessage);
-        var myhash = new MutableByte(hash, authenticationLength);
+        var sha = new HMACSHA1(authKey.ToArray());
+        var hash = sha.ComputeHash(wholeMessage.ToArray());
+        var myhash = hash.AsSpan(0, authenticationLength);
         sha.Clear(); // release resources
-        if (myhash.Equals(authenticationParameters)) return true;
+        if (myhash.SequenceEqual(authenticationParameters)) return true;
         return false;
     }
 
@@ -118,10 +120,10 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="engineID">Authoritative engine id</param>
     /// <returns>Localized authentication key</returns>
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
-    public byte[] PasswordToKey(byte[] userPassword, byte[] engineID)
+    public byte[] PasswordToKey(Span<byte> userPassword, Span<byte> engineID)
     {
         // key length has to be at least 8 bytes long (RFC3414)
-        if (userPassword == null || userPassword.Length < 8)
+        if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
 
         var password_index = 0;
@@ -142,12 +144,7 @@ public class AuthenticationSHA1 : IAuthenticationDigest
         }
 
         var digest = sha.ComputeHash(sourceBuffer);
-
-        var tmpbuf = new MutableByte();
-        tmpbuf.Append(digest);
-        tmpbuf.Append(engineID);
-        tmpbuf.Append(digest);
-        var res = sha.ComputeHash(tmpbuf);
+        var res = sha.ComputeHash([..digest, ..engineID, ..digest]);
         sha.Clear(); // release resources
         return res;
     }
@@ -174,10 +171,10 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="offset">Compute hash from the source buffer offset</param>
     /// <param name="count">Compute hash for source data length</param>
     /// <returns>Hash value</returns>
-    public byte[] ComputeHash(byte[] data, int offset, int count)
+    public byte[] ComputeHash(Span<byte> data, int offset, int count)
     {
         var sha = SHA1.Create();
-        var res = sha.ComputeHash(data, offset, count);
+        var res = sha.ComputeHash(data.ToArray(), offset, count);
         sha.Clear();
         return res;
     }

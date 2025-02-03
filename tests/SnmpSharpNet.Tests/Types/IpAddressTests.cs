@@ -22,8 +22,8 @@ public class IpAddressTests
     [Arguments(3u)]
     public async Task EncodedToDecode(uint a)
     {
-        Span<byte> buffer = stackalloc byte[UInteger32.MaxEncodedSize];
         var initial = new IpAddress(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new IpAddress();
         @new.decode(buffer, 0);

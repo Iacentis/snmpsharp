@@ -624,73 +624,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         _errorIndex.encode(tmpBuffer);
 
         // if V2TRAP PDU type, add sysUpTime and trapObjectID OIDs before encoding VarBind
-
-        switch (Type)
-        {
-            case PduType.V2Trap or PduType.Inform:
-            {
-                switch (_vbs.Count)
-                {
-                    case 0:
-                        // add sysUpTime and trapObjectID to the VbList
-                        _vbs.Add(SnmpConstants.SysUpTime, _trapTimeStamp);
-                        _vbs.Add(SnmpConstants.TrapObjectId, _trapObjectID);
-                        break;
-                    default:
-                    {
-                        // Make sure user didn't manually add sysUpTime and trapObjectID values
-                        // to the pdu
-
-                        switch (_vbs.Count)
-                        {
-                            // if we have more then one item in the VarBinds array check for sysUpTime
-                            // if the first Vb in the VarBinds array is not sysUpTime append it in the
-                            // encoded byte array
-                            case > 0:
-                            {
-                                var oid = _vbs[0].Oid;
-                                switch (oid is not null && oid.Equals(SnmpConstants.SysUpTime))
-                                {
-                                    case false:
-                                    {
-                                        var sysUpTimeVb = new Vb(SnmpConstants.SysUpTime, _trapTimeStamp);
-                                        _vbs.Insert(0, sysUpTimeVb);
-                                        break;
-                                    }
-                                }
-
-                                break;
-                            }
-                        }
-
-                        switch (_vbs.Count)
-                        {
-                            // if we have 2 or more Vbs in the VarBinds array check for trapObjectID Vb
-                            // if second Vb in the VarBinds array is not trapObjectId encode the value
-                            case > 1:
-                            {
-                                var oid = _vbs[1].Oid;
-                                switch (oid is not null && oid.Equals(SnmpConstants.TrapObjectId))
-                                {
-                                    case false:
-                                    {
-                                        var trapObjectIdVb = new Vb(SnmpConstants.TrapObjectId, _trapObjectID);
-                                        _vbs.Insert(1, trapObjectIdVb);
-                                        break;
-                                    }
-                                }
-
-                                break;
-                            }
-                        }
-
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
+        EnsureTrapAndInforms();
 
         // encode variable bindings
         _vbs.encode(tmpBuffer);
@@ -714,6 +648,90 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="OverflowException">Thrown when header points to more data then is available.</exception>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int encode(Span<byte> buffer)
+    {
+        switch (_requestId.Value)
+        {
+            // if request id is 0, get a random value
+            case 0:
+                _requestId.SetRandom();
+                break;
+        }
+
+        // if V2TRAP PDU type, add sysUpTime and trapObjectID OIDs before encoding VarBind
+
+        EnsureTrapAndInforms();
+        var written = 0;
+
+        Span<byte> tmpBuffer = stackalloc byte[MemberByteLength()];
+
+        written += _requestId.encode(tmpBuffer[written..]);
+        written += _errorStatus.encode(tmpBuffer[written..]);
+        written += _errorIndex.encode(tmpBuffer[written..]);
+
+        // encode variable bindings
+        written += _vbs.encode(tmpBuffer[written..]);
+
+        // Now encode the header for the PDU
+        var slice = BuildHeader(buffer, (byte)Type, written);
+        tmpBuffer[..written].CopyTo(buffer[slice..]);
+        return written + slice;
+    }
+
+    private void EnsureTrapAndInforms()
+    {
+        if (Type is not (PduType.V2Trap or PduType.Inform)) return;
+        if (_vbs.Count == 0)
+        {
+            // add sysUpTime and trapObjectID to the VbList
+            _vbs.Add(SnmpConstants.SysUpTime, _trapTimeStamp);
+            _vbs.Add(SnmpConstants.TrapObjectId, _trapObjectID);
+        }
+        else
+        {
+            // Make sure user didn't manually add sysUpTime and trapObjectID values
+            // to the pdu
+            // if we have more then one item in the VarBinds array check for sysUpTime
+            // if the first Vb in the VarBinds array is not sysUpTime append it in the
+            // encoded byte array
+            if (_vbs.Count > 0)
+            {
+                var oid = _vbs[0].Oid;
+                switch (oid is not null && oid.Equals(SnmpConstants.SysUpTime))
+                {
+                    case false:
+                    {
+                        var sysUpTimeVb = new Vb(SnmpConstants.SysUpTime, _trapTimeStamp);
+                        _vbs.Insert(0, sysUpTimeVb);
+                        break;
+                    }
+                }
+            }
+
+            // if we have 2 or more Vbs in the VarBinds array check for trapObjectID Vb
+            // if second Vb in the VarBinds array is not trapObjectId encode the value
+            if (_vbs.Count <= 1) return;
+            {
+                var oid = _vbs[1].Oid;
+                switch (oid is not null && oid.Equals(SnmpConstants.TrapObjectId))
+                {
+                    case false:
+                    {
+                        var trapObjectIdVb = new Vb(SnmpConstants.TrapObjectId, _trapObjectID);
+                        _vbs.Insert(1, trapObjectIdVb);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
+    public override int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (offset + headerLength > buffer.Length)
@@ -783,6 +801,21 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     #endregion
 
     #region Overrides
+
+    public override int ByteLength
+    {
+        get
+        {
+            EnsureTrapAndInforms();
+            var mbl = MemberByteLength();
+            var header = HeaderSize(mbl);
+            return mbl + header;
+        }
+    }
+
+    private int MemberByteLength() =>
+        _requestId.ByteLength + _errorStatus.ByteLength +
+        _errorIndex.ByteLength + _vbs.ByteLength;
 
     /// <summary>
     ///     Return string dump of the Pdu class.

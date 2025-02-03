@@ -16,8 +16,8 @@ public class V2ErrorTests
     [Test]
     public async Task EncodedToDecode()
     {
-        Span<byte> buffer = stackalloc byte[10];
         var initial = new V2Error();
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new V2Error();
         @new.decode(buffer, 0);

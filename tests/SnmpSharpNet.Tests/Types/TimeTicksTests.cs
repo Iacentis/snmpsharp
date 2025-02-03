@@ -22,8 +22,8 @@ public class TimeTicksTests
     [Arguments(3u)]
     public async Task EncodedToDecode(uint a)
     {
-        Span<byte> buffer = stackalloc byte[UInteger32.MaxEncodedSize];
         var initial = new TimeTicks(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new TimeTicks();
         @new.decode(buffer, 0);

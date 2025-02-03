@@ -22,8 +22,8 @@ public class Counter32Tests
     [Arguments(uint.MinValue)]
     public async Task EncodedToDecode(uint a)
     {
-        Span<byte> buffer = stackalloc byte[UInteger32.MaxEncodedSize];
         var initial = new Counter32(a);
+        Span<byte> buffer = stackalloc byte[initial.ByteLength];
         initial.encode(buffer);
         var @new = new Counter32();
         @new.decode(buffer, 0);
