@@ -61,6 +61,11 @@ public class Null : AsnType, ICloneable
         BuildHeader(buffer, Type, 0);
     }
 
+    public int encode(Span<byte> buffer)
+    {
+        return BuildHeader(buffer, Type, 0);
+    }
+
     /// <summary>
     ///     Decode null value from BER encoded buffer.
     /// </summary>
@@ -73,6 +78,22 @@ public class Null : AsnType, ICloneable
     /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not null</exception>
     /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>
+    ///     Decode null value from BER encoded buffer.
+    /// </summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">
+    ///     Offset within the buffer from where to start decoding. On return,
+    ///     this argument contains the offset immediately following the decoded value.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not null</exception>
+    /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
+    public int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
