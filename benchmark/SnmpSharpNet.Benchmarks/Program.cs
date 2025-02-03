@@ -3,4 +3,4 @@
 using BenchmarkDotNet.Running;
 using SnmpSharpNet.Tests;
 
-var summary = BenchmarkRunner.Run<Integer32Benchmarks>();
+var summary = BenchmarkRunner.Run<UInteger32Benchmarks>();

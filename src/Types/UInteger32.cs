@@ -316,6 +316,37 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         buffer.Append(tmp);
     }
 
+    /// <summary>BER encode class value.</summary>
+    /// <param name="buffer">Target buffer. Value is appended to the end of it.</param>
+    public void encode(Span<byte> buffer)
+    {
+        Span<byte> b = stackalloc byte[sizeof(uint)];
+        BitConverter.TryWriteBytes(b, _value);
+        Span<byte> tmp = stackalloc byte[sizeof(uint) + 1];
+        tmp.Clear();
+        var length = 0;
+        for (var i = 3; i >= 0; i--)
+            if (b[i] != 0 || length > 0)
+                tmp[length++] = b[i];
+        switch (tmp.Length)
+        {
+            case > 0 when (tmp[0] & 0x80) != 0:
+                tmp[..length].CopyTo(tmp[1..]);
+                tmp[0] = 0;
+                length++;
+                break;
+            case 0:
+                length++;
+                break;
+        }
+
+        var encoded = tmp[..length];
+        var slice = BuildHeader(buffer, Type, length);
+        encoded.CopyTo(buffer[slice..]);
+    }
+
+    public static int MaxEncodedSize => MaxHeaderSize + sizeof(uint) + 1;
+
     /// <summary>Decode BER encoded value</summary>
     /// <remarks>
     ///     Used to decode the integer value from the ASN.1 buffer.
@@ -329,6 +360,23 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     /// </param>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>Decode BER encoded value</summary>
+    /// <remarks>
+    ///     Used to decode the integer value from the ASN.1 buffer.
+    ///     The passed encoder is used to decode the ASN.1 information
+    ///     and the integer value is stored in the internal object.
+    /// </remarks>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">
+    ///     The offset of the first byte of data to decode. This variable will hold the offset of the first byte
+    ///     immediately after the value we decoded.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first
@@ -356,7 +404,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
         for (var i = 0; i < headerLength; i++)
         {
             _value <<= 8;
-            _value = _value | buffer[offset++];
+            _value |= buffer[offset++];
         }
 
         return offset;
