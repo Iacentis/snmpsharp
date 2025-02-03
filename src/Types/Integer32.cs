@@ -324,6 +324,7 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
                         tmp.Prepend(0xff);
                         break;
                 }
+
                 break;
             }
             case 0:
@@ -362,10 +363,110 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
                 tmp.Prepend(0);
                 break;
         }
+
         BuildHeader(buffer, Type, tmp.Length);
 
         buffer.Append(tmp);
     }
+
+    /// <summary>
+    ///     Used to encode the integer value into an ASN.1 buffer.
+    ///     The passed encoder defines the method for encoding the
+    ///     data.
+    /// </summary>
+    /// <param name="buffer">Buffer target to write the encoded data</param>
+    public void encode(Span<byte> buffer)
+    {
+        var val = _value;
+        Span<byte> b = stackalloc byte[sizeof(int)];
+        b.Clear();
+        BitConverter.TryWriteBytes(b, _value);
+
+        Span<byte> tmp = stackalloc byte[sizeof(int)];
+        tmp.Clear();
+        var length = 0;
+
+        switch (val)
+        {
+            // if value is negative
+            case < 0:
+            {
+                for (var i = 3; i >= 0; i--)
+                    if (length > 0 || b[i] != 0xff)
+                        tmp[length++] = b[i];
+
+                switch (length)
+                {
+                    // if the value is -1 then all bytes in an integer are 0xff and will be skipped above
+                    case 0:
+                        tmp[length++] = 0xff;
+                        break;
+                }
+
+                switch (tmp[0] & 0x80)
+                {
+                    // make sure value is negative
+                    case 0:
+                        tmp[..length].CopyTo(tmp[1..]);
+                        length++;
+                        tmp[0] = 0xff;
+                        break;
+                }
+
+                break;
+            }
+            case 0:
+                // this is just a shortcut to save processing time
+                length++;
+                break;
+            default:
+            {
+                for (var i = 3; i >= 0; i--)
+                    if (b[i] != 0 || length > 0)
+                        tmp[length++] = b[i];
+                switch (length)
+                {
+                    // if buffer length is 0 then value is 0, and we have to add it to the buffer
+                    case 0:
+                        tmp[length++] = 0;
+                        break;
+                    default:
+                    {
+                        if ((tmp[0] & 0x80) != 0)
+                        {
+                            // first bit of the first byte has to be 0 otherwise value is negative.
+                            tmp[..length].CopyTo(tmp[1..]);
+                            length++;
+                            tmp[0] = 0;
+                        }
+
+                        break;
+                    }
+                }
+
+                break;
+            }
+        }
+
+        switch (length)
+        {
+            // check for 9 1s at the beginning of the encoded value
+            case > 1 when tmp[0] == 0xff && (tmp[1] & 0x80) != 0:
+
+                // first bit of the first byte has to be 0 otherwise value is negative.
+                tmp[..length].CopyTo(tmp[1..]);
+                length++;
+                tmp[0] = 0;
+                break;
+        }
+
+        var encoded = tmp[..length];
+
+        var slice = BuildHeader(buffer, Type, length);
+        encoded.CopyTo(buffer[slice..]);
+    }
+
+    public static int MaxEncodedSize => MaxHeaderSize + sizeof(int);
 
     /// <summary>
     ///     Used to decode the integer value from the BER buffer.
@@ -376,6 +477,19 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
     /// <param name="offset">Offset in the buffer to start parsing from</param>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>
+    ///     Used to decode the integer value from the BER buffer.
+    ///     The passed encoder is used to decode the BER encoded information
+    ///     and the integer value is stored in the internal object.
+    /// </summary>
+    /// <param name="buffer">Buffer holding BER encoded data</param>
+    /// <param name="offset">Offset in the buffer to start parsing from</param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first
@@ -416,10 +530,11 @@ public class Integer32 : AsnType, IComparable<Integer32>, IComparable<int>, IClo
                 _value = 0;
                 break;
         }
+
         for (var i = 0; i < headerLength; i++)
         {
             _value <<= 8;
-            _value = _value | buffer[offset++];
+            _value |= buffer[offset++];
         }
 
         return offset;

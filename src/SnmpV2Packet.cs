@@ -143,7 +143,7 @@ public class SnmpV2Packet : SnmpPacket
 
         offset = _snmpCommunity.decode(buf, offset);
         var tmpOffset = offset;
-        var asnType = AsnType.ParseHeader(buf, ref tmpOffset, out var headerLength);
+        var asnType = AsnType.ParseHeader(buf.Value, ref tmpOffset, out var headerLength);
 
         // Check packet length
         if (headerLength + offset > buf.Length)

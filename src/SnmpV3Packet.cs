@@ -407,7 +407,7 @@ public class SnmpV3Packet : SnmpPacket
             throw new SnmpInvalidVersionException("Expecting SNMP version 3.");
 
         // now grab the global message data sequence header information
-        var asnType = AsnType.ParseHeader(buffer, ref offset, out var len);
+        var asnType = AsnType.ParseHeader(buffer.Value, ref offset, out var len);
 
         if (asnType != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid sequence type when decoding global message data sequence.");
@@ -521,7 +521,7 @@ public class SnmpV3Packet : SnmpPacket
             throw new SnmpInvalidVersionException("Expecting SNMP version 3.");
 
         // now grab the global message data sequence header information
-        var asnType = AsnType.ParseHeader(buffer, ref offset, out var len);
+        var asnType = AsnType.ParseHeader(buffer.Value, ref offset, out var len);
         if (asnType != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid sequence type in global message data sequence.");
 

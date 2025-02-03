@@ -131,6 +131,46 @@ public abstract class AsnType : ICloneable
     /// <param name="mb">MutableArray to append BER encoded length to</param>
     /// <param name="asnLength">Length value to encode.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
+    internal static int BuildLength(Span<byte> mb, int asnLength)
+    {
+        switch (asnLength)
+        {
+            case < 0:
+                throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
+        }
+
+        Span<byte> len = stackalloc byte[sizeof(int)];
+        BitConverter.TryWriteBytes(len, asnLength);
+        Span<byte> buf = stackalloc byte[sizeof(int)];
+        var length = 0;
+        for (var i = 3; i >= 0; i--)
+            if (len[i] != 0 || length > 0)
+                buf[length++] = len[i];
+        var cut = buf[..length];
+        switch (length)
+        {
+            // check for short form encoding
+            case 1 when (cut[0] & HIGH_BIT) == 0:
+                mb[0] = cut[0]; // done
+                return 1;
+            default:
+            {
+                // long form encoding
+                var encHeader = (byte)length;
+                encHeader = (byte)(encHeader | HIGH_BIT);
+                mb[0] = encHeader;
+                cut.CopyTo(mb[1..]);
+                return cut.Length + 1;
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Append BER encoded length to the <see cref="MutableByte" />
+    /// </summary>
+    /// <param name="mb">MutableArray to append BER encoded length to</param>
+    /// <param name="asnLength">Length value to encode.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
     internal static void BuildLength(MutableByte mb, int asnLength)
     {
         switch (asnLength)
@@ -138,6 +178,7 @@ public abstract class AsnType : ICloneable
             case < 0:
                 throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
         }
+
         var len = BitConverter.GetBytes(asnLength);
         var buf = new MutableByte();
         for (var i = 3; i >= 0; i--)
@@ -176,7 +217,7 @@ public abstract class AsnType : ICloneable
     /// <param name="offset">Offset to start parsing length from</param>
     /// <returns>Length value</returns>
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
-    internal static int ParseLength(byte[] mb, ref int offset)
+    internal static int ParseLength(Span<byte> mb, ref int offset)
     {
         if (offset == mb.Length)
             throw new OverflowException("Buffer is too short.");
@@ -219,6 +260,15 @@ public abstract class AsnType : ICloneable
         BuildLength(mb, asnLength);
     }
 
+    internal static int BuildHeader(Span<byte> mb, byte asnType, int asnLength)
+    {
+        mb[0] = asnType;
+        return BuildLength(mb[1..], asnLength) + 1;
+    }
+
+    internal static int MaxHeaderSize => 2 + sizeof(int);
+    internal static int HeaderSize(int asnLength) => BuildHeader(stackalloc byte[MaxHeaderSize], 0, asnLength);
+
     /// <summary>
     ///     Parse ASN.1 header.
     /// </summary>
@@ -228,7 +278,7 @@ public abstract class AsnType : ICloneable
     /// <returns>ASN.1 type of the header</returns>
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
     /// <exception cref="SnmpException">Thrown when invalid type is encountered in the header</exception>
-    internal static byte ParseHeader(byte[] mb, ref int offset, out int length)
+    internal static byte ParseHeader(Span<byte> mb, ref int offset, out int length)
     {
         switch (mb.Length - offset)
         {
