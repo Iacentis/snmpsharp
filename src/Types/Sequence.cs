@@ -28,7 +28,7 @@ public class Sequence : AsnType, ICloneable
     public Sequence(byte[]? value)
         : this()
     {
-        if (value != null && value.Length > 0)
+        if (value is { Length: > 0 })
         {
             _data = new byte[value.Length];
             Buffer.BlockCopy(value, 0, _data, 0, value.Length);

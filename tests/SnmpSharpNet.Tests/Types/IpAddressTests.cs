@@ -1,0 +1,18 @@
+﻿namespace SnmpSharpNet.Tests;
+
+public class IpAddressTests
+{
+    [Test]
+    [Arguments(1u)]
+    [Arguments(2u)]
+    [Arguments(3u)]
+    public async Task EncodedToDecode(uint a)
+    {
+        var initial = new IpAddress(a);
+        var buffer = new MutableByte();
+        initial.encode(buffer);
+        var @new = new IpAddress();
+        @new.decode(buffer, 0);
+        await Assert.That(@new).IsEqualTo(initial);
+    }
+}

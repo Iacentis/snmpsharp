@@ -15,6 +15,7 @@
 // 
 
 using System;
+using System.Text;
 
 namespace SnmpSharpNet;
 
@@ -193,6 +194,20 @@ public class SnmpV3Packet : SnmpPacket
     {
         get => _maxMessageSize.Value;
         set => _maxMessageSize.Value = value;
+    }
+
+    public override string ToString()
+    {
+        var str = new StringBuilder();
+        str.AppendLine("SNMPv3 packet:");
+        str.AppendLine($"Version: {_protocolVersion}");
+        str.AppendLine($"MsgId: {_messageId}");
+        str.AppendLine($"MaxMsgSize: {MaxMessageSize}");
+        str.AppendLine($"MsgFlags: {MsgFlags}");
+        str.AppendLine($"SecurityModel: {_securityModel}");
+        str.AppendLine($"USM: {USM}");
+        str.AppendLine($"ScopedPdu: {ScopedPdu}");
+        return str.ToString();
     }
 
     /// <summary>
