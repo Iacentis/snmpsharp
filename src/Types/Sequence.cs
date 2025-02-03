@@ -85,6 +85,20 @@ public class Sequence : AsnType, ICloneable
     }
 
     /// <summary>
+    ///     BER encode sequence
+    /// </summary>
+    /// <param name="buffer">Target buffer</param>
+    public int encode(Span<byte> buffer)
+    {
+        var dataLen = 0;
+        if (_data.Length > 0)
+            dataLen = _data.Length;
+        var slice = BuildHeader(buffer, Type, dataLen);
+        _data.CopyTo(buffer[slice..]);
+        return dataLen + slice;
+    }
+
+    /// <summary>
     ///     Decode sequence from the byte array. Returned offset value is advanced by the size of the sequence header.
     /// </summary>
     /// <param name="buffer">Source data buffer</param>
@@ -92,7 +106,17 @@ public class Sequence : AsnType, ICloneable
     /// <returns>Returns offset position after the sequence header</returns>
     public override int decode(byte[] buffer, int offset)
     {
-        _data = [];
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>
+    ///     Decode sequence from the byte array. Returned offset value is advanced by the size of the sequence header.
+    /// </summary>
+    /// <param name="buffer">Source data buffer</param>
+    /// <param name="offset">Offset within the buffer to start parsing from</param>
+    /// <returns>Returns offset position after the sequence header</returns>
+    public int decode(Span<byte> buffer, int offset)
+    {
         int asnType = ParseHeader(buffer, ref offset, out var dataLen);
         if (asnType != Type)
             throw new SnmpException("Invalid ASN.1 type.");
@@ -101,8 +125,11 @@ public class Sequence : AsnType, ICloneable
         switch (dataLen)
         {
             case > 0:
-                _data = new byte[dataLen];
-                Buffer.BlockCopy(buffer, offset, _data, 0, dataLen);
+                Array.Resize(ref _data, dataLen);
+                buffer[offset..(offset + dataLen)].CopyTo(_data);
+                break;
+            default:
+                _data = [];
                 break;
         }
 

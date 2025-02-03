@@ -888,39 +888,44 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// </param>
     public int encode(Span<byte> buffer)
     {
-        var values = _data;
-        if (values.Length < 2)
-        {
-            values = new uint[2];
-            values[0] = values[1] = 0;
-        }
-
+        var values = _data.AsSpan();
         var upperLimitLength = (values.Length - 1 /*first two values are merged*/) * sizeof(uint);
+        if (upperLimitLength < sizeof(uint) * 2) upperLimitLength = sizeof(uint) * 2;
         //Build header;
         Span<byte> workingSet = stackalloc byte[upperLimitLength];
-
-        // verify that it is a valid object id!
-        if (values[0] > 2)
-            throw new SnmpException("Invalid Object Identifier");
-
-        if (values[1] > 40)
-            throw new SnmpException("Invalid Object Identifier");
-
-
-        // add the first oid!
-        var first = (byte)(values[0] * 40 + values[1]);
-        var written = 0;
-        workingSet[written++] = first;
-
-        // encode remaining instance values
-        for (var i = 2; i < values.Length; i++)
+        if (values.Length < 2)
         {
-            written += encodeInstance(values[i], workingSet[written..]);
+            var written = 0;
+            workingSet[written++] = 0;
+            var slice = BuildHeader(buffer, Type, written);
+            workingSet[..written].CopyTo(buffer[slice..]);
+            return written + slice;
         }
+        else
+        {
+            // verify that it is a valid object id!
+            if (values[0] > 2)
+                throw new SnmpException("Invalid Object Identifier");
 
-        var slice = BuildHeader(buffer, Type, written);
-        workingSet[..written].CopyTo(buffer[slice..]);
-        return written + slice;
+            if (values[1] > 40)
+                throw new SnmpException("Invalid Object Identifier");
+
+
+            // add the first oid!
+            var first = (byte)(values[0] * 40 + values[1]);
+            var written = 0;
+            workingSet[written++] = first;
+
+            // encode remaining instance values
+            for (var i = 2; i < values.Length; i++)
+            {
+                written += encodeInstance(values[i], workingSet[written..]);
+            }
+
+            var slice = BuildHeader(buffer, Type, written);
+            workingSet[..written].CopyTo(buffer[slice..]);
+            return written + slice;
+        }
     }
 
     /// <summary>
@@ -986,14 +991,15 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
             {
                 var val = number;
                 Span<byte> tmp = stackalloc byte[sizeof(uint) * 2];
+                Span<byte> b = stackalloc byte[sizeof(uint)];
                 var length = 0;
                 while (val != 0)
                 {
-                    var b = BitConverter.GetBytes(val);
-                    var bval = b[0];
-                    if ((bval & 0x80) != 0) bval = (byte)(bval & ~HIGH_BIT); // clear high bit
+                    BitConverter.TryWriteBytes(b, val);
+                    var @byte = b[0];
+                    if ((@byte & 0x80) != 0) @byte = (byte)(@byte & ~HIGH_BIT); // clear high bit
                     val >>= 7; // shift original value by 7 bits
-                    tmp[length++] = bval;
+                    tmp[length++] = @byte;
                 }
 
                 var written = 0;
@@ -1041,14 +1047,17 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
                 return offset;
         }
 
-        var list = new List<uint>();
+        Span<uint> list = stackalloc uint[headerLength + 1];
+
+        Span<byte> tmp = stackalloc byte[headerLength];
 
 
         // decode the first byte
         --headerLength;
         var oid = Convert.ToUInt32(buffer[offset++]);
-        list.Add(oid / 40);
-        list.Add(oid % 40);
+        var listIndex = 0;
+        list[listIndex++] = oid / 40;
+        list[listIndex++] = oid % 40;
 
         //
         // decode the rest of the identifiers
@@ -1069,25 +1078,19 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
                         break;
                     default:
                     {
+                        var written = 0;
                         // long encoding
-                        var tmp = new MutableByte();
                         var completed = false;
                         do
                         {
-                            tmp.Append((byte)(buffer[offset] & ~HIGH_BIT));
-                            switch (buffer[offset] & HIGH_BIT)
-                            {
-                                case 0:
-                                    completed = true;
-                                    break;
-                            }
-
+                            tmp[written++] = (byte)(buffer[offset] & ~HIGH_BIT);
+                            if ((buffer[offset] & HIGH_BIT) == 0) completed = true;
                             offset += 1; // advance offset
                             --headerLength; // take out the processed byte from the header length
                         } while (!completed);
 
                         // convert byte array to integer
-                        for (var i = 0; i < tmp.Length; i++)
+                        for (var i = 0; i < written; i++)
                         {
                             result <<= 7;
                             result |= tmp[i];
@@ -1097,17 +1100,18 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
                     }
                 }
             }
-            list.Add(result);
+            list[listIndex++] = result;
         }
 
-        _data = list.ToArray();
-
-        switch (_data.Length)
+        if (list is [0, 0])
         {
-            case 2 when _data[0] == 0 && _data[1] == 0:
-                _data = [];
-                break;
+            _data = [];
+            return offset;
         }
+
+        Array.Resize(ref _data, listIndex);
+        list[..listIndex].CopyTo(_data);
+
 
         return offset;
     }
