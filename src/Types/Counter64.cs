@@ -342,6 +342,35 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
         buffer.Append(tmp);
     }
 
+    /// <summary>BER encode class value</summary>
+    /// <param name="buffer">
+    ///     MutableByte to append BER encoded value to.
+    /// </param>
+    public void encode(Span<byte> buffer)
+    {
+        Span<byte> b = stackalloc byte[sizeof(ulong)];
+        BitConverter.TryWriteBytes(b, _value);
+        Span<byte> tmp = stackalloc byte[sizeof(ulong)];
+        tmp.Clear();
+        var length = 0;
+        for (var i = b.Length - 1; i >= 0; i--)
+            if (b[i] != 0 || tmp.Length > 0)
+                tmp[length++] = b[i];
+        switch (length)
+        {
+            case 0:
+                length++; // value is 0. can't have an empty encoding
+                break;
+        }
+
+        var cut = tmp[..length];
+
+        var slice = BuildHeader(buffer, Type, tmp.Length);
+        cut.CopyTo(buffer[slice..]);
+    }
+
+    public static int MaxEncodedSize => MaxHeaderSize + sizeof(ulong);
+
     /// <summary>
     ///     Decode BER encoded Counter64 value
     /// </summary>
@@ -349,6 +378,17 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="offset">Offset to start value decoding from.</param>
     /// <returns>Offset after the parsed value.</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>
+    ///     Decode BER encoded Counter64 value
+    /// </summary>
+    /// <param name="buffer">The encoded ASN.1 data</param>
+    /// <param name="offset">Offset to start value decoding from.</param>
+    /// <returns>Offset after the parsed value.</returns>
+    public int decode(Span<byte> buffer, int offset)
     {
         //
         // parse the header first
