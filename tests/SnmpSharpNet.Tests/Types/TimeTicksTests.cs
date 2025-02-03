@@ -6,10 +6,24 @@ public class TimeTicksTests
     [Arguments(1u)]
     [Arguments(2u)]
     [Arguments(3u)]
-    public async Task EncodedToDecode(uint a)
+    public async Task EncodedToDecodeMutable(uint a)
     {
         var initial = new TimeTicks(a);
         var buffer = new MutableByte();
+        initial.encode(buffer);
+        var @new = new TimeTicks();
+        @new.decode(buffer, 0);
+        await Assert.That(@new).IsEqualTo(initial);
+    }
+
+    [Test]
+    [Arguments(1u)]
+    [Arguments(2u)]
+    [Arguments(3u)]
+    public async Task EncodedToDecode(uint a)
+    {
+        Span<byte> buffer = stackalloc byte[UInteger32.MaxEncodedSize];
+        var initial = new TimeTicks(a);
         initial.encode(buffer);
         var @new = new TimeTicks();
         @new.decode(buffer, 0);

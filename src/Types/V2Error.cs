@@ -62,6 +62,11 @@ public class V2Error : AsnType, ICloneable
         BuildHeader(buffer, Type, 0);
     }
 
+    public int encode(Span<byte> buffer)
+    {
+        return BuildHeader(buffer, Type, 0);
+    }
+
     /// <summary>Decode BER encoded SNMP version 2 error.</summary>
     /// <param name="buffer">BER encoded buffer</param>
     /// <param name="offset">
@@ -70,6 +75,18 @@ public class V2Error : AsnType, ICloneable
     /// </param>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>Decode BER encoded SNMP version 2 error.</summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">
+    ///     Offset within the buffer to start decoding the value from. This argument will
+    ///     receive the new offset to the byte immediately following the decoded value.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
