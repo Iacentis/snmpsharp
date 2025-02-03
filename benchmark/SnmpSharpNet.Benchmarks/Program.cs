@@ -3,4 +3,4 @@
 using BenchmarkDotNet.Running;
 using SnmpSharpNet.Tests;
 
-var summary = BenchmarkRunner.Run<OctetStringBenchmarks>();
+var summary = BenchmarkRunner.Run<OidBenchmarks>();

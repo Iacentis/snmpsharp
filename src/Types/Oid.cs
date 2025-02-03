@@ -881,6 +881,49 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     }
 
     /// <summary>
+    ///     Encodes ASN.1 object identifier and append it to the end of the passed buffer.
+    /// </summary>
+    /// <param name="buffer">
+    ///     Buffer to append the encoded information to.
+    /// </param>
+    public int encode(Span<byte> buffer)
+    {
+        var values = _data;
+        if (values.Length < 2)
+        {
+            values = new uint[2];
+            values[0] = values[1] = 0;
+        }
+
+        var upperLimitLength = (values.Length - 1 /*first two values are merged*/) * sizeof(uint);
+        //Build header;
+        Span<byte> workingSet = stackalloc byte[upperLimitLength];
+
+        // verify that it is a valid object id!
+        if (values[0] > 2)
+            throw new SnmpException("Invalid Object Identifier");
+
+        if (values[1] > 40)
+            throw new SnmpException("Invalid Object Identifier");
+
+
+        // add the first oid!
+        var first = (byte)(values[0] * 40 + values[1]);
+        var written = 0;
+        workingSet[written++] = first;
+
+        // encode remaining instance values
+        for (var i = 2; i < values.Length; i++)
+        {
+            written += encodeInstance(values[i], workingSet[written..]);
+        }
+
+        var slice = BuildHeader(buffer, Type, written);
+        workingSet[..written].CopyTo(buffer[slice..]);
+        return written + slice;
+    }
+
+    /// <summary>
     ///     Encode single OID instance value
     /// </summary>
     /// <param name="number">Instance value</param>
@@ -925,11 +968,62 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
         return result;
     }
 
+
+    /// <summary>
+    ///     Encode single OID instance value
+    /// </summary>
+    /// <param name="number">Instance value</param>
+    /// <param name="target">The span to write to</param>
+    /// <returns>Length written</returns>
+    private int encodeInstance(uint number, Span<byte> target)
+    {
+        switch (number)
+        {
+            case <= 127:
+                target[0] = (byte)number;
+                return 1;
+            default:
+            {
+                var val = number;
+                Span<byte> tmp = stackalloc byte[sizeof(uint) * 2];
+                var length = 0;
+                while (val != 0)
+                {
+                    var b = BitConverter.GetBytes(val);
+                    var bval = b[0];
+                    if ((bval & 0x80) != 0) bval = (byte)(bval & ~HIGH_BIT); // clear high bit
+                    val >>= 7; // shift original value by 7 bits
+                    tmp[length++] = bval;
+                }
+
+                var written = 0;
+                // now we need to reverse the bytes for the final encoding
+                for (var i = length - 1; i >= 0; i--)
+                {
+                    var value = tmp[i];
+                    if (i > 0) value |= HIGH_BIT;
+                    target[written++] = value;
+                }
+
+                return written;
+            }
+        }
+    }
+
     /// <summary>Decode BER encoded Oid value.</summary>
     /// <param name="buffer">BER encoded buffer</param>
     /// <param name="offset">The offset location to begin decoding</param>
     /// <returns>Buffer position after the decoded value</returns>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    /// <summary>Decode BER encoded Oid value.</summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">The offset location to begin decoding</param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public int decode(Span<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
