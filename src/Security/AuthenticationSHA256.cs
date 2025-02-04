@@ -45,11 +45,8 @@ public class AuthenticationSHA256 : IAuthenticationDigest
     {
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
-        var sha = new HMACSHA256(authKey);
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
-        sha.Clear(); // release resources
+        using var sha = new HMACSHA256(authKey);
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -63,11 +60,8 @@ public class AuthenticationSHA256 : IAuthenticationDigest
     {
         var result = new byte[authenticationLength];
 
-        var sha = new HMACSHA256(authKey.ToArray());
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
-        sha.Clear(); // release resources
+        using var sha = new HMACSHA256(authKey.ToArray());
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -83,15 +77,10 @@ public class AuthenticationSHA256 : IAuthenticationDigest
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
     public bool authenticateIncomingMsg(Span<byte> userPassword, Span<byte> engineId,
-        Span<byte> authenticationParameters,
-        Span<byte> wholeMessage)
+        Span<byte> authenticationParameters, Span<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
-        using var sha = new HMACSHA256(authKey);
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        var myhash = hash.AsSpan(0, authenticationLength);
-        sha.Clear(); // release resources
-        return myhash.SequenceEqual(authenticationParameters);
+        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
     }
 
     /// <summary>
@@ -105,11 +94,7 @@ public class AuthenticationSHA256 : IAuthenticationDigest
         Span<byte> wholeMessage)
     {
         using var sha = new HMACSHA256(authKey.ToArray());
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        var myhash = hash.AsSpan(0, authenticationLength);
-        sha.Clear(); // release resources
-        if (myhash.SequenceEqual(authenticationParameters)) return true;
-        return false;
+        return sha.CompareHashed(wholeMessage, authenticationParameters);
     }
 
     /// <summary>
@@ -169,11 +154,5 @@ public class AuthenticationSHA256 : IAuthenticationDigest
     /// <param name="offset">Compute hash from the source buffer offset</param>
     /// <param name="count">Compute hash for source data length</param>
     /// <returns>Hash value</returns>
-    public byte[] ComputeHash(Span<byte> data, int offset, int count)
-    {
-        var sha = SHA256.Create();
-        var res = sha.ComputeHash(data.ToArray(), offset, count);
-        sha.Clear();
-        return res;
-    }
+    public byte[] ComputeHash(Span<byte> data, int offset, int count) => SHA256.HashData(data.Slice(offset, count));
 }

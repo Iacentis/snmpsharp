@@ -45,10 +45,8 @@ public class AuthenticationMD5 : IAuthenticationDigest
     {
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
-        var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
+        using var sha = new HMACMD5(authKey);
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -61,10 +59,9 @@ public class AuthenticationMD5 : IAuthenticationDigest
     public byte[] authenticate(Span<byte> authKey, Span<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
-        var md5 = new HMACMD5(authKey.ToArray());
-        var hash = md5.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        Buffer.BlockCopy(hash, 0, result, 0, authenticationLength);
+
+        using var sha = new HMACMD5(authKey.ToArray());
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -83,10 +80,7 @@ public class AuthenticationMD5 : IAuthenticationDigest
         Span<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
-        var md5 = new HMACMD5(authKey);
-        var hash = md5.ComputeHash(wholeMessage.ToArray(), 0, wholeMessage.Length);
-        var myhash = hash.AsSpan(0, authenticationLength);
-        return myhash.SequenceEqual(authenticationParameters);
+        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
     }
 
     /// <summary>
@@ -99,10 +93,8 @@ public class AuthenticationMD5 : IAuthenticationDigest
     public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
         Span<byte> wholeMessage)
     {
-        var md5 = new HMACMD5(authKey.ToArray());
-        var hash = md5.ComputeHash(wholeMessage.ToArray(), 0, wholeMessage.Length);
-        var myhash = hash.AsSpan(0, authenticationLength);
-        return myhash.SequenceEqual(authenticationParameters);
+        using var md5 = new HMACMD5(authKey.ToArray());
+        return md5.CompareHashed(wholeMessage, authenticationParameters);
     }
 
     /// <summary>
@@ -164,9 +156,7 @@ public class AuthenticationMD5 : IAuthenticationDigest
     /// <returns>Hash value</returns>
     public byte[] ComputeHash(Span<byte> data, int offset, int count)
     {
-        var md5 = MD5.Create();
-        var res = md5.ComputeHash(data.ToArray(), offset, count);
-        md5.Clear();
+        var res = MD5.HashData(data.Slice(offset, count));
         return res;
     }
 }

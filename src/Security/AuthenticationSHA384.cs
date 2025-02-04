@@ -46,11 +46,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
         using var sha = new HMACSHA384(authKey);
-        sha.WithHashed(wholeMessage, (span, _) =>
-        {
-            span[..authenticationLength].CopyTo(result);
-            return true;
-        });
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -65,11 +61,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         var result = new byte[authenticationLength];
 
         using var sha = new HMACSHA384(authKey.ToArray());
-        sha.WithHashed(wholeMessage, (span, _) =>
-        {
-            span[..authenticationLength].CopyTo(result);
-            return true;
-        });
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
         return result;
     }
 
@@ -102,9 +94,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         Span<byte> wholeMessage)
     {
         using var sha = new HMACSHA384(authKey.ToArray());
-        var auth = authenticationParameters.ToArray();
-        var result = sha.WithHashed(wholeMessage, (span, _) => span[..authenticationLength].SequenceEqual(auth));
-        return result;
+        return sha.CompareHashed(wholeMessage, authenticationParameters);
     }
 
     /// <summary>
@@ -164,9 +154,5 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="offset">Compute hash from the source buffer offset</param>
     /// <param name="count">Compute hash for source data length</param>
     /// <returns>Hash value</returns>
-    public byte[] ComputeHash(Span<byte> data, int offset, int count)
-    {
-        var res = SHA384.HashData(data.ToArray().AsSpan(offset, count));
-        return res;
-    }
+    public byte[] ComputeHash(Span<byte> data, int offset, int count) => SHA384.HashData(data.Slice(offset, count));
 }
