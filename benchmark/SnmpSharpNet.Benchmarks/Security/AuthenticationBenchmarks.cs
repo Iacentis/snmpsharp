@@ -14,6 +14,8 @@ public class AuthenticationBenchmarks
     private byte[] _password;
     private byte[] _engineId;
 
+    [Params(11, 111, 1111)] public int passwordSize { get; set; }
+
     [GlobalSetup]
     public void PasswordToKeyIsConsistent()
     {
@@ -23,7 +25,8 @@ public class AuthenticationBenchmarks
         _sha384 = new AuthenticationSHA384();
         _sha512 = new AuthenticationSHA512();
 
-        _password = "password"u8.ToArray();
+        _password = new byte[passwordSize];
+        Random.Shared.NextBytes(_password);
         _engineId = [0x80, 0x00, 0x13, 0x70, 0x02, 0x01];
     }
 
