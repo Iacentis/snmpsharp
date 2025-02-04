@@ -13,187 +13,168 @@
 // You should have received a copy of the GNU General Public License
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
+
 using System;
+using System.Buffers;
 using System.Security.Cryptography;
 
-namespace SnmpSharpNet
+namespace SnmpSharpNet;
+
+/// <summary>
+///     SHA-384 Authentication class.
+/// </summary>
+public class AuthenticationSHA384 : IAuthenticationDigest
 {
-	/// <summary>
-	/// SHA-384 Authentication class.
-	/// </summary>
-	public class AuthenticationSHA384 : IAuthenticationDigest
-	{
-		private const int authenticationLength = 32;
-		private const int digestLength = 48;
+    private const int authenticationLength = 32;
+    private const int digestLength = 48;
 
-		/// <summary>
-		/// Standard constructor.
-		/// </summary>
-		public AuthenticationSHA384()
-		{
-		}
-		/// <summary>
-		/// Authenticate packet and return authentication parameters value to the caller
-		/// </summary>
-		/// <param name="authenticationSecret">User authentication secret</param>
-		/// <param name="engineId">SNMP agent authoritative engine id</param>
-		/// <param name="wholeMessage">Message to authenticate</param>
-		/// <returns>Authentication parameters value</returns>
-		public byte[] authenticate(byte[] authenticationSecret, byte[] engineId, byte[] wholeMessage)
-		{
-			byte[] result = new byte[authenticationLength];
-			byte[] authKey = PasswordToKey(authenticationSecret, engineId);
-			HMACSHA384 sha = new HMACSHA384(authKey);
-			byte[] hash = sha.ComputeHash(wholeMessage);
-			// copy "authentication lenght" bytes of the hash into the wholeMessage
-			for (int i = 0; i < authenticationLength; i++)
-			{
-				result[i] = hash[i];
-			}
-			sha.Clear(); // release resources
-			return result;
-		}
-		/// <summary>
-		/// Authenticate packet and return authentication parameters value to the caller
-		/// </summary>
-		/// <param name="authKey">Authentication key (not password)</param>
-		/// <param name="wholeMessage">Message to authenticate</param>
-		/// <returns>Authentication parameters value</returns>
-		public byte[] authenticate(byte[] authKey, byte[] wholeMessage)
-		{
-			byte[] result = new byte[authenticationLength];
+    /// <summary>
+    ///     Standard constructor.
+    /// </summary>
+    public AuthenticationSHA384()
+    {
+    }
 
-			HMACSHA384 sha = new HMACSHA384(authKey);
-			byte[] hash = sha.ComputeHash(wholeMessage);
-			// copy "authentication lenght" bytes of the hash into the wholeMessage
-			for (int i = 0; i < authenticationLength; i++)
-			{
-				result[i] = hash[i];
-			}
-			sha.Clear(); // release resources
-			return result;
-		}
-		/// <summary>
-		/// Verifies correct SHA-384 authentication of the frame. Prior to calling this method, you have to extract authentication
-		/// parameters from the wholeMessage and reset authenticationParameters field in the USM information block to 12 0x00
-		/// values.
-		/// </summary>
-		/// <param name="userPassword">User password</param>
-		/// <param name="engineId">Authoritative engine id</param>
-		/// <param name="authenticationParameters">Extracted USM authentication parameters</param>
-		/// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
-		/// <returns>True if message authentication has passed the check, otherwise false</returns>
-		public bool authenticateIncomingMsg(byte[] userPassword, byte[] engineId, byte[] authenticationParameters, MutableByte wholeMessage)
-		{
-			byte[] authKey = PasswordToKey(userPassword, engineId);
-			HMACSHA384 sha = new HMACSHA384(authKey);
-			byte[] hash = sha.ComputeHash(wholeMessage);
-			MutableByte myhash = new MutableByte(hash, authenticationLength);
-			sha.Clear(); // release resources
-			if (myhash.Equals(authenticationParameters))
-			{
-				return true;
-			}
-			return false;
-		}
-		/// <summary>
-		/// Verify SHA-384 authentication of a packet.
-		/// </summary>
-		/// <param name="authKey">Authentication key (not password)</param>
-		/// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
-		/// <param name="wholeMessage">Entire packet being authenticated</param>
-		/// <returns>True on authentication success, otherwise false</returns>
-		public bool authenticateIncomingMsg(byte[] authKey, byte[] authenticationParameters, MutableByte wholeMessage)
-		{
-			HMACSHA384 sha = new HMACSHA384(authKey);
-			byte[] hash = sha.ComputeHash(wholeMessage);
-			MutableByte myhash = new MutableByte(hash, authenticationLength);
-			sha.Clear(); // release resources
-			if (myhash.Equals(authenticationParameters))
-			{
-				return true;
-			}
-			return false;
-		}
-		/// <summary>
-		/// Convert user password to acceptable authentication key.
-		/// </summary>
-		/// <param name="userPassword">User password</param>
-		/// <param name="engineID">Authoritative engine id</param>
-		/// <returns>Localized authentication key</returns>
-		/// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
-		public byte[] PasswordToKey(byte[] userPassword, byte[] engineID)
-		{
-			// key length has to be at least 8 bytes long (RFC3414)
-			if (userPassword == null || userPassword.Length < 8)
-				throw new SnmpAuthenticationException("Secret key is too short.");
+    /// <summary>
+    ///     Authenticate packet and return authentication parameters value to the caller
+    /// </summary>
+    /// <param name="authenticationSecret">User authentication secret</param>
+    /// <param name="engineId">SNMP agent authoritative engine id</param>
+    /// <param name="wholeMessage">Message to authenticate</param>
+    /// <returns>Authentication parameters value</returns>
+    public byte[] authenticate(Span<byte> authenticationSecret, Span<byte> engineId, Span<byte> wholeMessage)
+    {
+        var result = new byte[authenticationLength];
+        var authKey = PasswordToKey(authenticationSecret, engineId);
+        using var sha = new HMACSHA384(authKey);
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
+        return result;
+    }
 
-			int password_index = 0;
-			int count = 0;
-			SHA384 sha = new SHA384CryptoServiceProvider();
+    /// <summary>
+    ///     Authenticate packet and return authentication parameters value to the caller
+    /// </summary>
+    /// <param name="authKey">Authentication key (not password)</param>
+    /// <param name="wholeMessage">Message to authenticate</param>
+    /// <returns>Authentication parameters value</returns>
+    public byte[] authenticate(Span<byte> authKey, Span<byte> wholeMessage)
+    {
+        var result = new byte[authenticationLength];
 
-			/* Use while loop until we've done 1 Megabyte */
-			byte[] sourceBuffer = new byte[1048576];
-			byte[] buf = new byte[64];
-			while (count < 1048576)
-			{
-				for (int i = 0; i < 64; ++i)
-				{
-					// Take the next octet of the password, wrapping
-					// to the beginning of the password as necessary.
-					buf[i] = userPassword[password_index++ % userPassword.Length];
-				}
-				Buffer.BlockCopy(buf, 0, sourceBuffer, count, buf.Length);
-				count += 64;
-			}
+        using var sha = new HMACSHA384(authKey.ToArray());
+        sha.WithHashed(wholeMessage, (span, _) => { span[..authenticationLength].CopyTo(result); });
+        return result;
+    }
 
-			byte[] digest = sha.ComputeHash(sourceBuffer);
+    /// <summary>
+    ///     Verifies correct SHA-384 authentication of the frame. Prior to calling this method, you have to extract
+    ///     authentication
+    ///     parameters from the wholeMessage and reset authenticationParameters field in the USM information block to 12 0x00
+    ///     values.
+    /// </summary>
+    /// <param name="userPassword">User password</param>
+    /// <param name="engineId">Authoritative engine id</param>
+    /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
+    /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
+    /// <returns>True if message authentication has passed the check, otherwise false</returns>
+    public bool authenticateIncomingMsg(Span<byte> userPassword, Span<byte> engineId,
+        Span<byte> authenticationParameters, Span<byte> wholeMessage)
+    {
+        var authKey = PasswordToKey(userPassword, engineId);
+        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
+    }
 
-			MutableByte tmpbuf = new MutableByte();
-			tmpbuf.Append(digest);
-			tmpbuf.Append(engineID);
-			tmpbuf.Append(digest);
-			byte[] res = sha.ComputeHash(tmpbuf);
-			sha.Clear(); // release resources
-			return res;
-		}
+    /// <summary>
+    ///     Verify SHA-384 authentication of a packet.
+    /// </summary>
+    /// <param name="authKey">Authentication key (not password)</param>
+    /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
+    /// <param name="wholeMessage">Entire packet being authenticated</param>
+    /// <returns>True on authentication success, otherwise false</returns>
+    public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
+        Span<byte> wholeMessage)
+    {
+        using var sha = new HMACSHA384(authKey.ToArray());
+        return sha.CompareHashed(wholeMessage, authenticationParameters);
+    }
 
-		/// <summary>
-		/// Length of the digest generated by the authentication protocol
-		/// </summary>
-		public int DigestLength
-		{
-			get { return digestLength; }
-		}
+    /// <summary>
+    ///     Convert user password to acceptable authentication key.
+    /// </summary>
+    /// <param name="userPassword">User password</param>
+    /// <param name="engineID">Authoritative engine id</param>
+    /// <returns>Localized authentication key</returns>
+    /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
+    public byte[] PasswordToKey(Span<byte> userPassword, Span<byte> engineID)
+    {
+        const int bufferSize = 8192;
+        // key length has to be at least 8 bytes long (RFC3414)
+        if (userPassword.Length < 8)
+            throw new SnmpAuthenticationException("Secret key is too short.");
+        using var sha = SHA384.Create();
 
-		/// <summary>
-		/// Length of the authentification header generated by the authentication protocol
-		/// </summary>
-		public int AuthentificationHeaderLength
-		{
-			get { return authenticationLength; }
-		}
+        var count = 0;
 
-		/// <summary>
-		/// Return authentication protocol name
-		/// </summary>
-		public string Name
-		{
-			get { return "HMAC-SHA384"; }
-		}
-		/// <summary>
-		/// Compute hash using authentication protocol.
-		/// </summary>
-		/// <param name="data">Data to hash</param>
-		/// <param name="offset">Compute hash from the source buffer offset</param>
-		/// <param name="count">Compute hash for source data length</param>
-		/// <returns>Hash value</returns>
-		public byte[] ComputeHash(byte[] data, int offset, int count)
-		{
-			SHA384 sha = new SHA384CryptoServiceProvider();
-			byte[] res = sha.ComputeHash(data, offset, count);
-			sha.Clear();
-			return res;
-		}
-	}
+        var buf = ArrayPool<byte>.Shared.Rent(bufferSize);
+        /* Use while loop until we've done 1 Megabyte */
+        var remnant = 0;
+        Span<byte> offsetUserPassword = stackalloc byte[userPassword.Length];
+        userPassword.CopyTo(offsetUserPassword);
+        Span<byte> tmp = stackalloc byte[userPassword.Length];
+        while (count < 1048576)
+        {
+            if (remnant > 0)
+            {
+                offsetUserPassword[remnant..].CopyTo(tmp);
+                offsetUserPassword[..remnant].CopyTo(tmp[(userPassword.Length - remnant)..]);
+                tmp.CopyTo(offsetUserPassword);
+            }
+
+            for (int i = 0; i < bufferSize; i += userPassword.Length)
+            {
+                var remaining = Math.Min(offsetUserPassword.Length, bufferSize - i);
+                // Take the next octet of the password, wrapping
+                // to the beginning of the password as necessary.
+                offsetUserPassword[..remaining].CopyTo(buf.AsSpan(i));
+                remnant = offsetUserPassword.Length - remaining;
+            }
+
+            sha.TransformBlock(buf, 0, bufferSize, buf, 0);
+            count += bufferSize;
+        }
+
+        sha.TransformFinalBlock(buf, 0, 0);
+        ArrayPool<byte>.Shared.Return(buf);
+
+        var digest = sha.Hash.AsSpan();
+        Span<byte> source = stackalloc byte[digest.Length + engineID.Length + digest.Length];
+        digest.CopyTo(source);
+        engineID.CopyTo(source[digest.Length..]);
+        digest.CopyTo(source[(digest.Length + engineID.Length)..]);
+        return SHA384.HashData(source);
+    }
+
+    /// <summary>
+    ///     Length of the digest generated by the authentication protocol
+    /// </summary>
+    public int DigestLength => digestLength;
+
+    /// <summary>
+    ///     Length of the authentification header generated by the authentication protocol
+    /// </summary>
+    public int AuthentificationHeaderLength => authenticationLength;
+
+    /// <summary>
+    ///     Return authentication protocol name
+    /// </summary>
+    public string Name => "HMAC-SHA384";
+
+    /// <summary>
+    ///     Compute hash using authentication protocol.
+    /// </summary>
+    /// <param name="data">Data to hash</param>
+    /// <param name="offset">Compute hash from the source buffer offset</param>
+    /// <param name="count">Compute hash for source data length</param>
+    /// <returns>Hash value</returns>
+    public byte[] ComputeHash(Span<byte> data, int offset, int count) => SHA384.HashData(data.Slice(offset, count));
 }
