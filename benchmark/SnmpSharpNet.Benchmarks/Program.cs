@@ -2,5 +2,6 @@
 
 using BenchmarkDotNet.Running;
 using SnmpSharpNet.Tests;
+using SnmpSharpNet.Tests.AuthenticationTests;
 
-var summary = BenchmarkRunner.Run<SequenceBenchmarks>();
+var summary = BenchmarkRunner.Run<AuthenticationBenchmarks>();

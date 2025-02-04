@@ -15,6 +15,7 @@
 // 
 
 using System;
+using System.Buffers;
 using System.Security.Cryptography;
 
 namespace SnmpSharpNet;
@@ -106,30 +107,51 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
     public byte[] PasswordToKey(Span<byte> userPassword, Span<byte> engineID)
     {
+        const int bufferSize = 8192;
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
-        Span<byte> digest = stackalloc byte[SHA384.HashSizeInBytes];
-        var buf = new byte[64];
+        using var sha = SHA384.Create();
 
-        var password_index = 0;
         var count = 0;
 
-        using var sha = SHA384.Create();
+        var buf = ArrayPool<byte>.Shared.Rent(bufferSize);
         /* Use while loop until we've done 1 Megabyte */
+        var remnant = 0;
+        Span<byte> offsetUserPassword = stackalloc byte[userPassword.Length];
+        userPassword.CopyTo(offsetUserPassword);
+        Span<byte> tmp = stackalloc byte[userPassword.Length];
         while (count < 1048576)
         {
-            for (var i = 0; i < 64; ++i)
+            if (remnant > 0)
+            {
+                offsetUserPassword[remnant..].CopyTo(tmp);
+                offsetUserPassword[..remnant].CopyTo(tmp[(userPassword.Length - remnant)..]);
+                tmp.CopyTo(offsetUserPassword);
+            }
+
+            for (int i = 0; i < bufferSize; i += userPassword.Length)
+            {
+                var remaining = Math.Min(offsetUserPassword.Length, bufferSize - i);
                 // Take the next octet of the password, wrapping
                 // to the beginning of the password as necessary.
-                buf[i] = userPassword[password_index++ % userPassword.Length];
-            sha.TransformBlock(buf, 0, 64, buf, 0);
-            count += 64;
+                offsetUserPassword[..remaining].CopyTo(buf.AsSpan(i));
+                remnant = offsetUserPassword.Length - remaining;
+            }
+
+            sha.TransformBlock(buf, 0, bufferSize, buf, 0);
+            count += bufferSize;
         }
 
         sha.TransformFinalBlock(buf, 0, 0);
-        sha.Hash.AsSpan().CopyTo(digest);
-        return SHA384.HashData([.. digest, .. engineID, .. digest]);
+        ArrayPool<byte>.Shared.Return(buf);
+
+        var digest = sha.Hash.AsSpan();
+        Span<byte> source = stackalloc byte[digest.Length + engineID.Length + digest.Length];
+        digest.CopyTo(source);
+        engineID.CopyTo(source[digest.Length..]);
+        digest.CopyTo(source[(digest.Length + engineID.Length)..]);
+        return SHA384.HashData(source);
     }
 
     /// <summary>
