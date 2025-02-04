@@ -1,4 +1,8 @@
-﻿0.9.6
+﻿0.9.7
+* Changed target framework to .NET 9
+* Added span-based API's to many of the types encode and decode functions
+* Added tests and benchmarking capabilities
+0.9.6
 * Added support for .NET 6
 * Made source tree more Docker friendly for builds (moved source code into `src`)
 * Assemblies are no longer strongly named

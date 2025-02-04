@@ -2,17 +2,27 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ wmo ]
+    branches: [wmo]
   pull_request:
-    branches: [ wmo ]
+    branches: [wmo]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag westermo/snmpsharpnet && docker run --rm -t westermo/snmpsharpnet
+      - uses: actions/checkout@v2
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag westermo/snmpsharpnet && docker run --rm -t westermo/snmpsharpnet
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Test
+        run: dotnet run -c Release /tests/SnmpSharpNet.Tests.csproj
