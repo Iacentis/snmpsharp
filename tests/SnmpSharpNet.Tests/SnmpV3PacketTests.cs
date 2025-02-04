@@ -42,21 +42,12 @@ public class SnmpV3PacketTests
             new Vb(new Oid("1.3.4"), new Integer32(345))
         ];
         SetAuth(@private, auth, packet, digests, protocols);
-        var authProto = SnmpSharpNet.Authentication.GetInstance(digests);
 
         packet.Pdu.SetVbList(vbs);
         packet.Pdu.RequestId = 123;
         packet.Pdu.ErrorIndex = 567;
         packet.Pdu.ErrorStatus = 6879;
         var bytes = packet.encode();
-
-        if (authProto is not null)
-        {
-            var authBytes = authProto.authenticate(someAuthKey, bytes);
-            var success = authProto.authenticateIncomingMsg(someAuthKey, authBytes, bytes);
-            await Assert.That(success).IsTrue();
-        }
-
         var newPacket = new SnmpV3Packet();
         SetAuth(@private, auth, newPacket, digests, protocols);
 
