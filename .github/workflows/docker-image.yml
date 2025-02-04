@@ -25,4 +25,4 @@ jobs:
         with:
           dotnet-version: "9.0.x"
       - name: Test
-        run: dotnet run -c Release /tests/SnmpSharpNet.Tests.csproj
+        run: dotnet run -c Release ./tests/SnmpSharpNet.Tests.csproj
