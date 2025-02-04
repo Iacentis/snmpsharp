@@ -51,7 +51,6 @@ public class AuthenticationSHA384 : IAuthenticationDigest
             span[..authenticationLength].CopyTo(result);
             return true;
         });
-        sha.Clear(); // release resources
         return result;
     }
 
@@ -71,7 +70,6 @@ public class AuthenticationSHA384 : IAuthenticationDigest
             span[..authenticationLength].CopyTo(result);
             return true;
         });
-        sha.Clear(); // release resources
         return result;
     }
 
@@ -106,7 +104,6 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         using var sha = new HMACSHA384(authKey.ToArray());
         var auth = authenticationParameters.ToArray();
         var result = sha.WithHashed(wholeMessage, (span, _) => span[..authenticationLength].SequenceEqual(auth));
-        sha.Clear(); // release resources
         return result;
     }
 
@@ -122,28 +119,28 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
+        Span<byte> digest = stackalloc byte[SHA384.HashSizeInBytes];
+        byte[] buf = new byte[64];
 
         var password_index = 0;
         var count = 0;
-        using var sha = SHA384.Create();
 
+        using var sha = SHA384.Create();
         /* Use while loop until we've done 1 Megabyte */
-        var sourceBuffer = new byte[1048576];
-        var buf = new byte[64];
         while (count < 1048576)
         {
             for (var i = 0; i < 64; ++i)
                 // Take the next octet of the password, wrapping
                 // to the beginning of the password as necessary.
                 buf[i] = userPassword[password_index++ % userPassword.Length];
-            Buffer.BlockCopy(buf, 0, sourceBuffer, count, buf.Length);
+            sha.TransformBlock(buf, 0, 64, buf, 0);
+            // buf.CopyTo(sourceBuffer.AsSpan(count, buf.Length));
             count += 64;
         }
 
-        var digest = sha.ComputeHash(sourceBuffer);
-        var res = sha.ComputeHash([..digest, ..engineID, ..digest]);
-        sha.Clear(); // release resources
-        return res;
+        sha.TransformFinalBlock(buf, 0, 0);
+        sha.Hash.AsSpan().CopyTo(digest);
+        return SHA384.HashData([.. digest, .. engineID, .. digest]);
     }
 
     /// <summary>
@@ -170,9 +167,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <returns>Hash value</returns>
     public byte[] ComputeHash(Span<byte> data, int offset, int count)
     {
-        using var sha = SHA384.Create();
-        var res = sha.ComputeHash(data.ToArray(), offset, count);
-        sha.Clear();
+        var res = SHA384.HashData(data.ToArray().AsSpan(offset, count));
         return res;
     }
 }
