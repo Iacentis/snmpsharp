@@ -120,7 +120,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
         Span<byte> digest = stackalloc byte[SHA384.HashSizeInBytes];
-        byte[] buf = new byte[64];
+        var buf = new byte[64];
 
         var password_index = 0;
         var count = 0;
@@ -134,7 +134,6 @@ public class AuthenticationSHA384 : IAuthenticationDigest
                 // to the beginning of the password as necessary.
                 buf[i] = userPassword[password_index++ % userPassword.Length];
             sha.TransformBlock(buf, 0, 64, buf, 0);
-            // buf.CopyTo(sourceBuffer.AsSpan(count, buf.Length));
             count += 64;
         }
 

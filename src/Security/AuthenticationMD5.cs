@@ -117,23 +117,27 @@ public class AuthenticationMD5 : IAuthenticationDigest
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
+        Span<byte> digest = stackalloc byte[MD5.HashSizeInBytes];
+        var buf = new byte[64];
 
         var password_index = 0;
         var count = 0;
 
-        var sourceBuffer = new byte[1048576];
-        var buf = new byte[64];
+        using var sha = MD5.Create();
+        /* Use while loop until we've done 1 Megabyte */
         while (count < 1048576)
         {
-            for (var i = 0; i < 64; ++i) buf[i] = userPassword[password_index++ % userPassword.Length];
-            Buffer.BlockCopy(buf, 0, sourceBuffer, count, buf.Length);
+            for (var i = 0; i < 64; ++i)
+                // Take the next octet of the password, wrapping
+                // to the beginning of the password as necessary.
+                buf[i] = userPassword[password_index++ % userPassword.Length];
+            sha.TransformBlock(buf, 0, 64, buf, 0);
             count += 64;
         }
 
-        var digest = MD5.HashData(sourceBuffer);
-        var key = MD5.HashData([..digest, ..engineID, ..digest]);
-
-        return key;
+        sha.TransformFinalBlock(buf, 0, 0);
+        sha.Hash.AsSpan().CopyTo(digest);
+        return MD5.HashData([.. digest, .. engineID, .. digest]);
     }
 
     /// <summary>

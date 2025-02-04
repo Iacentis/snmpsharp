@@ -124,28 +124,27 @@ public class AuthenticationSHA256 : IAuthenticationDigest
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
+        Span<byte> digest = stackalloc byte[SHA256.HashSizeInBytes];
+        var buf = new byte[64];
 
         var password_index = 0;
         var count = 0;
-        var sha = SHA256.Create();
 
+        using var sha = SHA256.Create();
         /* Use while loop until we've done 1 Megabyte */
-        var sourceBuffer = new byte[1048576];
-        var buf = new byte[64];
         while (count < 1048576)
         {
             for (var i = 0; i < 64; ++i)
                 // Take the next octet of the password, wrapping
                 // to the beginning of the password as necessary.
                 buf[i] = userPassword[password_index++ % userPassword.Length];
-            Buffer.BlockCopy(buf, 0, sourceBuffer, count, buf.Length);
+            sha.TransformBlock(buf, 0, 64, buf, 0);
             count += 64;
         }
 
-        var digest = sha.ComputeHash(sourceBuffer);
-        var res = sha.ComputeHash([..digest, ..engineID, ..digest]);
-        sha.Clear(); // release resources
-        return res;
+        sha.TransformFinalBlock(buf, 0, 0);
+        sha.Hash.AsSpan().CopyTo(digest);
+        return SHA256.HashData([.. digest, .. engineID, .. digest]);
     }
 
     /// <summary>
