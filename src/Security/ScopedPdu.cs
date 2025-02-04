@@ -143,6 +143,37 @@ public class ScopedPdu : Pdu
         buffer.Append(tmp);
     }
 
+    public override int encode(Span<byte> buffer)
+    {
+        Span<byte> tmp = stackalloc byte[MemberByteLength()];
+        var offset = 0;
+        offset += _contextEngineId.encode(tmp[offset..]);
+        offset += _contextName.encode(tmp[offset..]);
+        offset += base.encode(tmp[offset..]);
+        var headerLength = BuildHeader(buffer, SnmpConstants.SMI_SEQUENCE, offset);
+        tmp[..offset].CopyTo(buffer[headerLength..]);
+        return headerLength + offset;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var length = MemberByteLength();
+            length += HeaderSize(length);
+            return length;
+        }
+    }
+
+    private int MemberByteLength()
+    {
+        var length = 0;
+        length += _contextEngineId.ByteLength;
+        length += _contextName.ByteLength;
+        length += base.ByteLength;
+        return length;
+    }
+
     /// <summary>
     ///     Decode BER encoded <see cref="ScopedPdu" /> values. This method does not perform SNMP v3 privacy operations
     ///     and is not aware of privacy requirements.
@@ -157,6 +188,11 @@ public class ScopedPdu : Pdu
     /// <exception cref="SnmpDecodingException">Error was encountered when decoding the PDU</exception>
     /// <exception cref="OverflowException">Thrown when buffer is too short to contain the PDU</exception>
     public override int decode(byte[] buffer, int offset)
+    {
+        return decode(buffer.AsSpan(), offset);
+    }
+
+    public override int decode(Span<byte> buffer, int offset)
     {
         var sequenceType = ParseHeader(buffer, ref offset, out var length);
         if (sequenceType != SnmpConstants.SMI_SEQUENCE)

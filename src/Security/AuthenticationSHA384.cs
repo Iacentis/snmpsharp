@@ -45,10 +45,12 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     {
         var result = new byte[authenticationLength];
         var authKey = PasswordToKey(authenticationSecret, engineId);
-        var sha = new HMACSHA384(authKey);
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
+        using var sha = new HMACSHA384(authKey);
+        sha.WithHashed(wholeMessage, (span, _) =>
+        {
+            span[..authenticationLength].CopyTo(result);
+            return true;
+        });
         sha.Clear(); // release resources
         return result;
     }
@@ -63,10 +65,12 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     {
         var result = new byte[authenticationLength];
 
-        var sha = new HMACSHA384(authKey.ToArray());
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        // copy "authentication lenght" bytes of the hash into the wholeMessage
-        for (var i = 0; i < authenticationLength; i++) result[i] = hash[i];
+        using var sha = new HMACSHA384(authKey.ToArray());
+        sha.WithHashed(wholeMessage, (span, _) =>
+        {
+            span[..authenticationLength].CopyTo(result);
+            return true;
+        });
         sha.Clear(); // release resources
         return result;
     }
@@ -86,11 +90,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
         Span<byte> authenticationParameters, Span<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
-        var sha = new HMACSHA384(authKey);
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        var myhash = hash.AsSpan(0, authenticationLength);
-        sha.Clear(); // release resources
-        return myhash.SequenceEqual(authenticationParameters);
+        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
     }
 
     /// <summary>
@@ -103,11 +103,11 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
         Span<byte> wholeMessage)
     {
-        var sha = new HMACSHA384(authKey.ToArray());
-        var hash = sha.ComputeHash(wholeMessage.ToArray());
-        var myhash = hash.AsSpan(0, authenticationLength);
+        using var sha = new HMACSHA384(authKey.ToArray());
+        var auth = authenticationParameters.ToArray();
+        var result = sha.WithHashed(wholeMessage, (span, _) => span[..authenticationLength].SequenceEqual(auth));
         sha.Clear(); // release resources
-        return myhash.SequenceEqual(authenticationParameters);
+        return result;
     }
 
     /// <summary>
@@ -170,7 +170,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <returns>Hash value</returns>
     public byte[] ComputeHash(Span<byte> data, int offset, int count)
     {
-        var sha = SHA384.Create();
+        using var sha = SHA384.Create();
         var res = sha.ComputeHash(data.ToArray(), offset, count);
         sha.Clear();
         return res;

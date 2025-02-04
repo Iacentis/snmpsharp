@@ -448,47 +448,40 @@ public class SnmpV3Packet : SnmpPacket
     /// </summary>
     /// <param name="berBuffer">BER encoded SNMP version 3 packet buffer</param>
     /// <param name="length">Buffer length</param>
-    public override int decode(byte[] berBuffer, int length)
+    public override int decode(Span<byte> berBuffer, int length)
     {
-        byte[]? pkey = null;
-        byte[]? akey = null;
-        switch (MsgFlags.Authentication)
-        {
-            case true when USM.EngineId.Length > 0:
-            {
-                var auth = Authentication.GetInstance(USM.Authentication);
-                switch (auth)
-                {
-                    case null:
-                        throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
-                            "Invalid authentication protocol.");
-                }
-
-                akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
-                switch (MsgFlags.Privacy)
-                {
-                    case true when USM.EngineId.Length > 0:
-                    {
-                        var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-                        switch (privacyProtocol)
-                        {
-                            case null:
-                                throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
-                                    "Specified privacy protocol is not supported.");
-                        }
-
-                        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
-                            USM.EngineId,
-                            auth);
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
+        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
 
         return decode(berBuffer, length, akey, pkey);
+    }
+
+    private byte[]? GetPrivateAndAuthenticationKeys(out byte[]? akey)
+    {
+        byte[]? pkey = null;
+        akey = null;
+        if (!MsgFlags.Authentication || USM.EngineId.Length <= 0)
+            return pkey;
+
+        var auth = Authentication.GetInstance(USM.Authentication);
+
+        if (auth == null)
+            throw new SnmpException(SnmpException.UnsupportedNoAuthPriv, "Invalid authentication protocol.");
+
+        akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
+
+        if (!MsgFlags.Privacy || USM.EngineId.Length <= 0) return pkey;
+
+        var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
+
+        if (privacyProtocol == null)
+            throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
+                "Specified privacy protocol is not supported.");
+
+        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
+            USM.EngineId,
+            auth);
+
+        return pkey;
     }
 
     /// <summary>
@@ -497,14 +490,12 @@ public class SnmpV3Packet : SnmpPacket
     ///     not check for the timeliness of the packet, correct engine boot value or engine id because it does not have a
     ///     reference to the engine time prior to this call.
     /// </summary>
-    /// <param name="berBuffer">BER encoded SNMP version 3 packet buffer</param>
+    /// <param name="buffer">BER encoded SNMP version 3 packet buffer</param>
     /// <param name="length">Buffer length</param>
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="privKey">Privacy key (not password)</param>
-    public int decode(byte[] berBuffer, int length, byte[]? authKey, byte[]? privKey)
+    public int decode(Span<byte> buffer, int length, Span<byte> authKey, Span<byte> privKey)
     {
-        var buffer = berBuffer.AsSpan(0, length);
-
         var offset =
             // let base class parse first sequence and SNMP version number
             base.decode(buffer, length);
@@ -547,34 +538,27 @@ public class SnmpV3Packet : SnmpPacket
         // parse user security model
         offset = USM.decode(buffer, offset);
 
-        switch (MsgFlags.Authentication)
+        // Authenticate message if authentication flag is set and packet is not a discovery packet
+        if (MsgFlags.Authentication && USM.EngineId.Length > 0)
         {
-            // Authenticate message if authentication flag is set and packet is not a discovery packet
-            case true when USM.EngineId.Length > 0:
-            {
-                // Authenticate packet
-                var expectedLength = 12;
+            // Authenticate packet
+            var expectedLength = 12;
 
-                var authProto = Authentication.GetInstance(USM.Authentication);
-                if (authProto != null) expectedLength = authProto.AuthentificationHeaderLength;
-                if (USM.AuthenticationParameters.Length != expectedLength)
-                    throw new SnmpAuthenticationException("Invalid authentication parameter field length.");
-                if (!USM.IsAuthentic(authKey ?? [], buffer))
-                    throw new SnmpAuthenticationException("Authentication of the incoming packet failed.");
-                break;
-            }
+            var authProto = Authentication.GetInstance(USM.Authentication);
+            if (authProto != null) expectedLength = authProto.AuthentificationHeaderLength;
+            if (USM.AuthenticationParameters.Length != expectedLength)
+                throw new SnmpAuthenticationException("Invalid authentication parameter field length.");
+            if (!USM.IsAuthentic(authKey, buffer))
+                throw new SnmpAuthenticationException("Authentication of the incoming packet failed.");
         }
 
         // Decode ScopedPdu if it is privacy protected and packet is not a discovery packet
         if (MsgFlags.Privacy && USM.EngineId.Length > 0)
         {
             var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-            switch (privacyProtocol)
-            {
-                case null:
-                    throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
-                        "Privacy protocol requested is not supported.");
-            }
+            if (privacyProtocol == null)
+                throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
+                    "Privacy protocol requested is not supported.");
 
             if (USM.PrivacyParameters.Length != privacyProtocol.PrivacyParametersLength)
                 throw new SnmpException(SnmpException.InvalidPrivacyParameterLength,
@@ -589,7 +573,7 @@ public class SnmpV3Packet : SnmpPacket
                 encryptedScopedPdu,
                 0,
                 encryptedScopedPdu.Length,
-                privKey ?? [],
+                privKey.ToArray(),
                 USM.EngineBoots, USM.EngineTime,
                 USM.PrivacyParameters);
             var tempOffset = 0;
@@ -614,45 +598,9 @@ public class SnmpV3Packet : SnmpPacket
     /// <returns>Byte array BER encoded SNMP packet.</returns>
     public override byte[] encode()
     {
-        byte[]? privKey = null;
-        byte[]? authKey = null;
-        switch (MsgFlags.Authentication)
-        {
-            case true when USM.EngineId.Length > 0:
-            {
-                var auth = Authentication.GetInstance(USM.Authentication);
-                switch (auth)
-                {
-                    case null:
-                        throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
-                            "Invalid authentication protocol.");
-                }
+        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
 
-                authKey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
-                switch (MsgFlags.Privacy)
-                {
-                    case true when USM.EngineId.Length > 0:
-                    {
-                        var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-                        switch (privacyProtocol)
-                        {
-                            case null:
-                                throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
-                                    "Specified privacy protocol is not supported.");
-                        }
-
-                        privKey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
-                            USM.EngineId,
-                            auth);
-                        break;
-                    }
-                }
-
-                break;
-            }
-        }
-
-        return encode(authKey, privKey);
+        return encode(akey ?? [], pkey ?? []);
     }
 
     /// <summary>
@@ -666,7 +614,7 @@ public class SnmpV3Packet : SnmpPacket
     ///     SecretName, authentication method and secret (if needed), privacy method and secret (if needed), etc.
     /// </remarks>
     /// <returns>Byte array BER encoded SNMP packet.</returns>
-    public byte[] encode(byte[]? authKey, byte[]? privKey)
+    public byte[] encode(Span<byte> authKey, Span<byte> privKey)
     {
         // encode the global message data sequence header information
         switch (_messageId.Value)
@@ -705,7 +653,13 @@ public class SnmpV3Packet : SnmpPacket
         globalHeaderSize = AsnType.BuildHeader(globalHeader, SnmpConstants.SMI_SEQUENCE, globalWritten);
 
         var headerLength = globalHeaderSize + globalWritten;
-        Span<byte> buffer = stackalloc byte[headerLength + ScopedPdu.ByteLength + USM.ByteLength +
+        var usmLength = USM.ByteLength;
+        using (DiscoveryPacket()) //Discovery packet may have differing encoding size, check thats too
+        {
+            usmLength = Math.Max(usmLength, USM.ByteLength);
+        }
+
+        Span<byte> buffer = stackalloc byte[headerLength + ScopedPdu.ByteLength + usmLength +
                                             _protocolVersion.ByteLength + AsnType.MaxHeaderSize];
         globalHeader[..globalHeaderSize].CopyTo(buffer);
         globalMessageData[..globalWritten].CopyTo(buffer[globalHeaderSize..]);
@@ -713,7 +667,10 @@ public class SnmpV3Packet : SnmpPacket
         var written = headerLength;
 
         // before going down this road, check if this is a discovery packet
-        written += EncodeUSM(buffer[headerLength..]);
+        using (DiscoveryPacket())
+        {
+            written += USM.encode(buffer[headerLength..]);
+        }
 
         // Check if privacy encryption is required
         Range encodedPduLocation;
@@ -728,11 +685,12 @@ public class SnmpV3Packet : SnmpPacket
             written += end;
         }
 
-        base.encode(buffer, ref written);
 
+        var baseLength = base.encode(buffer, ref written);
         if (MsgFlags.Authentication && USM.EngineId.Length > 0)
         {
-            USM.Authenticate(authKey ?? [], buffer);
+            USM.Authenticate(authKey, buffer[..written]);
+            buffer[baseLength..].CopyTo(buffer); //Remove the base-encoded header
             // Now re-encode the packet with the authentication information
             var encodedPdu = buffer[encodedPduLocation].ToArray();
             written = headerLength;
@@ -742,18 +700,17 @@ public class SnmpV3Packet : SnmpPacket
             base.encode(buffer, ref written);
         }
 
+
         return buffer[..written].ToArray();
     }
 
-    private Range Encrypt(byte[]? privKey, Span<byte> buffer, int packetHeader, ref int written)
+
+    private Range Encrypt(Span<byte> privKey, Span<byte> buffer, int packetHeader, ref int written)
     {
         var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-        switch (privacyProtocol)
-        {
-            case null:
-                throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
-                    "Specified privacy protocol is not supported.");
-        }
+        if (privacyProtocol == null)
+            throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
+                "Specified privacy protocol is not supported.");
 
         // Get BER encoded ScopedPdu
         var unencryptedPdu = new byte[ScopedPdu.ByteLength];
@@ -761,15 +718,19 @@ public class SnmpV3Packet : SnmpPacket
 
         // we have to expand the key
         var auth = Authentication.GetInstance(USM.Authentication);
-        switch (auth)
-        {
-            case null:
-                throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
-                    "Invalid authentication protocol. noAuthPriv mode not supported.");
-        }
+        if (auth == null)
+            throw new SnmpException(SnmpException.UnsupportedNoAuthPriv,
+                "Invalid authentication protocol. noAuthPriv mode not supported.");
 
-        var encryptedBuffer = privacyProtocol.Encrypt(unencryptedPdu, 0, unencryptedWrite, privKey ?? [],
-            USM.EngineBoots, USM.EngineTime, out var privacyParameters, auth);
+        var encryptedBuffer = privacyProtocol.Encrypt(
+            unencryptedPdu,
+            0,
+            unencryptedWrite,
+            privKey.ToArray(),
+            USM.EngineBoots,
+            USM.EngineTime,
+            out var privacyParameters,
+            auth);
 
         USM.PrivacyParameters.Set(privacyParameters);
         var encryptedOctetString = new OctetString(encryptedBuffer);
@@ -782,7 +743,7 @@ public class SnmpV3Packet : SnmpPacket
         return location;
     }
 
-    private int EncodeUSM(Span<byte> buffer)
+    private Scope DiscoveryPacket()
     {
         var savedUserName = new OctetString();
         var privacy = MsgFlags.Privacy;
@@ -799,18 +760,26 @@ public class SnmpV3Packet : SnmpPacket
             MsgFlags.Reportable = true;
         }
 
-        var written = USM.encode(buffer);
 
-        if (USM.EngineId.Length <= 0)
+        return new Scope(() =>
         {
-            // restore saved USM values
-            USM.SecurityName.Set(savedUserName);
-            MsgFlags.Authentication = authentication;
-            MsgFlags.Privacy = privacy;
-            MsgFlags.Reportable = reportable;
-        }
+            if (USM.EngineId.Length <= 0)
+            {
+                // restore saved USM values
+                USM.SecurityName.Set(savedUserName);
+                MsgFlags.Authentication = authentication;
+                MsgFlags.Privacy = privacy;
+                MsgFlags.Reportable = reportable;
+            }
+        });
+    }
 
-        return written;
+    private class Scope(Action disposer) : IDisposable
+    {
+        public void Dispose()
+        {
+            disposer();
+        }
     }
 
     #endregion

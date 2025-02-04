@@ -28,11 +28,6 @@ namespace SnmpSharpNet;
 public class UserSecurityModel : AsnType, ICloneable
 {
     /// <summary>
-    ///     Authentication digest enumeration value. For acceptable values see <see cref="AuthenticationDigests" />
-    /// </summary>
-    protected AuthenticationDigests _authentication;
-
-    /// <summary>
     ///     Authentication secret
     /// </summary>
     protected MutableByte _authenticationSecret;
@@ -76,7 +71,7 @@ public class UserSecurityModel : AsnType, ICloneable
         EngineId = new OctetString();
         _engineBoots = new Integer32();
         _engineTime = new Integer32();
-        _authentication = AuthenticationDigests.None;
+        Authentication = AuthenticationDigests.None;
 
         _securityName = new OctetString();
         _authenticationSecret = new MutableByte();
@@ -135,11 +130,7 @@ public class UserSecurityModel : AsnType, ICloneable
     ///     Get/Set hash to use for SNMP version 3 authentication. For available values see
     ///     <see cref="AuthenticationDigests" />
     /// </summary>
-    public AuthenticationDigests Authentication
-    {
-        get => _authentication;
-        set => _authentication = value;
-    }
+    public AuthenticationDigests Authentication { get; set; }
 
     /// <summary>
     ///     Security name (or user name)
@@ -200,8 +191,8 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <param name="wholePacket">SNMP version 3 BER encoded packet.</param>
     public void Authenticate(ref MutableByte wholePacket)
     {
-        if (_authentication == AuthenticationDigests.None) return;
-        var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication)!;
+        if (Authentication == AuthenticationDigests.None) return;
+        var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication)!;
         var authParam = authProto.authenticate(AuthenticationSecret.Value, EngineId.ToArray(), wholePacket.Value);
         AuthenticationParameters = new OctetString(authParam);
     }
@@ -214,11 +205,11 @@ public class UserSecurityModel : AsnType, ICloneable
     /// </summary>
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholePacket">SNMP version 3 BER encoded packet.</param>
-    public void Authenticate(byte[] authKey, Span<byte> wholePacket)
+    public void Authenticate(Span<byte> authKey, Span<byte> wholePacket)
     {
-        var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
+        var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto == null) return;
-        var authParam = authProto.authenticate(authKey, wholePacket.ToArray());
+        var authParam = authProto.authenticate(authKey, wholePacket);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -229,9 +220,9 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <returns>True if packet is successfully authenticated, otherwise false.</returns>
     public bool IsAuthentic(MutableByte wholePacket)
     {
-        if (_authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
+        if (Authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
 
-        var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
+        var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto != null)
             return authProto.authenticateIncomingMsg(AuthenticationSecret.Value, EngineId.ToArray(),
                 AuthenticationParameters.ToArray(),
@@ -246,12 +237,12 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholePacket">Received BER encoded SNMP version 3 packet</param>
     /// <returns>True if packet is successfully authenticated, otherwise false.</returns>
-    public bool IsAuthentic(byte[] authKey, Span<byte> wholePacket)
+    public bool IsAuthentic(Span<byte> authKey, Span<byte> wholePacket)
     {
-        if (_authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
-        var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
+        if (Authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
+        var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         return authProto != null &&
-               authProto.authenticateIncomingMsg(authKey, AuthenticationParameters.ToArray(), wholePacket.ToArray());
+               authProto.authenticateIncomingMsg(authKey, AuthenticationParameters.ToArray(), wholePacket);
         // Nothing to authenticate
     }
 
@@ -313,7 +304,7 @@ public class UserSecurityModel : AsnType, ICloneable
         written += AuthenticationParameters.encode(tmp[written..]);
         written += _privacyParameters.encode(tmp[written..]);
 
-        Span<byte> tmp1 = stackalloc byte[written + MaxHeaderSize];
+        Span<byte> tmp1 = stackalloc byte[HeaderSize(tmp.Length) + written];
 
         var slice = BuildHeader(tmp1, SnmpConstants.SMI_SEQUENCE, tmp.Length);
         tmp.CopyTo(tmp1[slice..]);
@@ -326,7 +317,7 @@ public class UserSecurityModel : AsnType, ICloneable
 
     private void EnsureAuthParameters()
     {
-        if (_authentication != AuthenticationDigests.None)
+        if (Authentication != AuthenticationDigests.None)
         {
             switch (AuthenticationParameters.Length)
             {
@@ -334,7 +325,7 @@ public class UserSecurityModel : AsnType, ICloneable
                 {
                     // If authentication is used, set authentication parameters field to 0x00 with the authentification length of the auth protocol.
                     var size = 12;
-                    var authProto = SnmpSharpNet.Authentication.GetInstance(_authentication);
+                    var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
                     if (authProto != null) size = authProto.AuthentificationHeaderLength;
                     AuthenticationParameters.Set(new byte[size]);
                     break;
@@ -383,6 +374,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         get
         {
+            EnsureAuthParameters();
             var mbl = MemberByteLength;
             var firstHeader = HeaderSize(mbl);
             var secondHeader = HeaderSize(mbl + firstHeader);
@@ -447,14 +439,14 @@ public class UserSecurityModel : AsnType, ICloneable
     /// <returns>True if information is valid and complete enough for a successful request, otherwise false</returns>
     public bool Valid()
     {
-        if ((_authentication != AuthenticationDigests.None || _privacy != PrivacyProtocols.None) &&
+        if ((Authentication != AuthenticationDigests.None || _privacy != PrivacyProtocols.None) &&
             _securityName.Length <= 0)
             return false; // Have to provide a user name when using authentication or privacy
-        if (_authentication == AuthenticationDigests.None &&
+        if (Authentication == AuthenticationDigests.None &&
             _privacy != PrivacyProtocols.None) return false; // noAuthPriv is not supported by SNMP version 3
 
         // check that secrets are properly configured
-        if (_authentication != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
+        if (Authentication != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // authentication configured without a secret
         return _privacy == PrivacyProtocols.None || _privacySecret.Length > 0;
         // privacy configured without a secret
@@ -471,7 +463,7 @@ public class UserSecurityModel : AsnType, ICloneable
         EngineId = new OctetString();
         _engineBoots = new Integer32();
         _engineTime = new Integer32();
-        _authentication = AuthenticationDigests.None;
+        Authentication = AuthenticationDigests.None;
 
         _securityName = new OctetString();
         _authenticationSecret = new MutableByte();
