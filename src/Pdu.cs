@@ -667,7 +667,9 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         EnsureTrapAndInforms();
         var written = 0;
 
-        Span<byte> tmpBuffer = stackalloc byte[MemberByteLength()];
+        // Now encode the header for the PDU
+        var slice = BuildHeader(buffer, (byte)Type, MemberByteLength());
+        Span<byte> tmpBuffer = buffer[slice..];
 
         written += _requestId.encode(tmpBuffer[written..]);
         written += _errorStatus.encode(tmpBuffer[written..]);
@@ -676,9 +678,6 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         // encode variable bindings
         written += _vbs.encode(tmpBuffer[written..]);
 
-        // Now encode the header for the PDU
-        var slice = BuildHeader(buffer, (byte)Type, written);
-        tmpBuffer[..written].CopyTo(buffer[slice..]);
         return written + slice;
     }
 
@@ -850,7 +849,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
                 break;
         }
 
-        str.Append("\n");
+        str.Append('\n');
         str.Append($"RequestId: {RequestId}\n");
         if (Type != PduType.GetBulk)
             str.Append($"ErrorStatus: {ErrorStatus}\nError Index: {ErrorIndex}\n");
