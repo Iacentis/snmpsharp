@@ -628,6 +628,8 @@ public class SnmpV3Packet : SnmpPacket
             }
         }
 
+        var shouldEncrypt = MsgFlags.Privacy && USM.EngineId.Length > 0;
+
         _securityModel.Value = USM.Type;
 
         var globalLength = _messageId.ByteLength + _maxMessageSize.ByteLength + MsgFlags.ByteLength +
@@ -659,10 +661,11 @@ public class SnmpV3Packet : SnmpPacket
             usmLength = Math.Max(usmLength, USM.ByteLength);
         }
 
-        Span<byte> buffer = stackalloc byte[headerLength + ScopedPdu.ByteLength + usmLength +
+        var byteLength = (ScopedPdu.ByteLength / 64 + 1) * 64; // round up to 64 bytes
+        Span<byte> buffer = stackalloc byte[headerLength + byteLength + usmLength +
                                             _protocolVersion.ByteLength + AsnType.MaxHeaderSize];
-        globalHeader[..globalHeaderSize].CopyTo(buffer);
-        globalMessageData[..globalWritten].CopyTo(buffer[globalHeaderSize..]);
+        globalHeader.CopyTo(buffer);
+        globalMessageData.CopyTo(buffer[globalHeaderSize..]);
 
         var written = headerLength;
 
@@ -674,7 +677,7 @@ public class SnmpV3Packet : SnmpPacket
 
         // Check if privacy encryption is required
         Range encodedPduLocation;
-        if (MsgFlags.Privacy && USM.EngineId.Length > 0)
+        if (shouldEncrypt)
         {
             encodedPduLocation = Encrypt(privKey, buffer, headerLength, ref written);
         }
@@ -703,7 +706,6 @@ public class SnmpV3Packet : SnmpPacket
 
         return buffer[..written].ToArray();
     }
-
 
     private Range Encrypt(Span<byte> privKey, Span<byte> buffer, int packetHeader, ref int written)
     {

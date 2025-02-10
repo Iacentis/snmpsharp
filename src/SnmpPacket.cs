@@ -148,7 +148,7 @@ public abstract class SnmpPacket
         }
         // Encode header
         {
-            Span<byte> temp = stackalloc byte[AsnType.MaxHeaderSize];
+            Span<byte> temp = stackalloc byte[AsnType.HeaderSize(written)];
             var headerWrite = AsnType.BuildHeader(temp, SnmpConstants.SMI_SEQUENCE, written);
             buffer[..written].CopyTo(buffer[headerWrite..]);
             temp[..headerWrite].CopyTo(buffer);
