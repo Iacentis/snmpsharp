@@ -70,10 +70,11 @@ public class PrivacyDES : IPrivacyProtocol
     ///     Thrown when encryption key is null or length of the encryption key is too
     ///     short.
     /// </exception>
-    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        out byte[] privacyParameters, IAuthenticationDigest authDigest)
+    public byte[] Encrypt(ReadOnlySpan<byte> unencryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots,
+        int engineTime, out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
-        if (key == null || key.Length < MinimumKeyLength)
+        if (key.IsEmpty || key.Length < MinimumKeyLength)
             throw new ArgumentOutOfRangeException(nameof(key), "Encryption key length has to 32 bytes or more.");
 
         privacyParameters = GetSalt(engineBoots);
@@ -94,13 +95,13 @@ public class PrivacyDES : IPrivacyProtocol
         var cipherText = iv;
         var posIn = 0;
         var posResult = 0;
-        Buffer.BlockCopy(unencryptedData, offset, buffer, 0, length);
 
-        var des = DES.Create();
+        unencryptedData.Slice(offset, length).CopyTo(buffer);
+        using var des = DES.Create();
         des.Mode = CipherMode.ECB;
         des.Padding = PaddingMode.None;
 
-        var transform = des.CreateEncryptor(outKey, null);
+        using var transform = des.CreateEncryptor(outKey, null);
         for (var b = 0; b < div; b++)
         {
             for (var i = 0; i < 8; i++)
@@ -138,36 +139,38 @@ public class PrivacyDES : IPrivacyProtocol
     ///     Thrown when encryption key length is less then 32 byte or if privacy parameters
     ///     argument is null or length other then 8 bytes
     /// </exception>
-    public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        byte[] privacyParameters)
+    public byte[] Decrypt(ReadOnlySpan<byte> encryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots,
+        int engineTime,
+        ReadOnlySpan<byte> privacyParameters)
     {
         if (length % 8 != 0)
             throw new ArgumentOutOfRangeException(nameof(encryptedData),
                 "Encrypted data buffer has to be divisible by 8.");
-        if (encryptedData == null || encryptedData.Length == 0)
+        if (encryptedData.IsEmpty || encryptedData.Length == 0)
             throw new ArgumentNullException(nameof(encryptedData));
-        if (privacyParameters == null || privacyParameters.Length != PrivacyParametersLength)
+        if (privacyParameters.IsEmpty || privacyParameters.Length != PrivacyParametersLength)
             throw new ArgumentOutOfRangeException(nameof(privacyParameters),
                 "Privacy parameters argument has to be 8 bytes long");
 
-        if (key == null || key.Length < MinimumKeyLength)
+        if (key.IsEmpty || key.Length < MinimumKeyLength)
             throw new ArgumentOutOfRangeException(nameof(key), "Decryption key has to be at least 16 bytes long.");
 
         var iv = new byte[8];
         for (var i = 0; i < 8; ++i) iv[i] = (byte)(key[8 + i] ^ privacyParameters[i]);
-        var des = DES.Create();
+        using var des = DES.Create();
         des.Mode = CipherMode.CBC;
         des.Padding = PaddingMode.Zeros;
 
         // .NET implementation only takes an 8 byte key
         var outKey = new byte[8];
-        Buffer.BlockCopy(key, 0, outKey, 0, 8);
+        key[..8].CopyTo(outKey);
 
         des.Key = outKey;
         des.IV = iv;
-        var transform = des.CreateDecryptor();
+        using var transform = des.CreateDecryptor();
 
-        var decryptedData = transform.TransformFinalBlock(encryptedData, 0, encryptedData.Length);
+        var decryptedData = transform.TransformFinalBlock(encryptedData.ToArray(), 0, encryptedData.Length);
         des.Clear();
 
         return decryptedData;
@@ -221,9 +224,11 @@ public class PrivacyDES : IPrivacyProtocol
     /// <param name="engineID">Authoritative engine id</param>
     /// <param name="authProtocol">Authentication protocol class instance</param>
     /// <returns>unaltered shortKey value</returns>
-    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    public byte[] ExtendShortKey(ReadOnlySpan<byte> shortKey, ReadOnlySpan<byte> password, ReadOnlySpan<byte> engineID,
+        IAuthenticationDigest authProtocol)
+
     {
-        return shortKey;
+        return shortKey.ToArray();
     }
 
     /// <summary>
@@ -244,10 +249,11 @@ public class PrivacyDES : IPrivacyProtocol
     /// <param name="authProtocol">Authentication protocol</param>
     /// <returns>Encryption key</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
-    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    public byte[] PasswordToKey(ReadOnlySpan<byte> secret, ReadOnlySpan<byte> engineId,
+        IAuthenticationDigest authProtocol)
     {
         // RFC 3414 - password length is minimum of 8 bytes long
-        if (secret == null || secret.Length < 8)
+        if (secret.Length < 8)
             throw new SnmpPrivacyException("Invalid privacy secret length.");
         var encryptionKey = authProtocol.PasswordToKey(secret, engineId);
         return encryptionKey;
@@ -304,12 +310,12 @@ public class PrivacyDES : IPrivacyProtocol
     /// <param name="privacyPassword">16 byte privacy password</param>
     /// <returns>8 byte DES encryption password</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when privacy password is less then 16 bytes long</exception>
-    private byte[] GetKey(byte[] privacyPassword)
+    private byte[] GetKey(ReadOnlySpan<byte> privacyPassword)
     {
         if (privacyPassword == null || privacyPassword.Length < 16)
             throw new SnmpPrivacyException("Invalid privacy key length.");
         var key = new byte[8];
-        Buffer.BlockCopy(privacyPassword, 0, key, 0, 8);
+        privacyPassword[..8].CopyTo(key);
         return key;
     }
 
@@ -320,7 +326,7 @@ public class PrivacyDES : IPrivacyProtocol
     /// <param name="salt">Salt value returned by GetSalt method</param>
     /// <returns>IV value used in the encryption process</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
-    private byte[] GetIV(byte[] privacyKey, byte[] salt)
+    private byte[] GetIV(ReadOnlySpan<byte> privacyKey, ReadOnlySpan<byte> salt)
     {
         switch (privacyKey.Length)
         {

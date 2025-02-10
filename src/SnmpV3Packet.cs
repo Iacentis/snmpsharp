@@ -477,8 +477,8 @@ public class SnmpV3Packet : SnmpPacket
             throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
                 "Specified privacy protocol is not supported.");
 
-        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
-            USM.EngineId,
+        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret.Value,
+            USM.EngineId.GetData(),
             auth);
 
         return pkey;
@@ -570,12 +570,12 @@ public class SnmpV3Packet : SnmpPacket
 
             // decode encrypted packet
             var decryptedScopedPdu = privacyProtocol.Decrypt(
-                encryptedScopedPdu,
+                encryptedScopedPdu.GetData(),
                 0,
                 encryptedScopedPdu.Length,
                 privKey.ToArray(),
                 USM.EngineBoots, USM.EngineTime,
-                USM.PrivacyParameters);
+                USM.PrivacyParameters.GetData());
             var tempOffset = 0;
             offset = ScopedPdu.decode(decryptedScopedPdu, tempOffset);
         }
@@ -818,7 +818,7 @@ public class SnmpV3Packet : SnmpPacket
         var authenticationDigest = Authentication.GetInstance(USM.Authentication);
         if (authenticationDigest == null) return null;
         var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-        return privacyProtocol?.PasswordToKey(USM.PrivacySecret, USM.EngineId, authenticationDigest);
+        return privacyProtocol?.PasswordToKey(USM.PrivacySecret.Value, USM.EngineId.GetData(), authenticationDigest);
     }
 
     /// <summary>

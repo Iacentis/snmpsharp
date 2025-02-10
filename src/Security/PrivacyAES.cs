@@ -39,7 +39,7 @@ public class PrivacyAES : IPrivacyProtocol
     ///     Key size in bytes. Acceptable values are
     ///     16 = 128-bit key size, 24 = 192-bit key size, or 32 = 256-bit key size.
     /// </param>
-    public PrivacyAES(int keyBytes)
+    protected PrivacyAES(int keyBytes)
     {
         if (keyBytes != 16 && keyBytes != 24 && keyBytes != 32)
             throw new ArgumentOutOfRangeException(nameof(keyBytes), "Valid key sizes are 16, 24 and 32 bytes.");
@@ -64,11 +64,12 @@ public class PrivacyAES : IPrivacyProtocol
     /// </param>
     /// <param name="authDigest">Authentication digest reference. Not used by AES protocol and can be null</param>
     /// <returns>Byte array containing encrypted <see cref="ScopedPdu" /> BER encoded data</returns>
-    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        out byte[] privacyParameters, IAuthenticationDigest authDigest)
+    public byte[] Encrypt(ReadOnlySpan<byte> unencryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots,
+        int engineTime, out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         // check the key before doing anything else
-        if (key == null || key.Length < _keyBytes)
+        if (key.IsEmpty || key.Length < _keyBytes)
             throw new ArgumentOutOfRangeException(nameof(key), "Invalid key length");
 
         var iv = new byte[16];
@@ -108,21 +109,17 @@ public class PrivacyAES : IPrivacyProtocol
         rm.Mode = CipherMode.CFB;
         // make sure we have the right key length
         var pkey = new byte[MinimumKeyLength];
-        Buffer.BlockCopy(key, 0, pkey, 0, MinimumKeyLength);
+        key[..MinimumKeyLength].CopyTo(pkey);
         rm.Key = pkey;
         rm.IV = iv;
-        var cryptor = rm.CreateEncryptor();
-        var encryptedData = cryptor.TransformFinalBlock(unencryptedData, offset, length);
+        using var encryptor = rm.CreateEncryptor();
+        var encryptedData = encryptor.TransformFinalBlock(unencryptedData.ToArray(), offset, length);
         // check if encrypted data is the same length as source data
-        if (encryptedData.Length != unencryptedData.Length)
-        {
-            // cut out the padding
-            var tmp = new byte[unencryptedData.Length];
-            Buffer.BlockCopy(encryptedData, 0, tmp, 0, unencryptedData.Length);
-            return tmp;
-        }
-
-        return encryptedData;
+        if (encryptedData.Length == unencryptedData.Length) return encryptedData;
+        // cut out the padding
+        var tmp = new byte[unencryptedData.Length];
+        Buffer.BlockCopy(encryptedData, 0, tmp, 0, unencryptedData.Length);
+        return tmp;
     }
 
     /// <summary>
@@ -136,8 +133,10 @@ public class PrivacyAES : IPrivacyProtocol
     /// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery procedure</param>
     /// <param name="privacyParameters">Privacy parameters parsed from the incoming packet.</param>
     /// <returns>Byte array containing decrypted <see cref="ScopedPdu" /> in BER encoded format.</returns>
-    public byte[] Decrypt(byte[] cryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        byte[] privacyParameters)
+    public byte[] Decrypt(ReadOnlySpan<byte> cryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots,
+        int engineTime,
+        ReadOnlySpan<byte> privacyParameters)
     {
         if (key == null || key.Length < _keyBytes)
             throw new ArgumentOutOfRangeException(nameof(key), "Invalid key length");
@@ -156,12 +155,12 @@ public class PrivacyAES : IPrivacyProtocol
         iv[7] = timeBytes[0];
 
         // Copy salt value to the iv array
-        Buffer.BlockCopy(privacyParameters, 0, iv, 8, 8);
+        privacyParameters[..8].CopyTo(iv.AsSpan(8, 8));
 
         byte[] decryptedData;
 
         // now do CFB decryption of the encrypted data
-        var rm = Aes.Create();
+        using var rm = Aes.Create();
         rm.KeySize = _keyBytes * 8;
         rm.FeedbackSize = 128;
         rm.BlockSize = 128;
@@ -170,34 +169,33 @@ public class PrivacyAES : IPrivacyProtocol
         if (key.Length > MinimumKeyLength)
         {
             var normKey = new byte[MinimumKeyLength];
-            Buffer.BlockCopy(key, 0, normKey, 0, MinimumKeyLength);
+            key[..MinimumKeyLength].CopyTo(normKey);
             rm.Key = normKey;
         }
         else
         {
-            rm.Key = key;
+            rm.Key = key.ToArray();
         }
 
         rm.IV = iv;
-        ICryptoTransform cryptor;
-        cryptor = rm.CreateDecryptor();
+        using var decryptor = rm.CreateDecryptor();
 
         // We need to make sure that cryptedData is a collection of 128 byte blocks
         if (cryptedData.Length % _keyBytes != 0)
         {
             var buffer = new byte[length];
-            Buffer.BlockCopy(cryptedData, offset, buffer, 0, length);
+            cryptedData.Slice(offset, length).CopyTo(buffer);
             var div = (int)Math.Floor(buffer.Length / (double)16);
             var newLength = (div + 1) * 16;
             var decryptBuffer = new byte[newLength];
             Buffer.BlockCopy(buffer, 0, decryptBuffer, 0, buffer.Length);
-            decryptedData = cryptor.TransformFinalBlock(decryptBuffer, 0, decryptBuffer.Length);
+            decryptedData = decryptor.TransformFinalBlock(decryptBuffer, 0, decryptBuffer.Length);
             // now remove padding
             Buffer.BlockCopy(decryptedData, 0, buffer, 0, length);
             return buffer;
         }
 
-        decryptedData = cryptor.TransformFinalBlock(cryptedData, offset, length);
+        decryptedData = decryptor.TransformFinalBlock(cryptedData.ToArray(), offset, length);
 
         return decryptedData;
     }
@@ -237,13 +235,16 @@ public class PrivacyAES : IPrivacyProtocol
     /// <param name="engineID">Authoritative engine id. Value is retrieved as part of SNMP v3 discovery procedure</param>
     /// <param name="authProtocol">Authentication protocol class instance cast as <see cref="IAuthenticationDigest" /></param>
     /// <returns>Extended key value</returns>
-    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    public byte[] ExtendShortKey(ReadOnlySpan<byte> shortKey, ReadOnlySpan<byte> password,
+        ReadOnlySpan<byte> engineID,
+        IAuthenticationDigest authProtocol)
     {
         var extKey = new byte[MinimumKeyLength];
         var lastKeyBuf = new byte[shortKey.Length];
-        Array.Copy(shortKey, lastKeyBuf, shortKey.Length);
+
+        shortKey.CopyTo(lastKeyBuf);
         var keyLen = shortKey.Length > MinimumKeyLength ? MinimumKeyLength : shortKey.Length;
-        Array.Copy(shortKey, extKey, keyLen);
+        shortKey[..keyLen].CopyTo(extKey);
         while (keyLen < MinimumKeyLength)
         {
             var tmpBuf = authProtocol.PasswordToKey(lastKeyBuf, engineID);
@@ -284,9 +285,10 @@ public class PrivacyAES : IPrivacyProtocol
     /// <param name="authProtocol">Authentication protocol</param>
     /// <returns>Encryption key</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
-    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    public byte[] PasswordToKey(ReadOnlySpan<byte> secret, ReadOnlySpan<byte> engineId,
+        IAuthenticationDigest authProtocol)
     {
-        if (secret == null || secret.Length < 8)
+        if (secret.Length < 8)
             throw new SnmpPrivacyException("Invalid privacy secret length.");
         var key = authProtocol.PasswordToKey(secret, engineId);
         if (key.Length < MinimumKeyLength) key = ExtendShortKey(key, secret, engineId, authProtocol);

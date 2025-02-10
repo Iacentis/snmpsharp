@@ -72,7 +72,8 @@ public class Privacy3DES : IPrivacyProtocol
     ///     Thrown when encryption key is null or length of the encryption key is too
     ///     short.
     /// </exception>
-    public byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
+    public byte[] Encrypt(ReadOnlySpan<byte> unencryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots, int engineTime,
         out byte[] privacyParameters, IAuthenticationDigest authDigest)
     {
         privacyParameters = GetSalt(engineBoots);
@@ -89,16 +90,16 @@ public class Privacy3DES : IPrivacyProtocol
             trippleDes.Padding = PaddingMode.None;
             // normalize key - generated key is 32 bytes long, we need 24 bytes to encrypt
             var normKey = new byte[24];
-            Buffer.BlockCopy(key, 0, normKey, 0, normKey.Length);
+            key[..24].CopyTo(normKey);
             var transform = trippleDes.CreateEncryptor(normKey, iv);
             if (length % 8 == 0)
             {
-                encryptedData = transform.TransformFinalBlock(unencryptedData, offset, length);
+                encryptedData = transform.TransformFinalBlock(unencryptedData.ToArray(), offset, length);
             }
             else
             {
                 var tmpbuffer = new byte[8 * (length / 8 + 1)];
-                Buffer.BlockCopy(unencryptedData, offset, tmpbuffer, 0, length);
+                unencryptedData.Slice(offset, length).CopyTo(tmpbuffer);
                 encryptedData = transform.TransformFinalBlock(tmpbuffer, 0, tmpbuffer.Length);
             }
         }
@@ -130,19 +131,21 @@ public class Privacy3DES : IPrivacyProtocol
     ///     Thrown when encryption key length is less then 32 byte or if privacy parameters
     ///     argument is null or length other then 8 bytes
     /// </exception>
-    public byte[] Decrypt(byte[] encryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        byte[] privacyParameters)
+    public byte[] Decrypt(ReadOnlySpan<byte> encryptedData, int offset, int length, ReadOnlySpan<byte> key,
+        int engineBoots,
+        int engineTime,
+        ReadOnlySpan<byte> privacyParameters)
     {
         if (length % 8 != 0)
             throw new ArgumentOutOfRangeException(nameof(encryptedData),
                 "Encrypted data buffer has to be divisable by 8.");
-        if (encryptedData == null || encryptedData.Length < 8)
+        if (encryptedData.IsEmpty || encryptedData.Length < 8)
             throw new ArgumentOutOfRangeException(nameof(encryptedData),
                 "Encrypted data buffer is null or smaller then 8 bytes in length.");
         if (offset > encryptedData.Length || offset + length > encryptedData.Length)
             throw new ArgumentOutOfRangeException(nameof(offset),
                 "Offset and length arguments point beyond the bounds of the encryptedData array.");
-        if (key == null || key.Length < 32)
+        if (key.IsEmpty || key.Length < 32)
             throw new ArgumentOutOfRangeException(nameof(key),
                 "Minimum acceptable length of the decryption key is 32 bytes.");
         if (privacyParameters is not { Length: 8 })
@@ -160,10 +163,10 @@ public class Privacy3DES : IPrivacyProtocol
 
             // normalize key - generated key is 32 bytes long, we need 24 bytes to encrypt
             var normKey = new byte[24];
-            Buffer.BlockCopy(key, 0, normKey, 0, normKey.Length);
+            key[..24].CopyTo(normKey);
 
             var transform = tripleDes.CreateDecryptor(normKey, iv);
-            decryptedData = transform.TransformFinalBlock(encryptedData, offset, length);
+            decryptedData = transform.TransformFinalBlock(encryptedData.ToArray(), offset, length);
         }
         catch (Exception ex)
         {
@@ -230,11 +233,12 @@ public class Privacy3DES : IPrivacyProtocol
     /// <param name="engineID">Authoritative engine id</param>
     /// <param name="authProtocol">Authentication protocol class instance</param>
     /// <returns>unaltered shortKey value</returns>
-    public byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol)
+    public byte[] ExtendShortKey(ReadOnlySpan<byte> shortKey, ReadOnlySpan<byte> password, ReadOnlySpan<byte> engineID,
+        IAuthenticationDigest authProtocol)
     {
         var length = shortKey.Length;
         var extendedKey = new byte[MinimumKeyLength];
-        Buffer.BlockCopy(shortKey, 0, extendedKey, 0, shortKey.Length);
+        shortKey.CopyTo(extendedKey);
 
         while (length < MinimumKeyLength)
         {
@@ -263,10 +267,11 @@ public class Privacy3DES : IPrivacyProtocol
     /// <param name="authProtocol">Authentication protocol</param>
     /// <returns>Encryption key</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when user secret/password is shorter then MinimumKeyLength</exception>
-    public byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol)
+    public byte[] PasswordToKey(ReadOnlySpan<byte> secret, ReadOnlySpan<byte> engineId,
+        IAuthenticationDigest authProtocol)
     {
         // RFC 3414 - password length is minimum of 8 bytes long
-        if (secret == null || secret.Length < 8)
+        if (secret.Length < 8)
             throw new SnmpPrivacyException("Invalid privacy secret length.");
         var encryptionKey = authProtocol.PasswordToKey(secret, engineId);
         if (encryptionKey.Length < MinimumKeyLength)
@@ -322,7 +327,7 @@ public class Privacy3DES : IPrivacyProtocol
     /// <param name="salt">Salt value returned by GetSalt method</param>
     /// <returns>IV value used in the encryption process</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when privacy key is less then 16 bytes long.</exception>
-    private byte[] GetIV(byte[] privacyKey, byte[] salt)
+    private byte[] GetIV(ReadOnlySpan<byte> privacyKey, ReadOnlySpan<byte> salt)
     {
         if (privacyKey.Length < 32)
             throw new SnmpPrivacyException("Invalid privacy key length");

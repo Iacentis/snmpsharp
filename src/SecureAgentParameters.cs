@@ -523,7 +523,7 @@ public class SecureAgentParameters : IAgentParameters
         _authenticationKey = authProto.PasswordToKey(_authenticationSecret.Value, _engineId.ToArray());
         if (_privacyProtocol == PrivacyProtocols.None || _privacySecret.Length <= 0) return;
         var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
-        _privacyKey = privProto?.PasswordToKey(_privacySecret, _engineId, authProto);
+        _privacyKey = privProto?.PasswordToKey(_privacySecret.Value, _engineId.GetData(), authProto);
     }
 
     #region Variables
