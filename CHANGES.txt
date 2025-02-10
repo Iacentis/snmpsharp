@@ -1,4 +1,7 @@
-﻿0.9.8-wmo1
+﻿0.9.10-wmo1
+* Fixed error-prone encoding in SNMPv3 packets
+* Made ReadOnlySpan the default API for Authenticate and Privacy
+0.9.8-wmo1
 * Added SHA224 authentication
 * Fixed a bug in null-object encoding
 * Added more tests and performance improvements.
