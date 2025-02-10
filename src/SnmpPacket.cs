@@ -135,7 +135,7 @@ public abstract class SnmpPacket
     ///     Derived classes call this method to finalize SNMP packet encoding.
     /// </summary>
     /// <param name="buffer">Buffer containing BER encoded SNMP information</param>
-    public virtual int encode(Span<byte> buffer, ref int written)
+    protected int encode(Span<byte> buffer, ref int written)
     {
         var start = written;
         // Encode SNMP protocol version

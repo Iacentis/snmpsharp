@@ -467,7 +467,7 @@ public class SnmpV3Packet : SnmpPacket
         if (auth == null)
             throw new SnmpException(SnmpException.UnsupportedNoAuthPriv, "Invalid authentication protocol.");
 
-        akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
+        akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.GetData());
 
         if (!MsgFlags.Privacy || USM.EngineId.Length <= 0) return pkey;
 
@@ -573,7 +573,7 @@ public class SnmpV3Packet : SnmpPacket
                 encryptedScopedPdu.GetData(),
                 0,
                 encryptedScopedPdu.Length,
-                privKey.ToArray(),
+                privKey,
                 USM.EngineBoots, USM.EngineTime,
                 USM.PrivacyParameters.GetData());
             var tempOffset = 0;
@@ -695,7 +695,8 @@ public class SnmpV3Packet : SnmpPacket
             USM.Authenticate(authKey, buffer[..written]);
             buffer[baseLength..].CopyTo(buffer); //Remove the base-encoded header
             // Now re-encode the packet with the authentication information
-            var encodedPdu = buffer[encodedPduLocation].ToArray();
+            Span<byte> encodedPdu = stackalloc byte[encodedPduLocation.End.Value - encodedPduLocation.Start.Value];
+            buffer[encodedPduLocation].CopyTo(encodedPdu);
             written = headerLength;
             written += USM.encode(buffer[written..]);
             encodedPdu.CopyTo(buffer[written..]);
@@ -728,7 +729,7 @@ public class SnmpV3Packet : SnmpPacket
             unencryptedPdu,
             0,
             unencryptedWrite,
-            privKey.ToArray(),
+            privKey,
             USM.EngineBoots,
             USM.EngineTime,
             out var privacyParameters,
@@ -800,7 +801,7 @@ public class SnmpV3Packet : SnmpPacket
             return null;
         if (USM.Authentication == AuthenticationDigests.None) return null;
         var authProto = Authentication.GetInstance(USM.Authentication);
-        return authProto?.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
+        return authProto?.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.GetData());
     }
 
     /// <summary>

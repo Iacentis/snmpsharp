@@ -508,7 +508,7 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     /// <returns>Byte array value of the supplied OctetString</returns>
     public static implicit operator byte[](OctetString? oStr)
     {
-        return oStr == null ? [] : oStr.ToArray();
+        return oStr == null ? [] : oStr.GetData();
     }
 
     /// <summary>

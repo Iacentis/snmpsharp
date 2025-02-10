@@ -68,7 +68,7 @@ public class EthernetAddress : OctetString
     /// </param>
     public EthernetAddress(EthernetAddress second)
     {
-        base.Set(second.ToArray());
+        base.Set(second.GetData());
     }
 
     /// <summary>
