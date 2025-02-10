@@ -42,7 +42,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="engineId">SNMP agent authoritative engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(Span<byte> authenticationSecret, Span<byte> engineId, Span<byte> wholeMessage)
+    public byte[] authenticate(ReadOnlySpan<byte> authenticationSecret, ReadOnlySpan<byte> engineId, ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(authenticationSecret, engineId);
         return authenticate(authKey, wholeMessage);
@@ -54,7 +54,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(Span<byte> authKey, Span<byte> wholeMessage)
+    public byte[] authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
 
@@ -74,8 +74,8 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
-    public bool authenticateIncomingMsg(Span<byte> userPassword, Span<byte> engineId,
-        Span<byte> authenticationParameters, Span<byte> wholeMessage)
+    public bool authenticateIncomingMsg(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId,
+        ReadOnlySpan<byte> authenticationParameters, ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
         return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
@@ -88,8 +88,8 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
     /// <param name="wholeMessage">Entire packet being authenticated</param>
     /// <returns>True on authentication success, otherwise false</returns>
-    public bool authenticateIncomingMsg(Span<byte> authKey, Span<byte> authenticationParameters,
-        Span<byte> wholeMessage)
+    public bool authenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
+        ReadOnlySpan<byte> wholeMessage)
     {
         using var sha = new HMACSHA384(authKey.ToArray());
         return sha.CompareHashed(wholeMessage, authenticationParameters);
@@ -102,7 +102,7 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="engineID">Authoritative engine id</param>
     /// <returns>Localized authentication key</returns>
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
-    public byte[] PasswordToKey(Span<byte> userPassword, Span<byte> engineID)
+    public byte[] PasswordToKey(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineID)
     {
         const int bufferSize = 8192;
         // key length has to be at least 8 bytes long (RFC3414)
@@ -178,5 +178,5 @@ public class AuthenticationSHA384 : IAuthenticationDigest
     /// <param name="offset">Compute hash from the source buffer offset</param>
     /// <param name="count">Compute hash for source data length</param>
     /// <returns>Hash value</returns>
-    public byte[] ComputeHash(Span<byte> data, int offset, int count) => SHA384.HashData(data.Slice(offset, count));
+    public byte[] ComputeHash(ReadOnlySpan<byte> data, int offset, int count) => SHA384.HashData(data.Slice(offset, count));
 }

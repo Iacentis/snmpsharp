@@ -6,7 +6,7 @@ namespace SnmpSharpNet;
 
 public static class HashAlgorithmExtensions
 {
-    public static T? WithHashed<T>(this HashAlgorithm hashAlgorithm, Span<byte> toCompute,
+    public static T? WithHashed<T>(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> toCompute,
         Func<Span<byte>, int, T> postHashFunction)
     {
         Span<byte> span = stackalloc byte[hashAlgorithm.HashSize / 8];
@@ -15,7 +15,7 @@ public static class HashAlgorithmExtensions
             : default;
     }
 
-    public static void WithHashed(this HashAlgorithm hashAlgorithm, Span<byte> toCompute,
+    public static void WithHashed(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> toCompute,
         Action<Span<byte>, int> postHashFunction)
     {
         Span<byte> span = stackalloc byte[hashAlgorithm.HashSize / 8];
@@ -25,7 +25,7 @@ public static class HashAlgorithmExtensions
         }
     }
 
-    public static bool CompareHashed(this HashAlgorithm hashAlgorithm, Span<byte> toCompute,
+    public static bool CompareHashed(this HashAlgorithm hashAlgorithm, ReadOnlySpan<byte> toCompute,
         ReadOnlySpan<byte> expectedHash)
     {
         Span<byte> span = stackalloc byte[hashAlgorithm.HashSize / 8];

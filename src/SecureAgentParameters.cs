@@ -520,10 +520,10 @@ public class SecureAgentParameters : IAgentParameters
             return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authenticationProtocol);
         if (authProto is null) return;
-        _authenticationKey = authProto.PasswordToKey(_authenticationSecret.Value, _engineId.ToArray());
+        _authenticationKey = authProto.PasswordToKey(_authenticationSecret.Value, _engineId.GetData());
         if (_privacyProtocol == PrivacyProtocols.None || _privacySecret.Length <= 0) return;
         var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
-        _privacyKey = privProto?.PasswordToKey(_privacySecret, _engineId, authProto);
+        _privacyKey = privProto?.PasswordToKey(_privacySecret.Value, _engineId.GetData(), authProto);
     }
 
     #region Variables

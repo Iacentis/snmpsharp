@@ -459,7 +459,7 @@ public sealed class IpAddress : OctetString, IComparable
     public IpAddress GetSubnetAddress(IpAddress mask)
     {
         var ip = _data;
-        var m = mask.ToArray();
+        var m = mask.GetData();
         var res = new byte[4];
         for (var i = 0; i < 4; i++) res[i] = (byte)(ip[i] & m[i]);
         return new IpAddress(res);

@@ -467,7 +467,7 @@ public class SnmpV3Packet : SnmpPacket
         if (auth == null)
             throw new SnmpException(SnmpException.UnsupportedNoAuthPriv, "Invalid authentication protocol.");
 
-        akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
+        akey = auth.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.GetData());
 
         if (!MsgFlags.Privacy || USM.EngineId.Length <= 0) return pkey;
 
@@ -477,8 +477,8 @@ public class SnmpV3Packet : SnmpPacket
             throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
                 "Specified privacy protocol is not supported.");
 
-        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
-            USM.EngineId,
+        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret.Value,
+            USM.EngineId.GetData(),
             auth);
 
         return pkey;
@@ -570,12 +570,12 @@ public class SnmpV3Packet : SnmpPacket
 
             // decode encrypted packet
             var decryptedScopedPdu = privacyProtocol.Decrypt(
-                encryptedScopedPdu,
+                encryptedScopedPdu.GetData(),
                 0,
                 encryptedScopedPdu.Length,
-                privKey.ToArray(),
+                privKey,
                 USM.EngineBoots, USM.EngineTime,
-                USM.PrivacyParameters);
+                USM.PrivacyParameters.GetData());
             var tempOffset = 0;
             offset = ScopedPdu.decode(decryptedScopedPdu, tempOffset);
         }
@@ -628,6 +628,8 @@ public class SnmpV3Packet : SnmpPacket
             }
         }
 
+        var shouldEncrypt = MsgFlags.Privacy && USM.EngineId.Length > 0;
+
         _securityModel.Value = USM.Type;
 
         var globalLength = _messageId.ByteLength + _maxMessageSize.ByteLength + MsgFlags.ByteLength +
@@ -659,10 +661,11 @@ public class SnmpV3Packet : SnmpPacket
             usmLength = Math.Max(usmLength, USM.ByteLength);
         }
 
-        Span<byte> buffer = stackalloc byte[headerLength + ScopedPdu.ByteLength + usmLength +
+        var byteLength = (ScopedPdu.ByteLength / 64 + 1) * 64; // round up to 64 bytes
+        Span<byte> buffer = stackalloc byte[headerLength + byteLength + usmLength +
                                             _protocolVersion.ByteLength + AsnType.MaxHeaderSize];
-        globalHeader[..globalHeaderSize].CopyTo(buffer);
-        globalMessageData[..globalWritten].CopyTo(buffer[globalHeaderSize..]);
+        globalHeader.CopyTo(buffer);
+        globalMessageData.CopyTo(buffer[globalHeaderSize..]);
 
         var written = headerLength;
 
@@ -674,7 +677,7 @@ public class SnmpV3Packet : SnmpPacket
 
         // Check if privacy encryption is required
         Range encodedPduLocation;
-        if (MsgFlags.Privacy && USM.EngineId.Length > 0)
+        if (shouldEncrypt)
         {
             encodedPduLocation = Encrypt(privKey, buffer, headerLength, ref written);
         }
@@ -692,7 +695,8 @@ public class SnmpV3Packet : SnmpPacket
             USM.Authenticate(authKey, buffer[..written]);
             buffer[baseLength..].CopyTo(buffer); //Remove the base-encoded header
             // Now re-encode the packet with the authentication information
-            var encodedPdu = buffer[encodedPduLocation].ToArray();
+            Span<byte> encodedPdu = stackalloc byte[encodedPduLocation.End.Value - encodedPduLocation.Start.Value];
+            buffer[encodedPduLocation].CopyTo(encodedPdu);
             written = headerLength;
             written += USM.encode(buffer[written..]);
             encodedPdu.CopyTo(buffer[written..]);
@@ -703,7 +707,6 @@ public class SnmpV3Packet : SnmpPacket
 
         return buffer[..written].ToArray();
     }
-
 
     private Range Encrypt(Span<byte> privKey, Span<byte> buffer, int packetHeader, ref int written)
     {
@@ -726,7 +729,7 @@ public class SnmpV3Packet : SnmpPacket
             unencryptedPdu,
             0,
             unencryptedWrite,
-            privKey.ToArray(),
+            privKey,
             USM.EngineBoots,
             USM.EngineTime,
             out var privacyParameters,
@@ -798,7 +801,7 @@ public class SnmpV3Packet : SnmpPacket
             return null;
         if (USM.Authentication == AuthenticationDigests.None) return null;
         var authProto = Authentication.GetInstance(USM.Authentication);
-        return authProto?.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.ToArray());
+        return authProto?.PasswordToKey(USM.AuthenticationSecret.Value, USM.EngineId.GetData());
     }
 
     /// <summary>
@@ -816,7 +819,7 @@ public class SnmpV3Packet : SnmpPacket
         var authenticationDigest = Authentication.GetInstance(USM.Authentication);
         if (authenticationDigest == null) return null;
         var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
-        return privacyProtocol?.PasswordToKey(USM.PrivacySecret, USM.EngineId, authenticationDigest);
+        return privacyProtocol?.PasswordToKey(USM.PrivacySecret.Value, USM.EngineId.GetData(), authenticationDigest);
     }
 
     /// <summary>

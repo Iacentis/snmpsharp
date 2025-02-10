@@ -135,7 +135,7 @@ public abstract class SnmpPacket
     ///     Derived classes call this method to finalize SNMP packet encoding.
     /// </summary>
     /// <param name="buffer">Buffer containing BER encoded SNMP information</param>
-    public virtual int encode(Span<byte> buffer, ref int written)
+    protected int encode(Span<byte> buffer, ref int written)
     {
         var start = written;
         // Encode SNMP protocol version
@@ -148,7 +148,7 @@ public abstract class SnmpPacket
         }
         // Encode header
         {
-            Span<byte> temp = stackalloc byte[AsnType.MaxHeaderSize];
+            Span<byte> temp = stackalloc byte[AsnType.HeaderSize(written)];
             var headerWrite = AsnType.BuildHeader(temp, SnmpConstants.SMI_SEQUENCE, written);
             buffer[..written].CopyTo(buffer[headerWrite..]);
             temp[..headerWrite].CopyTo(buffer);

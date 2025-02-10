@@ -14,6 +14,8 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
+using System;
+
 namespace SnmpSharpNet;
 
 /// <summary>
@@ -70,7 +72,8 @@ public interface IPrivacyProtocol
     ///     privacy protocols.
     /// </param>
     /// <returns>Byte array containing encrypted <see cref="ScopedPdu" /> BER encoded data</returns>
-    byte[] Encrypt(byte[] unencryptedData, int offset, int length, byte[] encryptionKey, int engineBoots,
+    byte[] Encrypt(ReadOnlySpan<byte> unencryptedData, int offset, int length, ReadOnlySpan<byte> encryptionKey,
+        int engineBoots,
         int engineTime, out byte[] privacyParameters, IAuthenticationDigest authDigest);
 
     /// <summary>
@@ -84,8 +87,9 @@ public interface IPrivacyProtocol
     /// <param name="engineTime">Authoritative engine time value. Retrieved as part of SNMP v3 discovery procedure</param>
     /// <param name="privacyParameters">Privacy parameters parsed from the incoming packet.</param>
     /// <returns>Byte array containing decrypted <see cref="ScopedPdu" /> in BER encoded format.</returns>
-    byte[] Decrypt(byte[] cryptedData, int offset, int length, byte[] key, int engineBoots, int engineTime,
-        byte[] privacyParameters);
+    byte[] Decrypt(ReadOnlySpan<byte> cryptedData, int offset, int length, ReadOnlySpan<byte> key, int engineBoots,
+        int engineTime,
+        ReadOnlySpan<byte> privacyParameters);
 
     /// <summary>
     ///     Calculates and returns length of the buffer that is the result of the encryption method.
@@ -105,7 +109,8 @@ public interface IPrivacyProtocol
     /// <param name="engineID">Authoritative engine id. Value is retrieved as part of SNMP v3 discovery procedure</param>
     /// <param name="authProtocol">Authentication protocol class instance cast as <see cref="IAuthenticationDigest" /></param>
     /// <returns>Extended key value</returns>
-    byte[] ExtendShortKey(byte[] shortKey, byte[] password, byte[] engineID, IAuthenticationDigest authProtocol);
+    byte[] ExtendShortKey(ReadOnlySpan<byte> shortKey, ReadOnlySpan<byte> password, ReadOnlySpan<byte> engineID,
+        IAuthenticationDigest authProtocol);
 
     /// <summary>
     ///     Convert privacy password into encryption key using packet authentication hash.
@@ -115,5 +120,5 @@ public interface IPrivacyProtocol
     /// <param name="authProtocol">Authentication protocol</param>
     /// <returns>Encryption key</returns>
     /// <exception cref="SnmpPrivacyException">Thrown when key size is shorter then MinimumKeyLength</exception>
-    byte[] PasswordToKey(byte[] secret, byte[] engineId, IAuthenticationDigest authProtocol);
+    byte[] PasswordToKey(ReadOnlySpan<byte> secret, ReadOnlySpan<byte> engineId, IAuthenticationDigest authProtocol);
 }

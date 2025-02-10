@@ -780,7 +780,7 @@ public sealed class Oid : AsnType, ICloneable, IComparable, IEnumerable<uint>
     /// <returns>Integer array representing the Oid class value</returns>
     public static explicit operator uint[](Oid oid)
     {
-        return oid.ToArray();
+        return oid.GetData();
     }
 
     /// <summary>
