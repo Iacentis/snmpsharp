@@ -133,5 +133,5 @@ public class Sequence : AsnType, ICloneable
         return offset;
     }
 
-    public override int ByteLength => encode(stackalloc byte[_data.Length + MaxHeaderSize]);
+    public override int ByteLength => HeaderSize(_data.Length) + _data.Length;
 }

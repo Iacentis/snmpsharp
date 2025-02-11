@@ -145,14 +145,11 @@ public class ScopedPdu : Pdu
 
     public override int encode(Span<byte> buffer)
     {
-        Span<byte> tmp = stackalloc byte[MemberByteLength()];
-        var offset = 0;
-        offset += _contextEngineId.encode(tmp[offset..]);
-        offset += _contextName.encode(tmp[offset..]);
-        offset += base.encode(tmp[offset..]);
-        var headerLength = BuildHeader(buffer, SnmpConstants.SMI_SEQUENCE, offset);
-        tmp[..offset].CopyTo(buffer[headerLength..]);
-        return headerLength + offset;
+        var offset = BuildHeader(buffer, SnmpConstants.SMI_SEQUENCE, MemberByteLength());
+        offset += _contextEngineId.encode(buffer[offset..]);
+        offset += _contextName.encode(buffer[offset..]);
+        offset += base.encode(buffer[offset..]);
+        return offset;
     }
 
     public override int ByteLength

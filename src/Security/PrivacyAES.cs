@@ -138,7 +138,7 @@ public class PrivacyAES : IPrivacyProtocol
         int engineTime,
         ReadOnlySpan<byte> privacyParameters)
     {
-        if (key == null || key.Length < _keyBytes)
+        if (key.Length < _keyBytes)
             throw new ArgumentOutOfRangeException(nameof(key), "Invalid key length");
 
         var iv = new byte[16];

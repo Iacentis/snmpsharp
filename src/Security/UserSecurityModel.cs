@@ -291,28 +291,19 @@ public class UserSecurityModel : AsnType, ICloneable
     public override int encode(Span<byte> buffer)
     {
         EnsureAuthParameters();
-
-        Span<byte> tmp = stackalloc byte[MemberByteLength];
-        var written = 0;
+        var mbl = MemberByteLength;
+        var written = BuildHeader(buffer, OCTETSTRING, mbl + HeaderSize(mbl));
+        written += BuildHeader(buffer[written..], SnmpConstants.SMI_SEQUENCE, mbl);
         // First encode all the values that will form the sequence
-        written += EngineId.encode(tmp);
+        written += EngineId.encode(buffer[written..]);
         // Encode engine boots
-        written += _engineBoots.encode(tmp[written..]);
+        written += _engineBoots.encode(buffer[written..]);
         // encode engine time
-        written += _engineTime.encode(tmp[written..]);
-        written += _securityName.encode(tmp[written..]);
-        written += AuthenticationParameters.encode(tmp[written..]);
-        written += _privacyParameters.encode(tmp[written..]);
-
-        Span<byte> tmp1 = stackalloc byte[HeaderSize(tmp.Length) + written];
-
-        var slice = BuildHeader(tmp1, SnmpConstants.SMI_SEQUENCE, tmp.Length);
-        tmp.CopyTo(tmp1[slice..]);
-        tmp1 = tmp1[..(slice + tmp.Length)];
-
-        slice = BuildHeader(buffer, OCTETSTRING, tmp1.Length);
-        tmp1.CopyTo(buffer[slice..]);
-        return slice + tmp1.Length;
+        written += _engineTime.encode(buffer[written..]);
+        written += _securityName.encode(buffer[written..]);
+        written += AuthenticationParameters.encode(buffer[written..]);
+        written += _privacyParameters.encode(buffer[written..]);
+        return written;
     }
 
     private void EnsureAuthParameters()
@@ -322,14 +313,14 @@ public class UserSecurityModel : AsnType, ICloneable
             switch (AuthenticationParameters.Length)
             {
                 case <= 0:
-                {
-                    // If authentication is used, set authentication parameters field to 0x00 with the authentification length of the auth protocol.
-                    var size = 12;
-                    var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
-                    if (authProto != null) size = authProto.AuthentificationHeaderLength;
-                    AuthenticationParameters.Set(new byte[size]);
-                    break;
-                }
+                    {
+                        // If authentication is used, set authentication parameters field to 0x00 with the authentification length of the auth protocol.
+                        var size = 12;
+                        var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
+                        if (authProto != null) size = authProto.AuthentificationHeaderLength;
+                        AuthenticationParameters.Set(new byte[size]);
+                        break;
+                    }
             }
         }
         else
@@ -342,26 +333,26 @@ public class UserSecurityModel : AsnType, ICloneable
             switch (_privacyParameters.Length)
             {
                 case <= 0:
-                {
-                    var privProto = PrivacyProtocol.GetInstance(_privacy);
-                    if (privProto != null)
                     {
-                        var parameter = new byte[privProto.PrivacyParametersLength];
-                        for (var i = 0;
-                             i < privProto.PrivacyParametersLength;
-                             i++)
-                            parameter[i] =
-                                0x00; // This is not necessary since all array members are, by default, initialized to 0
-                        _privacyParameters.Set(parameter);
-                    }
-                    else
-                    {
-                        throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
-                            "Unrecognized privacy protocol specified.");
-                    }
+                        var privProto = PrivacyProtocol.GetInstance(_privacy);
+                        if (privProto != null)
+                        {
+                            var parameter = new byte[privProto.PrivacyParametersLength];
+                            for (var i = 0;
+                                 i < privProto.PrivacyParametersLength;
+                                 i++)
+                                parameter[i] =
+                                    0x00; // This is not necessary since all array members are, by default, initialized to 0
+                            _privacyParameters.Set(parameter);
+                        }
+                        else
+                        {
+                            throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
+                                "Unrecognized privacy protocol specified.");
+                        }
 
-                    break;
-                }
+                        break;
+                    }
             }
         }
         else
@@ -419,13 +410,13 @@ public class UserSecurityModel : AsnType, ICloneable
         switch (AuthenticationParameters.Length)
         {
             case > 0:
-            {
-                // walk through and set the authentication parameters to 0x00 in the packet
+                {
+                    // walk through and set the authentication parameters to 0x00 in the packet
 
-                saveOffset += 2; // Skip BER encoded variable type and length
-                for (var i = 0; i < AuthenticationParameters.Length; i++) buffer[saveOffset + i] = 0x00;
-                break;
-            }
+                    saveOffset += 2; // Skip BER encoded variable type and length
+                    for (var i = 0; i < AuthenticationParameters.Length; i++) buffer[saveOffset + i] = 0x00;
+                    break;
+                }
         }
 
         offset = _privacyParameters.decode(buffer, offset);
