@@ -312,7 +312,7 @@ public class PrivacyDES : IPrivacyProtocol
     /// <exception cref="SnmpPrivacyException">Thrown when privacy password is less then 16 bytes long</exception>
     private byte[] GetKey(ReadOnlySpan<byte> privacyPassword)
     {
-        if (privacyPassword == null || privacyPassword.Length < 16)
+        if (privacyPassword.Length < 16)
             throw new SnmpPrivacyException("Invalid privacy key length.");
         var key = new byte[8];
         privacyPassword[..8].CopyTo(key);
