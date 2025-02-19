@@ -155,23 +155,21 @@ public class TrapPdu : AsnType, ICloneable
 
     public override int encode(Span<byte> buffer)
     {
-        Span<byte> trapBuffer = stackalloc byte[MemberByteLength()];
+        var mbl = MemberByteLength();
+        var written = BuildHeader(buffer, (byte)PduType.Trap, mbl);
         // encode the enterprise id & address
-        var written = _enterprise.encode(trapBuffer);
+        written += _enterprise.encode(buffer[written..]);
 
-        written += _agentAddr.encode(trapBuffer);
+        written += _agentAddr.encode(buffer[written..]);
 
-        written += _generic.encode(trapBuffer);
+        written += _generic.encode(buffer[written..]);
 
-        written += _specific.encode(trapBuffer);
+        written += _specific.encode(buffer[written..]);
 
-        written += _timeStamp.encode(trapBuffer);
+        written += _timeStamp.encode(buffer[written..]);
 
-        written += _variables.encode(trapBuffer);
-
-        var slice = BuildHeader(buffer, (byte)PduType.Trap, written);
-        trapBuffer[..written].CopyTo(buffer[slice..]);
-        return written + slice;
+        written += _variables.encode(buffer[written..]);
+        return written;
     }
 
     public override int ByteLength
@@ -186,7 +184,8 @@ public class TrapPdu : AsnType, ICloneable
 
     private int MemberByteLength()
     {
-        return _enterprise.ByteLength + _agentAddr.ByteLength + _generic.ByteLength + _specific.ByteLength +
+        return _enterprise.ByteLength +
+        _agentAddr.ByteLength + _generic.ByteLength + _specific.ByteLength +
                _timeStamp.ByteLength + _variables.ByteLength;
     }
 
