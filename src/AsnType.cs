@@ -149,40 +149,7 @@ public abstract class AsnType : ICloneable
     /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
     internal static int BuildLength(Span<byte> mb, int asnLength)
     {
-        switch (asnLength)
-        {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
-        }
-
-        Span<byte> len = stackalloc byte[sizeof(int)];
-        BitConverter.TryWriteBytes(len, asnLength);
-        Span<byte> buf = stackalloc byte[sizeof(int)];
-        var length = 0;
-        for (var i = 3; i >= 0; i--)
-            if (len[i] != 0 || length > 0)
-                buf[length++] = len[i];
-        var cut = buf[..length];
-        if (length == 0)
-        {
-            cut = buf[..1];
-            cut[0] = 0;
-            length = 1;
-        }
-
-        // check for short form encoding
-        if (length == 1 && (cut[0] & HIGH_BIT) == 0)
-        {
-            mb[0] = cut[0]; // done
-            return 1;
-        }
-
-        // long form encoding
-        var encHeader = (byte)length;
-        encHeader = (byte)(encHeader | HIGH_BIT);
-        mb[0] = encHeader;
-        cut.CopyTo(mb[1..]);
-        return cut.Length + 1;
+        return new SnmpLength(asnLength).CopyTo(mb);
     }
 
     /// <summary>
