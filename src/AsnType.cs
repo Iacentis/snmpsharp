@@ -199,27 +199,10 @@ public abstract class AsnType : ICloneable
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
     internal static int ParseLength(Span<byte> mb, ref int offset)
     {
-        if (offset == mb.Length)
-            throw new OverflowException("Buffer is too short.");
-        int dataLen;
-        if ((mb[offset] & HIGH_BIT) == 0)
-        {
-            // short form encoding
-            dataLen = mb[offset++];
-            return dataLen; // we are done
-        }
-
-        dataLen = mb[offset++] & ~HIGH_BIT; // store byte length of the encoded length value
-        var value = 0;
-        for (var i = 0; i < dataLen; i++)
-        {
-            value <<= 8;
-            value |= mb[offset++];
-            if (offset > mb.Length || (i < dataLen - 1 && offset == mb.Length))
-                throw new OverflowException("Buffer is too short.");
-        }
-
-        return value;
+        var span = mb[offset..];
+        var length = new SnmpLength(span);
+        offset += length.ByteLength;
+        return length;
     }
 
     /// <summary>
@@ -241,8 +224,7 @@ public abstract class AsnType : ICloneable
 
     public static int BuildHeader(Span<byte> mb, byte asnType, int asnLength)
     {
-        mb[0] = asnType;
-        return BuildLength(mb[1..], asnLength) + 1;
+        return new SnmpHeader(asnType, asnLength).CopyTo(mb);
     }
 
     public const int MaxHeaderSize = 2 + sizeof(int);
@@ -273,18 +255,9 @@ public abstract class AsnType : ICloneable
     /// <exception cref="SnmpException">Thrown when invalid type is encountered in the header</exception>
     internal static byte ParseHeader(Span<byte> buffer, ref int offset, out int length)
     {
-        switch (buffer.Length - offset)
-        {
-            case < 1:
-                throw new OverflowException("Buffer is too short.");
-        }
-
-        // ASN.1 type
-        var asnType = buffer[offset++];
-        if ((asnType & EXTENSION_ID) == EXTENSION_ID) throw new SnmpException("Invalid SNMP header type");
-
-        // length
-        length = ParseLength(buffer, ref offset);
-        return asnType;
+        var header = new SnmpHeader(buffer[offset..]);
+        length = header.Length;
+        offset += header.ByteLength;
+        return header.AsnType;
     }
 }
