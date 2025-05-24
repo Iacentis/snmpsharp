@@ -79,6 +79,11 @@ public class SnmpV1TrapPacket : SnmpPacket
         _snmpCommunity.Set(snmpCommunity);
     }
 
+    public SnmpV1TrapPacket(ReadOnlySpan<byte> encodedForm) : this()
+    {
+        Decode(encodedForm);
+    }
+
     /// <summary>
     ///     Access to the packet <see cref="TrapPdu" />.
     /// </summary>
@@ -101,7 +106,7 @@ public class SnmpV1TrapPacket : SnmpPacket
     /// </summary>
     /// <param name="buffer">Packet buffer</param>
     /// <param name="length">Buffer length</param>
-    public override int Decode(ReadOnlySpan<byte> buffer)
+    public sealed override int Decode(ReadOnlySpan<byte> buffer)
     {
         var offset = base.Decode(buffer);
 

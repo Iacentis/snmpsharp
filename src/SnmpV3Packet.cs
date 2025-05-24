@@ -123,7 +123,7 @@ public class SnmpV3Packet : SnmpPacket
     public SnmpV3Packet()
         : base(SnmpVersion.Ver3)
     {
-        _messageId = new Integer32();
+        _messageId = new Integer32(Random.Shared.Next(1, int.MaxValue));
         _maxMessageSize = new Integer32(64 * 1024);
         MsgFlags = new MsgFlags
         {
@@ -143,11 +143,13 @@ public class SnmpV3Packet : SnmpPacket
     ///     since it is not cloned but assigned to the internal variable.
     /// </remarks>
     /// <param name="pdu"><see cref="ScopedPdu" /> class assigned to the class</param>
-    public SnmpV3Packet(ScopedPdu? pdu)
+    /// <param name="parameters"></param>
+    public SnmpV3Packet(ScopedPdu? pdu, SecureAgentParameters? parameters = null)
         : this()
     {
         if (pdu != null)
             ScopedPdu = pdu;
+        parameters?.InitializePacket(this);
     }
 
     /// <summary>
@@ -176,6 +178,22 @@ public class SnmpV3Packet : SnmpPacket
     {
         if (pdu != null)
             ScopedPdu = pdu;
+    }
+
+    public SnmpV3Packet(ReadOnlySpan<byte> encodedForm, ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> privKey) : this()
+    {
+        Decode(encodedForm, authKey, privKey);
+    }
+
+    public SnmpV3Packet(ReadOnlySpan<byte> encodedForm) : this(encodedForm, ReadOnlySpan<byte>.Empty,
+        ReadOnlySpan<byte>.Empty)
+    {
+    }
+
+    public SnmpV3Packet(ReadOnlySpan<byte> encodedForm, SecureAgentParameters parameters) : this()
+    {
+        parameters.InitializePacket(this);
+        Decode(encodedForm);
     }
 
     /// <summary>
@@ -448,7 +466,7 @@ public class SnmpV3Packet : SnmpPacket
     /// </summary>
     /// <param name="berBuffer">BER encoded SNMP version 3 packet buffer</param>
     /// <param name="length">Buffer length</param>
-    public override int Decode(ReadOnlySpan<byte> berBuffer)
+    public sealed override int Decode(ReadOnlySpan<byte> berBuffer)
     {
         var pkey = GetPrivateAndAuthenticationKeys(out var akey);
 
@@ -493,11 +511,10 @@ public class SnmpV3Packet : SnmpPacket
     /// <param name="buffer">BER encoded SNMP version 3 packet buffer</param>
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="privKey">Privacy key (not password)</param>
-    public int Decode(ReadOnlySpan<byte> buffer, Span<byte> authKey, Span<byte> privKey)
+    public int Decode(ReadOnlySpan<byte> buffer, ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> privKey)
     {
-        var offset =
-            // let base class parse first sequence and SNMP version number
-            base.Decode(buffer);
+        // let base class parse first sequence and SNMP version number
+        var offset = base.Decode(buffer);
 
         // check for correct SNMP protocol version
         if (_protocolVersion != (int)SnmpVersion.Ver3)
@@ -613,7 +630,7 @@ public class SnmpV3Packet : SnmpPacket
     public override int Encode(Span<byte> target)
     {
         var pkey = GetPrivateAndAuthenticationKeys(out var akey);
-        return Encode(target, pkey, akey);
+        return Encode(target, akey ?? [], pkey ?? []);
     }
 
     public override int ByteLength => HeaderLength + ScopedPduLength + UsmLength +
@@ -653,14 +670,8 @@ public class SnmpV3Packet : SnmpPacket
     /// <returns>Byte array BER encoded SNMP packet.</returns>
     public byte[] Encode(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> privKey)
     {
-        if (_messageId.Value == 0)
-        {
-            var rand = Random.Shared;
-            _messageId.Value = rand.Next(1, int.MaxValue);
-        }
-
         _securityModel.Value = USM.Type;
-        
+
         Span<byte> result = stackalloc byte[ByteLength];
         var written = Encode(result, authKey, privKey);
         return result[..written].ToArray();
@@ -682,13 +693,6 @@ public class SnmpV3Packet : SnmpPacket
     {
         // encode the global message data sequence header information
         // if message id is 0 then generate a new, random message id
-        if (_messageId.Value == 0)
-        {
-            var rand = Random.Shared;
-            _messageId.Value = rand.Next(1, int.MaxValue);
-        }
-
-
         _securityModel.Value = USM.Type;
 
         EncodeGlobalData(buffer);

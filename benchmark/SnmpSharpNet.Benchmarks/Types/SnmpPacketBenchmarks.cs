@@ -6,17 +6,15 @@ namespace SnmpSharpNet.Tests;
 public class SnmpPacketBenchmarks
 {
     private SnmpV1Packet _1Initial = new();
-    private SnmpV1Packet _1New = new();
     private byte[] _1Bytes = [];
     private SnmpV2Packet _2Initial = new();
-    private SnmpV2Packet _2New = new();
     private byte[] _2Bytes = [];
     private SnmpV3Packet _3Initial = new();
-    private SnmpV3Packet _3New = new();
     private byte[] _3Bytes = [];
+    private SecureAgentParameters _parameters = null!;
 
-    [Params(false)] public bool Private { get; set; }
-    [Params(false)] public bool Auth { get; set; }
+    private bool Private => Protocol != PrivacyProtocols.None;
+    private bool Auth => Digest != AuthenticationDigests.None;
 
     [Params(AuthenticationDigests.None)] public AuthenticationDigests Digest { get; set; }
 
@@ -48,7 +46,6 @@ public class SnmpPacketBenchmarks
         packet.Pdu.ErrorStatus = a - b + c;
         _1Initial = packet;
         _1Bytes = packet.Encode();
-        _1New = new SnmpV1Packet();
     }
 
     private void SetupV2()
@@ -69,25 +66,20 @@ public class SnmpPacketBenchmarks
         packet.Pdu.ErrorStatus = a - b + c;
         _2Initial = packet;
         _2Bytes = packet.Encode();
-        _2New = new SnmpV2Packet();
     }
 
     private void SetupV3()
     {
         var pdu = new ScopedPdu(PduType.GetNext, 123);
-        var parameters = new SecureAgentParameters();
-        parameters.EngineId.Set($"{123}");
-        parameters.EngineTime.Set($"{234}");
-        parameters.EngineBoots.Set($"{457}");
-
-        var packet = new SnmpV3Packet(parameters, pdu);
+        _parameters = new SecureAgentParameters();
+        SetAuth(Private, Auth, _parameters, Digest, Protocol);
+        var packet = new SnmpV3Packet(_parameters, pdu);
         VbCollection vbs =
         [
             new Vb(new Oid("1.3.2"), new Integer32(123)),
             new Vb(new Oid("1.3.3"), new Integer32(234)),
             new Vb(new Oid("1.3.4"), new Integer32(345))
         ];
-        SetAuth(Private, Auth, packet, Digest, Protocol);
 
         packet.Pdu.SetVbList(vbs);
         packet.Pdu.RequestId = 123;
@@ -95,37 +87,6 @@ public class SnmpPacketBenchmarks
         packet.Pdu.ErrorStatus = 6879;
         _3Initial = packet;
         _3Bytes = packet.Encode();
-        _3New = new SnmpV3Packet();
-        SetAuth(Private, Auth, _3New, Digest, Protocol);
-    }
-
-    private void SetAuth(bool @private, bool auth, SnmpV3Packet packet, AuthenticationDigests digests,
-        PrivacyProtocols protocols)
-    {
-        @private &= protocols != PrivacyProtocols.None;
-        auth &= digests != AuthenticationDigests.None;
-        var username = "admin"u8.ToArray();
-        var authenticationPassword = "someFakePassword"u8.ToArray();
-        var privacyPassword = "someFakePassword"u8.ToArray();
-        var engineId = "TheEngineID"u8.ToArray();
-
-        switch (auth)
-        {
-            case true when @private:
-                packet.authPriv(username, authenticationPassword, digests, privacyPassword,
-                    protocols);
-                break;
-            case true:
-                packet.authNoPriv(username, authenticationPassword, digests);
-                break;
-            default:
-                packet.NoAuthNoPriv(username);
-                break;
-        }
-
-        packet.IsReportable = true;
-        packet.SetEngineTime(123, 234);
-        packet.SetEngineId(engineId);
     }
 
     private void SetAuth(bool @private, bool auth, SecureAgentParameters parameters, AuthenticationDigests digests,
@@ -157,41 +118,41 @@ public class SnmpPacketBenchmarks
     }
 
     [Benchmark]
-    public byte[] EncodeV1()
+    public int EncodeV1()
     {
-        return _1Initial.Encode();
+        Span<byte> bytes = stackalloc byte[_1Initial.ByteLength];
+        return _1Initial.Encode(bytes);
     }
 
     [Benchmark]
     public SnmpV1Packet DecodeV1()
     {
-        _1New.Decode(_1Bytes);
-        return _1New;
+        return new SnmpV1Packet(_1Bytes);
     }
 
     [Benchmark]
-    public byte[] EncodeV2()
+    public int EncodeV2()
     {
-        return _2Initial.Encode();
+        Span<byte> bytes = stackalloc byte[_2Initial.ByteLength];
+        return _2Initial.Encode(bytes);
     }
 
     [Benchmark]
     public SnmpV2Packet DecodeV2()
     {
-        _2New.Decode(_2Bytes);
-        return _2New;
+        return new SnmpV2Packet(_2Bytes);
     }
 
     [Benchmark]
-    public byte[] EncodeV3()
+    public int EncodeV3()
     {
-        return _3Initial.Encode();
+        Span<byte> bytes = stackalloc byte[_3Initial.ByteLength];
+        return _3Initial.Encode(bytes);
     }
 
     [Benchmark]
     public SnmpV3Packet DecodeV3()
     {
-        _3New.Decode(_3Bytes);
-        return _3New;
+        return new SnmpV3Packet(_3Bytes, _parameters);
     }
 }

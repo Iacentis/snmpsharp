@@ -100,6 +100,11 @@ public class SnmpV1Packet : SnmpPacket
         _snmpCommunity.Set(snmpCommunity);
     }
 
+    public SnmpV1Packet(ReadOnlySpan<byte> encodedForm) : this()
+    {
+        Decode(encodedForm);
+    }
+
     /// <summary>
     ///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
     /// </summary>
@@ -120,7 +125,7 @@ public class SnmpV1Packet : SnmpPacket
     /// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
     /// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
     /// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
-    public override int Decode(ReadOnlySpan<byte> buffer)
+    public sealed override int Decode(ReadOnlySpan<byte> buffer)
     {
         var offset = base.Decode(buffer);
 

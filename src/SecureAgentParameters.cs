@@ -164,55 +164,42 @@ public class SecureAgentParameters : IAgentParameters
     /// <exception cref="SnmpInvalidVersionException">Thrown when parameter packet is not SnmpV3Packet</exception>
     public void InitializePacket(SnmpPacket packet)
     {
-        switch (packet)
+        if (packet is SnmpV3Packet pkt)
         {
-            case SnmpV3Packet pkt:
+            var isAuth = _authenticationProtocol != AuthenticationDigests.None;
+            var isPriv = _privacyProtocol != PrivacyProtocols.None;
+            switch (isAuth)
             {
-                var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
-                var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
-                switch (isAuth)
-                {
-                    case true when isPriv:
-                        pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
-                            _privacyProtocol);
-                        break;
-                    case true when !isPriv:
-                        pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
-                        break;
-                    default:
-                        pkt.NoAuthNoPriv(_securityName);
-                        break;
-                }
-
-                pkt.USM.EngineId.Set(_engineId);
-                pkt.USM.EngineBoots = _engineBoots.Value;
-                pkt.USM.EngineTime = GetCurrentEngineTime();
-                pkt.MaxMessageSize = _maxMessageSize.Value;
-                pkt.MsgFlags.Reportable = _reportable;
-                switch (_contextEngineId.Length)
-                {
-                    case > 0:
-                        pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
-                        break;
-                    default:
-                        pkt.ScopedPdu.ContextEngineId.Set(_engineId);
-                        break;
-                }
-
-                switch (_contextName.Length)
-                {
-                    case > 0:
-                        pkt.ScopedPdu.ContextName.Set(_contextName);
-                        break;
-                    default:
-                        pkt.ScopedPdu.ContextName.Reset();
-                        break;
-                }
-
-                break;
+                case true when isPriv:
+                    pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
+                        _privacyProtocol);
+                    break;
+                case true when !isPriv:
+                    pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
+                    break;
+                default:
+                    pkt.NoAuthNoPriv(_securityName);
+                    break;
             }
-            default:
-                throw new SnmpInvalidVersionException("Invalid SNMP version.");
+
+            pkt.USM.EngineId.Set(_engineId);
+            pkt.USM.EngineBoots = _engineBoots.Value;
+            pkt.USM.EngineTime = GetCurrentEngineTime();
+            pkt.MaxMessageSize = _maxMessageSize.Value;
+            pkt.MsgFlags.Reportable = _reportable;
+            if (_contextEngineId.Length > 0)
+                pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
+            else
+                pkt.ScopedPdu.ContextEngineId.Set(_engineId);
+
+            if (_contextName.Length > 0)
+                pkt.ScopedPdu.ContextName.Set(_contextName);
+            else
+                pkt.ScopedPdu.ContextName.Reset();
+        }
+        else
+        {
+            throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
