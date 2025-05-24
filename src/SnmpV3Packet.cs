@@ -2,7 +2,7 @@
 // 
 // SNMP#NET is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
+// the Free Software Foundation, either version 3 of the License or
 // (at your option) any later version.
 // 
 // SNMP#NET is distributed in the hope that it will be useful,
@@ -50,7 +50,7 @@ namespace SnmpSharpNet;
 ///     returned by the decode method. While using SnmpV3Packet class for full packet handling is possible, transport
 ///     specific class <see cref="UdpTarget" /> uses <see cref="SecureAgentParameters" /> class to store protocol
 ///     version 3 specific information that carries over from request to request when used on the same SNMP agent
-///     and therefore simplifies both initial definition of agents configuration (mostly security) as well as
+///     and therefore simplifies both initial definition of agents configuration (mostly security) and
 ///     removes the need for repeated initialization of the packet class for subsequent requests.
 ///     If you decide not to use transport helper class(es) like <see cref="UdpTarget" />, BER encoding and
 ///     decoding and packets is easily done with SnmpPacket derived classes.
@@ -84,8 +84,7 @@ namespace SnmpSharpNet;
 ///     Example, SNMP version 3 authPriv using MD5 authentication and DES encryption packet encoding:
 ///     <code>
 ///  SnmpV3Packet packetv3 = new SnmpV3Packet();
-///  packetv3.authPriv("myusername", "myAuthenticationPassword", AuthenticationDigests.MD5,
-/// 		"myPrivacyPassword", PrivacyProtocols.DES);
+///  packetv3.authPriv("myusername", "myAuthenticationPassword", AuthenticationDigests.MD5, "myPrivacyPassword", PrivacyProtocols.DES);
 ///  packetv3.SetEngineTime(engineTime, engineBoots); // See SNMPv3 discovery process for details
 ///  packetv3.SetEngineId(engineId); // See SNMPv3 discovery process for details
 ///  packetv3.IsReportable = true;
@@ -93,7 +92,7 @@ namespace SnmpSharpNet;
 ///  byte[] berpacket = packetv3.encode();
 ///  </code>
 ///     When decoding SNMP version 3 packets, SnmpV3Packet class needs to be initialized with the same values
-///     security values as a request does. This includes, authoritative engine id, engine boots and engine time,
+///     security values as a request does. This includes authoritative engine id, engine boots and engine time,
 ///     if authentication is used, authentication digest and password and for encryption, password and privacy
 ///     protocol used. Without these parameters packet class will not be able to verify the incoming packet and
 ///     responses will be discarded even if they are valid.
@@ -101,8 +100,8 @@ namespace SnmpSharpNet;
 public class SnmpV3Packet : SnmpPacket
 {
     /// <summary>
-    ///     Maximum message size. In the discovery packet, set it to the maximum acceptable size = 64KB. Agent will
-    ///     return the maximum value it is ready to handle so you should stick with that value in all following
+    ///     Maximum message size. In the discovery packet, set it to the maximum acceptable size = 64KB. The Agent will
+    ///     return the maximum value it is ready to handle, so you should stick with that value in all following
     ///     requests.
     /// </summary>
     private readonly Integer32 _maxMessageSize;
@@ -113,9 +112,9 @@ public class SnmpV3Packet : SnmpPacket
     private readonly Integer32 _messageId;
 
     /// <summary>
-    ///     Security model code. Only supported security model is UserSecurityModel (integer value 3)
+    ///     Security model code. The only supported security model is UserSecurityModel (integer value 3)
     /// </summary>
-    protected readonly Integer32 _securityModel;
+    private readonly Integer32 _securityModel;
 
     /// <summary>
     ///     Standard constructor.
@@ -206,7 +205,7 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Get maximum message size to be sent to the agent in the request.
+    ///     Get the maximum message size to be sent to the agent in the request.
     /// </summary>
     public int MaxMessageSize
     {
@@ -253,7 +252,7 @@ public class SnmpV3Packet : SnmpPacket
     public ScopedPdu ScopedPdu { get; }
 
     /// <summary>
-    ///     Get or set SNMP version 3 packet Reportable flag in the message flags section. By default this value is set to
+    ///     Get or set SNMP version 3 packet-Reportable flag in the message flags section. By default, this value is set to
     ///     true.
     /// </summary>
     public bool IsReportable
@@ -266,9 +265,8 @@ public class SnmpV3Packet : SnmpPacket
     ///     Packet is a discovery request
     /// </summary>
     /// <remarks>
-    ///     Class checks if Engine id, engine boots and engine time values are set to default values (null, 0 and 0). If they
-    ///     are
-    ///     packet is probably a discovery packet, otherwise it is not an false is returned
+    ///     Class checks if Engine id, engine boots, and engine time values are set to default values (null, 0 and 0). If they are
+    ///     then the packet is probably a discovery packet, otherwise it is not and false is returned
     /// </remarks>
     public bool IsDiscoveryPacket =>
         USM.EngineId.Length switch
@@ -278,7 +276,7 @@ public class SnmpV3Packet : SnmpPacket
         };
 
     /// <summary>
-    ///     Set class security to no authentication and no privacy. User name is set to "initial" (suitable for
+    ///     Set class security to no authentication and no privacy. The Username is set to "initial" (suitable for
     ///     SNMP version 3 discovery process). Change username before using if discovery is not being performed.
     /// </summary>
     public void NoAuthNoPriv()
@@ -289,7 +287,7 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Set class security to no authentication and no privacy with the specific user name.
+    ///     Set class security to no authentication and no privacy with the specific username.
     /// </summary>
     /// <param name="userName">User name</param>
     public void NoAuthNoPriv(byte[] userName)
@@ -300,11 +298,11 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Set class security to enabled authentication and no privacy. To perform authentication,
+    ///     Set class security to enable authentication and no privacy. To perform authentication,
     ///     authentication password needs to be supplied and authentication protocol to be used
     ///     to perform authentication.
-    ///     This method does not initialize the packet user name. Use SNMPV3Packet.SecurityName
-    ///     method to set the security name (also called user name) for this request.
+    ///     This method does not initialize the packet username. Use SNMPV3Packet.SecurityName
+    ///     method to set the security name (also called username) for this request.
     /// </summary>
     /// <param name="userName">User name</param>
     /// <param name="authenticationPassword">
@@ -316,9 +314,9 @@ public class SnmpV3Packet : SnmpPacket
     ///     <see cref="AuthenticationDigests.MD5" /> for HMAC-MD5 authentication, and <see cref="AuthenticationDigests.SHA1" />
     ///     for HMAC-SHA1 message authentication.
     /// </param>
-    public void authNoPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol)
+    public void AuthNoPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol)
     {
-        NoAuthNoPriv(userName); // reset authentication and privacy values and set user name
+        NoAuthNoPriv(userName); // reset authentication and privacy values and set username
         MsgFlags.Authentication = true;
         USM.Authentication = authenticationProtocol;
         USM.AuthenticationSecret = authenticationPassword;
@@ -336,10 +334,10 @@ public class SnmpV3Packet : SnmpPacket
     /// </param>
     /// <param name="privacyPassword">Privacy protection password.</param>
     /// <param name="privacyProtocol">Privacy protocol. See definitions in <see cref="PrivacyProtocols" /> enumeration.</param>
-    public void authPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol,
+    public void AuthPriv(byte[] userName, byte[] authenticationPassword, AuthenticationDigests authenticationProtocol,
         byte[] privacyPassword, PrivacyProtocols privacyProtocol)
     {
-        NoAuthNoPriv(userName); // reset authentication and privacy values and set user name
+        NoAuthNoPriv(userName); // reset authentication and privacy values and set username
         MsgFlags.Authentication = true;
         USM.AuthenticationSecret = authenticationPassword;
         USM.Authentication = authenticationProtocol;
@@ -374,7 +372,7 @@ public class SnmpV3Packet : SnmpPacket
     ///     "Look-ahead" decode of SNMP packet header including USM information
     /// </summary>
     /// <remarks>
-    ///     Decode first component of the SNMP version 3 packet allowing the caller to retrieve USM SecureName needed to
+    ///     Decode the first component of the SNMP version 3 packet allowing the caller to retrieve USM SecureName needed to
     ///     retrieve
     ///     client security parameters that will allow authentication and privacy decryption to take place.
     ///     This method is used to support Agent like behavior or to handle unsolicited packets like TRAP and INFORMs. In all
@@ -394,26 +392,26 @@ public class SnmpV3Packet : SnmpPacket
     ///     received.
     /// </exception>
     /// <exception cref="SnmpDecodingException">
-    ///     Thrown when invalid sequence is enountered while decoding global message data
+    ///     Thrown when an invalid sequence is encountered while decoding global message data
     ///     sequence
     /// </exception>
     /// <exception cref="SnmpException">
-    ///     Thrown with SnmpException.UnsupportedNoAuthPriv when packet is using privacy without
+    ///     Thrown with SnmpException.UnsupportedNoAuthPriv when a packet is using privacy without
     ///     authentication (not allowed)
     /// </exception>
     /// <exception cref="SnmpException">
-    ///     Thrown with SnmpException.UnsupportedSecurityModel when packet is sent with security
-    ///     model other then USM (only USM is defined in SNMPv3 standard)
+    ///     Thrown with SnmpException.UnsupportedSecurityModel when a packet is sent with security
+    ///     model other than USM (only USM is defined in SNMPv3 standard)
     /// </exception>
     public UserSecurityModel GetUSM(byte[] berBuffer, int length)
     {
         var buffer = berBuffer.AsSpan(0, length);
 
         var offset =
-            // let base class parse first sequence and SNMP version number
+            // let base class parse the first sequence and SNMP version number
             base.Decode(buffer);
 
-        // check for correct SNMP protocol version
+        // check for a correct SNMP protocol version
         if (_protocolVersion != (int)SnmpVersion.Ver3)
             throw new SnmpInvalidVersionException("Expecting SNMP version 3.");
 
@@ -465,7 +463,6 @@ public class SnmpV3Packet : SnmpPacket
     ///     reference to the engine time prior to this call.
     /// </summary>
     /// <param name="berBuffer">BER encoded SNMP version 3 packet buffer</param>
-    /// <param name="length">Buffer length</param>
     public sealed override int Decode(ReadOnlySpan<byte> berBuffer)
     {
         var pkey = GetPrivateAndAuthenticationKeys(out var akey);
@@ -473,21 +470,21 @@ public class SnmpV3Packet : SnmpPacket
         return Decode(berBuffer, akey, pkey);
     }
 
-    private byte[]? GetPrivateAndAuthenticationKeys(out byte[]? akey)
+    private byte[]? GetPrivateAndAuthenticationKeys(out byte[]? authenticationKey)
     {
-        byte[]? pkey = null;
-        akey = null;
-        if (!MsgFlags.Authentication || USM.EngineId.Length <= 0)
-            return pkey;
+        byte[]? privacyKey = null;
+        authenticationKey = null;
+        if (!ShouldAuthenticate)
+            return privacyKey;
 
         var auth = Authentication.GetInstance(USM.Authentication);
 
         if (auth == null)
             throw new SnmpException(SnmpException.UnsupportedNoAuthPriv, "Invalid authentication protocol.");
 
-        akey = auth.PasswordToKey(USM.AuthenticationSecret, USM.EngineId.GetData());
+        authenticationKey = auth.PasswordToKey(USM.AuthenticationSecret, USM.EngineId.GetData());
 
-        if (!MsgFlags.Privacy || USM.EngineId.Length <= 0) return pkey;
+        if (!ShouldEncrypt) return privacyKey;
 
         var privacyProtocol = PrivacyProtocol.GetInstance(USM.Privacy);
 
@@ -495,11 +492,11 @@ public class SnmpV3Packet : SnmpPacket
             throw new SnmpException(SnmpException.UnsupportedPrivacyProtocol,
                 "Specified privacy protocol is not supported.");
 
-        pkey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
+        privacyKey = privacyProtocol.PasswordToKey(USM.PrivacySecret,
             USM.EngineId.GetData(),
             auth);
 
-        return pkey;
+        return privacyKey;
     }
 
     /// <summary>
@@ -509,14 +506,14 @@ public class SnmpV3Packet : SnmpPacket
     ///     reference to the engine time prior to this call.
     /// </summary>
     /// <param name="buffer">BER encoded SNMP version 3 packet buffer</param>
-    /// <param name="authKey">Authentication key (not password)</param>
-    /// <param name="privKey">Privacy key (not password)</param>
-    public int Decode(ReadOnlySpan<byte> buffer, ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> privKey)
+    /// <param name="authenticationKey">Authentication key (not password)</param>
+    /// <param name="privacyKey">Privacy key (not password)</param>
+    public int Decode(ReadOnlySpan<byte> buffer, ReadOnlySpan<byte> authenticationKey, ReadOnlySpan<byte> privacyKey)
     {
-        // let base class parse first sequence and SNMP version number
+        // let base class parse the first sequence and SNMP version number
         var offset = base.Decode(buffer);
 
-        // check for correct SNMP protocol version
+        // check for a correct SNMP protocol version
         if (_protocolVersion != (int)SnmpVersion.Ver3)
             throw new SnmpInvalidVersionException("Expecting SNMP version 3.");
 
@@ -554,7 +551,7 @@ public class SnmpV3Packet : SnmpPacket
         // parse user security model
         offset = USM.Decode(buffer, offset);
 
-        // Authenticate message if authentication flag is set and packet is not a discovery packet
+        // Authenticate message if the authentication flag is set and packet is not a discovery packet
         if (MsgFlags.Authentication && USM.EngineId.Length > 0)
         {
             // Authenticate packet
@@ -572,7 +569,7 @@ public class SnmpV3Packet : SnmpPacket
                 bufferWithoutAuthParams[i] = 0x00;
             }
 
-            if (!USM.IsAuthentic(authKey, bufferWithoutAuthParams))
+            if (!USM.IsAuthentic(authenticationKey, bufferWithoutAuthParams))
                 throw new SnmpAuthenticationException("Authentication of the incoming packet failed.");
         }
 
@@ -597,7 +594,7 @@ public class SnmpV3Packet : SnmpPacket
                 encryptedScopedPdu.GetData(),
                 0,
                 encryptedScopedPdu.Length,
-                privKey,
+                privacyKey,
                 USM.EngineBoots, USM.EngineTime,
                 USM.PrivacyParameters.GetData());
             var tempOffset = 0;
@@ -615,22 +612,22 @@ public class SnmpV3Packet : SnmpPacket
     ///     Encode SNMP version 3 packet
     /// </summary>
     /// <remarks>
-    ///     Before encoding the packet into a byte array you need to ensure all required information is
-    ///     set. Examples of required information is request type, Vbs (Oid + values pairs), USM settings including
+    ///     Before encoding the packet into a byte array, you need to ensure all required information is
+    ///     set. Examples of required information are request type, Vbs (Oid + values pairs), USM settings including
     ///     SecretName, authentication method and secret (if needed), privacy method and secret (if needed), etc.
     /// </remarks>
     /// <returns>Byte array BER encoded SNMP packet.</returns>
     public override byte[] Encode()
     {
-        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
+        var privacyKey = GetPrivateAndAuthenticationKeys(out var authenticationKey);
 
-        return Encode(akey ?? [], pkey ?? []);
+        return Encode(authenticationKey ?? [], privacyKey ?? []);
     }
 
     public override int Encode(Span<byte> target)
     {
-        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
-        return Encode(target, akey ?? [], pkey ?? []);
+        var pkey = GetPrivateAndAuthenticationKeys(out var authenticationKey);
+        return Encode(target, authenticationKey ?? [], pkey ?? []);
     }
 
     public override int ByteLength => HeaderLength + ScopedPduLength + UsmLength +
@@ -657,23 +654,23 @@ public class SnmpV3Packet : SnmpPacket
 
     private bool ShouldEncrypt => MsgFlags.Privacy && USM.EngineId.Length > 0;
 
+    private bool ShouldAuthenticate => MsgFlags.Authentication && USM.EngineId.Length > 0;
+
     /// <summary>
     ///     Encode SNMP version 3 packet
     /// </summary>
-    /// <param name="authKey">Authentication key (not password)</param>
-    /// <param name="privKey">Privacy key (not password)</param>
+    /// <param name="authenticationKey">Authentication key (not password)</param>
+    /// <param name="privacyKey">Privacy key (not password)</param>
     /// <remarks>
-    ///     Before encoding the packet into a byte array you need to ensure all required information is
+    ///     Before encoding the packet into a byte array, you need to ensure all required information is
     ///     set. Examples of required information is request type, Vbs (Oid + values pairs), USM settings including
     ///     SecretName, authentication method and secret (if needed), privacy method and secret (if needed), etc.
     /// </remarks>
     /// <returns>Byte array BER encoded SNMP packet.</returns>
-    public byte[] Encode(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> privKey)
+    public byte[] Encode(ReadOnlySpan<byte> authenticationKey, ReadOnlySpan<byte> privacyKey)
     {
-        _securityModel.Value = USM.Type;
-
         Span<byte> result = stackalloc byte[ByteLength];
-        var written = Encode(result, authKey, privKey);
+        var written = Encode(result, authenticationKey, privacyKey);
         return result[..written].ToArray();
     }
 
@@ -681,11 +678,12 @@ public class SnmpV3Packet : SnmpPacket
     /// <summary>
     ///     Encode SNMP version 3 packet
     /// </summary>
+    /// <param name="buffer">The buffer to write the BER-encoded data to</param>
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="privKey">Privacy key (not password)</param>
     /// <remarks>
-    ///     Before encoding the packet into a byte array you need to ensure all required information is
-    ///     set. Examples of required information is request type, Vbs (Oid + values pairs), USM settings including
+    ///     Before encoding the packet into a byte array, you need to ensure all required information is
+    ///     set. Examples of required information are request type, Vbs (Oid + values pairs), USM settings including
     ///     SecretName, authentication method and secret (if needed), privacy method and secret (if needed), etc.
     /// </remarks>
     /// <returns>Byte array BER encoded SNMP packet.</returns>
@@ -735,8 +733,6 @@ public class SnmpV3Packet : SnmpPacket
 
         return written;
     }
-
-    private bool ShouldAuthenticate => MsgFlags.Authentication && USM.EngineId.Length > 0;
 
     private void EncodeGlobalData(Span<byte> buffer)
     {
@@ -843,7 +839,7 @@ public class SnmpV3Packet : SnmpPacket
     #region Helper methods
 
     /// <summary>
-    ///     Generate authentication key from authentication password and engine id
+    ///     Generate an authentication key from authentication password and engine id
     /// </summary>
     /// <returns>Authentication key on success or null on failure</returns>
     public byte[]? GenerateAuthenticationKey()
@@ -858,7 +854,7 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Generate privacy key from authentication password and engine id
+    ///     Generate a privacy key from authentication password and engine id
     /// </summary>
     /// <returns>Privacy key on success or null on failure</returns>
     public byte[]? GeneratePrivacyKey()
@@ -876,19 +872,19 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Build an SNMP version 3 packet suitable for use in discovery process.
+    ///     Build an SNMP version 3 packet suitable for use in a discovery process.
     /// </summary>
     /// <returns>Discovery process prepared SNMP version 3 packet.</returns>
     public static SnmpV3Packet DiscoveryRequest()
     {
         var packet = new SnmpV3Packet(new ScopedPdu()); // with a blank scoped pdu
-        // looking through other implementation, null (length 0) user name is used
-        // packet.USM.SecurityName.Set("initial"); // set user name to initial, as described in RFCs
+        // looking through other implementation, null (length 0) username is used
+        // packet.USM.SecurityName.Set("initial"); // set username to initial, as described in RFCs
         return packet; // return packet
     }
 
     /// <summary>
-    ///     Build SNMP discovery response packet.
+    ///     Build an SNMP discovery response packet.
     /// </summary>
     /// <remarks>
     ///     Manager application has to be able to respond to discovery requests to be able to handle
@@ -917,7 +913,7 @@ public class SnmpV3Packet : SnmpPacket
             }
         };
         packet.Pdu.VbList.Add(SnmpConstants.usmStatsUnknownEngineIDs, new Integer32(unknownEngineIdCount));
-        // discovery response is a report packet. We don't want to receive reports about a report
+        // Discovery response is a report packet. We don't want to receive reports about a report
         packet.MsgFlags.Reportable = false;
         packet.SetEngineId(engineId);
         packet.MessageId = messageId;
@@ -927,7 +923,7 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Build SNMP RESPONSE packet for the received INFORM packet.
+    ///     Build an SNMP RESPONSE packet for the received INFORM packet.
     /// </summary>
     /// <returns>SNMP version 3 packet containing RESPONSE to the INFORM packet contained in the class instance.</returns>
     public SnmpV3Packet BuildInformResponse()
@@ -936,7 +932,7 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     /// <summary>
-    ///     Build SNMP RESPONSE packet for the INFORM packet class.
+    ///     Build an SNMP RESPONSE packet for the INFORM packet class.
     /// </summary>
     /// <param name="informPacket">SNMP INFORM packet</param>
     /// <returns>SNMP version 3 packet containing RESPONSE to the INFORM packet contained in the parameter.</returns>

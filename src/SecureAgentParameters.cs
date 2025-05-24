@@ -171,11 +171,11 @@ public class SecureAgentParameters : IAgentParameters
             switch (isAuth)
             {
                 case true when isPriv:
-                    pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
+                    pkt.AuthPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
                         _privacyProtocol);
                     break;
                 case true when !isPriv:
-                    pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
+                    pkt.AuthNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
                     break;
                 default:
                     pkt.NoAuthNoPriv(_securityName);

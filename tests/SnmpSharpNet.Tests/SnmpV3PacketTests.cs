@@ -85,11 +85,11 @@ public class SnmpV3PacketTests
         switch (auth)
         {
             case true when @private:
-                packet.authPriv(username, authenticationPassword, digests, privacyPassword,
+                packet.AuthPriv(username, authenticationPassword, digests, privacyPassword,
                     protocols);
                 break;
             case true:
-                packet.authNoPriv(username, authenticationPassword, digests);
+                packet.AuthNoPriv(username, authenticationPassword, digests);
                 break;
             default:
                 packet.NoAuthNoPriv(username);
