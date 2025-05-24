@@ -40,8 +40,8 @@ public class AuthenticationSHA256Tests
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId, authenticate, packet);
         await Assert.That(result).IsTrue();
     }
 
@@ -67,8 +67,8 @@ public class AuthenticationSHA256Tests
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password2, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password2, engineId, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 
@@ -94,8 +94,8 @@ public class AuthenticationSHA256Tests
         var engineId2 = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x02 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId2, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId2, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 }

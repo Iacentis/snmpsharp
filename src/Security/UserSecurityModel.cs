@@ -205,7 +205,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         if (Authentication == AuthenticationDigests.None) return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication)!;
-        var authParam = authProto.authenticate(AuthenticationSecret, EngineId.GetData(), wholePacket);
+        var authParam = authProto.Authenticate(AuthenticationSecret, EngineId.GetData(), wholePacket);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -221,7 +221,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto == null) return;
-        var authParam = authProto.authenticate(authKey, wholePacket);
+        var authParam = authProto.Authenticate(authKey, wholePacket);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -236,7 +236,7 @@ public class UserSecurityModel : AsnType, ICloneable
 
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto != null)
-            return authProto.authenticateIncomingMsg(AuthenticationSecret, EngineId.GetData(),
+            return authProto.AuthenticateIncomingMsg(AuthenticationSecret, EngineId.GetData(),
                 AuthenticationParameters.GetData(),
                 wholePacket);
 
@@ -254,7 +254,7 @@ public class UserSecurityModel : AsnType, ICloneable
         if (Authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         return authProto != null &&
-               authProto.authenticateIncomingMsg(authKey, AuthenticationParameters.GetData(), wholePacket);
+               authProto.AuthenticateIncomingMsg(authKey, AuthenticationParameters.GetData(), wholePacket);
         // Nothing to authenticate
     }
 

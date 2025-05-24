@@ -42,11 +42,11 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="engineId">SNMP agent authoritative engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(ReadOnlySpan<byte> authenticationSecret, ReadOnlySpan<byte> engineId,
+    public byte[] Authenticate(ReadOnlySpan<byte> authenticationSecret, ReadOnlySpan<byte> engineId,
         ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(authenticationSecret, engineId);
-        return authenticate(authKey, wholeMessage);
+        return Authenticate(authKey, wholeMessage);
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage)
+    public byte[] Authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
 
@@ -75,11 +75,11 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
-    public bool authenticateIncomingMsg(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId,
+    public bool AuthenticateIncomingMsg(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId,
         ReadOnlySpan<byte> authenticationParameters, ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
-        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
+        return AuthenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
     }
 
     /// <summary>
@@ -89,7 +89,7 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
     /// <param name="wholeMessage">Entire packet being authenticated</param>
     /// <returns>True on authentication success, otherwise false</returns>
-    public bool authenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
+    public bool AuthenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
         ReadOnlySpan<byte> wholeMessage)
     {
         using var sha = new HMACSHA1(authKey.ToArray());
