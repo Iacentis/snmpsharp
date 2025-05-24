@@ -271,47 +271,10 @@ public class VbCollection : AsnType, IEnumerable<Vb>
     ///     Encode VarBind collection sequence
     /// </summary>
     /// <param name="buffer">Target buffer. Encoded VarBind collection is appended.</param>
-    public override void encode(MutableByte buffer)
-    {
-        var tmp = new MutableByte();
-        foreach (var v in _vbs) v.encode(tmp);
-        BuildHeader(buffer, Type, tmp.Length);
-        buffer.Append(tmp);
-    }
-
-    /// <summary>
-    ///     Decode VarBind collection sequence.
-    /// </summary>
-    /// <param name="buffer">Buffer containing BER encoded VarBind collection</param>
-    /// <param name="offset">Offset to start decoding from</param>
-    /// <returns>New offset of the position following the VarBind collection</returns>
-    /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not a VarBind collection sequence type</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        var b = ParseHeader(buffer, ref offset, out var headerLen);
-        if (b != Type)
-            throw new SnmpException("Invalid ASN.1 encoding for variable binding list.");
-
-        _vbs.Clear();
-
-        var oldOffset = offset;
-        while (headerLen > 0)
-        {
-            var vb = new Vb();
-            offset = vb.decode(buffer, offset);
-
-            headerLen -= offset - oldOffset;
-            oldOffset = offset;
-            _vbs.Add(vb);
-        }
-
-        return offset;
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var written = BuildHeader(buffer, Type, MemberByteLength());
-        foreach (var v in _vbs) written += v.encode(buffer[written..]);
+        foreach (var v in _vbs) written += v.Encode(buffer[written..]);
         return written;
     }
 
@@ -331,7 +294,14 @@ public class VbCollection : AsnType, IEnumerable<Vb>
         return len;
     }
 
-    public override int decode(Span<byte> buffer, int offset)
+    /// <summary>
+    ///     Decode VarBind collection sequence.
+    /// </summary>
+    /// <param name="buffer">Buffer containing BER encoded VarBind collection</param>
+    /// <param name="offset">Offset to start decoding from</param>
+    /// <returns>New offset of the position following the VarBind collection</returns>
+    /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not a VarBind collection sequence type</exception>
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var b = ParseHeader(buffer, ref offset, out var headerLen);
         if (b != Type)
@@ -343,7 +313,7 @@ public class VbCollection : AsnType, IEnumerable<Vb>
         while (headerLen > 0)
         {
             var vb = new Vb();
-            offset = vb.decode(buffer, offset);
+            offset = vb.Decode(buffer, offset);
 
             headerLen -= offset - oldOffset;
             oldOffset = offset;

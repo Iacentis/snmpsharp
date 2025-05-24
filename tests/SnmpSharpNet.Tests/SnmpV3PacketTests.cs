@@ -33,12 +33,12 @@ public class SnmpV3PacketTests
         packet.Pdu.RequestId = 123;
         packet.Pdu.ErrorIndex = 567;
         packet.Pdu.ErrorStatus = 6879;
-        var bytes = packet.encode();
+        var bytes = packet.Encode();
         var newPacket = new SnmpV3Packet();
         SetAuth(@private, auth, newPacket, digests, protocols);
 
 
-        newPacket.decode(bytes, bytes.Length);
+        newPacket.Decode(bytes);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 
@@ -67,10 +67,10 @@ public class SnmpV3PacketTests
         var outPdu = new ScopedPdu(pdu);
         var packet = new SnmpV3Packet(outPdu);
         parameters.InitializePacket(packet);
-        var bytes = packet.encode();
+        var bytes = packet.Encode();
         var newPacket = new SnmpV3Packet();
         parameters.InitializePacket(newPacket);
-        newPacket.decode(bytes, bytes.Length);
+        newPacket.Decode(bytes);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 

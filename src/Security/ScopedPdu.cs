@@ -115,40 +115,12 @@ public class ScopedPdu : Pdu
     #endregion
 
     #region Encode and decode
-
-    /// <summary>
-    ///     Convert <see cref="ScopedPdu" /> into a BER encoded byte array. Resulting byte array is appended
-    ///     to the argument specified <see cref="MutableByte" /> class.
-    ///     Privacy operations are not performed by this method. Value encoded and returned by this method is
-    ///     suitable for sending in NoAuthNoPriv or AuthNoPriv security configurations. If privacy is required,
-    ///     caller will have to perform encryption and decryption operations after BER encoding is performed.
-    ///     In privacy protected SNMP version 3 packets, ScopedPdu is 1) encrypted using configured encryption
-    ///     method, 2) added to a <see cref="OctetString" /> field, and 3) appended to the data buffer.
-    ///     Because privacy operation is intrusive, it is recommended that BER encoding of the ScopedPdu packet
-    ///     is stored in a temporary <see cref="MutableByte" /> class, where it can be privacy protected and
-    ///     added to the <see cref="OctetString" /> class for final encoding into the target SNMP v3 packet.
-    /// </summary>
-    /// <param name="buffer">
-    ///     <see cref="MutableByte" /> class passed by reference that encoded ScopedPdu
-    ///     value is appended to.
-    /// </param>
-    public override void encode(MutableByte buffer)
-    {
-        var tmp = new MutableByte();
-        _contextEngineId.encode(tmp);
-        _contextName.encode(tmp);
-        // Encode base
-        base.encode(tmp);
-        BuildHeader(buffer, SnmpConstants.SMI_SEQUENCE, tmp.Length);
-        buffer.Append(tmp);
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var offset = BuildHeader(buffer, SnmpConstants.SMI_SEQUENCE, MemberByteLength());
-        offset += _contextEngineId.encode(buffer[offset..]);
-        offset += _contextName.encode(buffer[offset..]);
-        offset += base.encode(buffer[offset..]);
+        offset += _contextEngineId.Encode(buffer[offset..]);
+        offset += _contextName.Encode(buffer[offset..]);
+        offset += base.Encode(buffer[offset..]);
         return offset;
     }
 
@@ -184,12 +156,7 @@ public class ScopedPdu : Pdu
     /// <returns>Offset position after parsed ScopedPdu</returns>
     /// <exception cref="SnmpDecodingException">Error was encountered when decoding the PDU</exception>
     /// <exception cref="OverflowException">Thrown when buffer is too short to contain the PDU</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var sequenceType = ParseHeader(buffer, ref offset, out var length);
         if (sequenceType != SnmpConstants.SMI_SEQUENCE)
@@ -202,10 +169,10 @@ public class ScopedPdu : Pdu
         _contextEngineId.Reset();
         _contextName.Reset();
         // parse scoped pdu specific variables
-        offset = _contextEngineId.decode(buffer, offset);
-        offset = _contextName.decode(buffer, offset);
+        offset = _contextEngineId.Decode(buffer, offset);
+        offset = _contextName.Decode(buffer, offset);
         // decode base pdu
-        offset = base.decode(buffer, offset);
+        offset = base.Decode(buffer, offset);
 
         return offset;
     }

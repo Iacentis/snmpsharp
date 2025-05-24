@@ -85,12 +85,12 @@ public class UTarget : ITarget
     /// <summary>
     ///     Privacy secret (or privacy password)
     /// </summary>
-    protected MutableByte _privacySecret;
+    protected byte[] _privacySecret;
 
     /// <summary>
     ///     Authentication secret (or authentication password)
     /// </summary>
-    protected MutableByte _authenticationSecret;
+    protected byte[] _authenticationSecret;
 
     /// <summary>
     ///     Context engine id. By default, this value is set to authoritative engine id value unless specifically
@@ -169,7 +169,7 @@ public class UTarget : ITarget
     /// <summary>
     ///     Privacy secret. Length of the secret is dependent on the selected privacy method.
     /// </summary>
-    public MutableByte PrivacySecret => _privacySecret;
+    public byte[] PrivacySecret => _privacySecret;
 
     /// <summary>
     ///     Authentication method. Acceptable values are members of <see cref="AuthenticationDigests" /> enum.
@@ -188,7 +188,7 @@ public class UTarget : ITarget
     /// <summary>
     ///     Authentication secret. Secret length depends on the hash algorithm selected.
     /// </summary>
-    public MutableByte AuthenticationSecret => _authenticationSecret;
+    public byte[] AuthenticationSecret => _authenticationSecret;
 
     /// <summary>
     ///     Get SNMP version 3 context engine id. By default, this value will be set
@@ -254,8 +254,8 @@ public class UTarget : ITarget
         _privacyProtocol = PrivacyProtocols.None;
         _authenticationProtocol = AuthenticationDigests.None;
 
-        _privacySecret = new MutableByte();
-        _authenticationSecret = new MutableByte();
+        _privacySecret = [];
+        _authenticationSecret = [];
 
         _contextEngineId = new OctetString();
         _contextName = new OctetString();

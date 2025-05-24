@@ -26,9 +26,9 @@ public class SnmpV1PacketTests
         packet.Pdu.RequestId = a * b * c;
         packet.Pdu.ErrorIndex = a + b + c;
         packet.Pdu.ErrorStatus = a - b + c;
-        var bytes = packet.encode();
+        var bytes = packet.Encode();
         var newPacket = new SnmpV1Packet();
-        newPacket.decode(bytes, bytes.Length);
+        newPacket.Decode(bytes);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 }

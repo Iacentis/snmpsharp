@@ -60,6 +60,8 @@ public abstract class SnmpPacket
     /// </summary>
     public virtual Pdu Pdu => new Pdu();
 
+    public abstract int ByteLength { get; }
+    
     /// <summary>
     ///     Decode SNMP packet header. This class decodes the initial sequence and SNMP protocol version
     ///     number.
@@ -71,26 +73,10 @@ public abstract class SnmpPacket
     ///     Thrown when invalid sequence type is found at the start of the SNMP packet
     ///     being decoded
     /// </exception>
-    public virtual int decode(byte[] buffer, int length)
-    {
-        return decode(buffer.AsSpan(), length);
-    }
-
-    /// <summary>
-    ///     Decode SNMP packet header. This class decodes the initial sequence and SNMP protocol version
-    ///     number.
-    /// </summary>
-    /// <param name="buffer">BER encoded SNMP packet</param>
-    /// <param name="length">Packet length</param>
-    /// <returns>Offset position after the initial sequence header and protocol version value</returns>
-    /// <exception cref="SnmpDecodingException">
-    ///     Thrown when invalid sequence type is found at the start of the SNMP packet
-    ///     being decoded
-    /// </exception>
-    public virtual int decode(Span<byte> buffer, int length)
+    public virtual int Decode(ReadOnlySpan<byte> buffer)
     {
         var offset = 0;
-        switch (length)
+        switch (buffer.Length)
         {
             // we need at least 2 bytes
             case < 2:
@@ -99,10 +85,10 @@ public abstract class SnmpPacket
 
         // make sure you get the right length buffer to be able to check for over/under flow errors
         var seq = new Sequence();
-        offset = seq.decode(buffer, offset);
+        offset = seq.Decode(buffer, offset);
         if (seq.Type != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid sequence type at the start of the SNMP packet.");
-        offset = _protocolVersion.decode(buffer, offset);
+        offset = _protocolVersion.Decode(buffer, offset);
         return offset;
     }
 
@@ -110,38 +96,24 @@ public abstract class SnmpPacket
     ///     Place holder for derived class implementations.
     /// </summary>
     /// <returns>Nothing</returns>
-    public abstract byte[] encode();
+    public abstract byte[] Encode();
+
+    public abstract int Encode(Span<byte> target);
 
     /// <summary>
-    ///     Wrap BER encoded SNMP information contained in the parameter <see cref="MutableByte" /> class.
+    ///     Wrap BER encoded SNMP information contained in the parameter <see cref="byte[]" /> class.
     ///     Information in the parameter is prepended by the SNMP version field and wrapped in a sequence header.
     ///     Derived classes call this method to finalize SNMP packet encoding.
     /// </summary>
     /// <param name="buffer">Buffer containing BER encoded SNMP information</param>
-    public virtual void encode(MutableByte buffer)
-    {
-        // Encode SNMP protocol version
-        var temp = new MutableByte();
-        _protocolVersion.encode(temp);
-        buffer.Prepend(temp);
-        temp.Reset();
-        AsnType.BuildHeader(temp, SnmpConstants.SMI_SEQUENCE, buffer.Length);
-        buffer.Prepend(temp);
-    }
-
-    /// <summary>
-    ///     Wrap BER encoded SNMP information contained in the parameter <see cref="MutableByte" /> class.
-    ///     Information in the parameter is prepended by the SNMP version field and wrapped in a sequence header.
-    ///     Derived classes call this method to finalize SNMP packet encoding.
-    /// </summary>
-    /// <param name="buffer">Buffer containing BER encoded SNMP information</param>
-    protected int encode(Span<byte> buffer, ref int written)
+    /// <param name="written"></param>
+    protected int Encode(Span<byte> buffer, ref int written)
     {
         var start = written;
         // Encode SNMP protocol version
         {
             Span<byte> temp = stackalloc byte[_protocolVersion.ByteLength];
-            var versionWrite = _protocolVersion.encode(temp);
+            var versionWrite = _protocolVersion.Encode(temp);
             buffer[..written].CopyTo(buffer[versionWrite..]);
             temp[..versionWrite].CopyTo(buffer);
             written += versionWrite;
@@ -156,6 +128,8 @@ public abstract class SnmpPacket
         }
         return written - start;
     }
+
+    protected int BaseByteLength(int contentLength) => _protocolVersion.ByteLength + AsnType.HeaderSize(contentLength);
 
     /// <summary>
     ///     Get SNMP protocol version from the packet. This routine does not verify if version number is valid. Caller
@@ -195,7 +169,7 @@ public abstract class SnmpPacket
         if (asnType != SnmpConstants.SMI_SEQUENCE)
             throw new SnmpDecodingException("Invalid sequence type at the start of the SNMP packet.");
         var version = new Integer32();
-        version.decode(buffer, offset);
+        version.Decode(buffer, offset);
         return version.Value;
     }
 

@@ -14,6 +14,8 @@
 // along with SNMP#NET.  If not, see <http://www.gnu.org/licenses/>.
 // 
 
+using System;
+
 namespace SnmpSharpNet;
 
 /// <summary>SNMP version 1 TRAP packet class.</summary>
@@ -82,6 +84,7 @@ public class SnmpV1TrapPacket : SnmpPacket
     /// </summary>
     public new TrapPdu Pdu => _pdu;
 
+
     /// <summary>
     ///     Get TrapPdu
     /// </summary>
@@ -98,15 +101,13 @@ public class SnmpV1TrapPacket : SnmpPacket
     /// </summary>
     /// <param name="buffer">Packet buffer</param>
     /// <param name="length">Buffer length</param>
-    public override int decode(byte[] buffer, int length)
+    public override int Decode(ReadOnlySpan<byte> buffer)
     {
-        var buf = new MutableByte(buffer, length);
-
-        var offset = base.decode(buffer, length);
+        var offset = base.Decode(buffer);
 
 
         // parse community
-        offset = _snmpCommunity.decode(buf, offset);
+        offset = _snmpCommunity.Decode(buffer, offset);
 
         // look ahead to make sure this is a TRAP packet
         var tmpOffset = offset;
@@ -114,25 +115,44 @@ public class SnmpV1TrapPacket : SnmpPacket
         if (tmpAsnType != (byte)PduType.Trap)
             throw new SnmpException($"Invalid SNMP ASN.1 type. Received: {tmpAsnType:x2}");
         // decode protocol data unit
-        offset = Pdu.decode(buf, offset);
+        offset = Pdu.Decode(buffer, offset);
         return offset;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var childLength = _snmpCommunity.ByteLength + Pdu.ByteLength;
+            return childLength + BaseByteLength(childLength);
+        }
     }
 
     /// <summary>
     ///     Encode SNMP packet for sending.
     /// </summary>
     /// <returns>BER encoded SNMP packet.</returns>
-    public override byte[] encode()
+    public override byte[] Encode()
     {
-        var tmpBuffer = new MutableByte();
+        var result = new byte[ByteLength];
+        Encode(result);
+        return result;
+    }
 
+    /// <summary>
+    ///     Encode SNMP packet for sending.
+    /// </summary>
+    /// <returns>BER encoded SNMP packet.</returns>
+    public override int Encode(Span<byte> target)
+    {
+        var written = 0;
         //
         // encode the community strings
-        _snmpCommunity.encode(tmpBuffer);
-        Pdu.encode(tmpBuffer);
+        written += _snmpCommunity.Encode(target);
+        written += Pdu.Encode(target[written..]);
 
-        base.encode(tmpBuffer);
+        base.Encode(target, ref written);
 
-        return tmpBuffer;
+        return written;
     }
 }

@@ -50,18 +50,7 @@ public class Null : AsnType, ICloneable
 
     #region Encode & decode methods
 
-    /// <summary>
-    ///     ASN.1 encode Null value
-    /// </summary>
-    /// <param name="buffer">
-    ///     <see cref="MutableByte" /> class to the end of which encoded data is appended
-    /// </param>
-    public override void encode(MutableByte buffer)
-    {
-        BuildHeader(buffer, Type, 0);
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         return BuildHeader(buffer, Type, 0);
     }
@@ -77,23 +66,7 @@ public class Null : AsnType, ICloneable
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not null</exception>
     /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    /// <summary>
-    ///     Decode null value from BER encoded buffer.
-    /// </summary>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">
-    ///     Offset within the buffer from where to start decoding. On return,
-    ///     this argument contains the offset immediately following the decoded value.
-    /// </param>
-    /// <returns>Buffer position after the decoded value</returns>
-    /// <exception cref="SnmpException">Thrown when parsed ASN.1 type is not null</exception>
-    /// <exception cref="SnmpException">Thrown when length of null value is greater then 0 bytes</exception>
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 

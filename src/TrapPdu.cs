@@ -117,58 +117,24 @@ public class TrapPdu : AsnType, ICloneable
             throw new ArgumentException("Invalid argument type.", nameof(second));
         }
     }
-
     /// <summary>ASN.1 encode SNMP version 1 trap</summary>
-    /// <param name="buffer"><see cref="MutableByte" /> buffer to the end of which encoded values are appended.</param>
-    public override void encode(MutableByte buffer)
-    {
-        var trapBuffer = new MutableByte();
-        // encode the enterprise id & address
-        _enterprise.encode(trapBuffer);
-
-        _agentAddr.encode(trapBuffer);
-
-        _generic.encode(trapBuffer);
-
-        _specific.encode(trapBuffer);
-
-        _timeStamp.encode(trapBuffer);
-
-        _variables.encode(trapBuffer);
-        var tmpBuffer = new MutableByte();
-
-        BuildHeader(tmpBuffer, (byte)PduType.Trap, trapBuffer.Length);
-        trapBuffer.Prepend(tmpBuffer);
-        buffer.Append(trapBuffer);
-    }
-
-    /// <summary>Decode BER encoded SNMP version 1 trap packet</summary>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">Offset in the packet to start decoding from</param>
-    /// <returns>Buffer position after the decoded value.</returns>
-    /// <exception cref="SnmpException">Invalid SNMP Pdu type received. Not an SNMP version 1 Trap PDU.</exception>
-    /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int encode(Span<byte> buffer)
+    /// <param name="buffer"><see cref="byte[]" /> buffer to the end of which encoded values are appended.</param>
+    public override int Encode(Span<byte> buffer)
     {
         var mbl = MemberByteLength();
         var written = BuildHeader(buffer, (byte)PduType.Trap, mbl);
         // encode the enterprise id & address
-        written += _enterprise.encode(buffer[written..]);
+        written += _enterprise.Encode(buffer[written..]);
 
-        written += _agentAddr.encode(buffer[written..]);
+        written += _agentAddr.Encode(buffer[written..]);
 
-        written += _generic.encode(buffer[written..]);
+        written += _generic.Encode(buffer[written..]);
 
-        written += _specific.encode(buffer[written..]);
+        written += _specific.Encode(buffer[written..]);
 
-        written += _timeStamp.encode(buffer[written..]);
+        written += _timeStamp.Encode(buffer[written..]);
 
-        written += _variables.encode(buffer[written..]);
+        written += _variables.Encode(buffer[written..]);
         return written;
     }
 
@@ -189,7 +155,13 @@ public class TrapPdu : AsnType, ICloneable
                _timeStamp.ByteLength + _variables.ByteLength;
     }
 
-    public override int decode(Span<byte> buffer, int offset)
+    /// <summary>Decode BER encoded SNMP version 1 trap packet</summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">Offset in the packet to start decoding from</param>
+    /// <returns>Buffer position after the decoded value.</returns>
+    /// <exception cref="SnmpException">Invalid SNMP Pdu type received. Not an SNMP version 1 Trap PDU.</exception>
+    /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != (byte)PduType.Trap)
@@ -198,19 +170,19 @@ public class TrapPdu : AsnType, ICloneable
         if (headerLength > buffer.Length - offset)
             throw new OverflowException("Packet is too short.");
 
-        offset = _enterprise.decode(buffer, offset);
-        offset = _agentAddr.decode(buffer, offset);
+        offset = _enterprise.Decode(buffer, offset);
+        offset = _agentAddr.Decode(buffer, offset);
 
-        offset = _generic.decode(buffer, offset);
+        offset = _generic.Decode(buffer, offset);
 
-        offset = _specific.decode(buffer, offset);
+        offset = _specific.Decode(buffer, offset);
 
-        offset = _timeStamp.decode(buffer, offset);
+        offset = _timeStamp.Decode(buffer, offset);
 
         // clean out the current variables
         _variables.Clear();
 
-        offset = _variables.decode(buffer, offset);
+        offset = _variables.Decode(buffer, offset);
 
         return offset;
     }

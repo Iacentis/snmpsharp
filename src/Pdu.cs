@@ -598,61 +598,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
 
     #region Encode & Decode methods
 
-    /// <summary>
-    ///     Encode Pdu class to BER byte buffer
-    /// </summary>
-    /// <remarks>
-    ///     Encodes the protocol data unit using the passed encoder and stores
-    ///     the results in the passed buffer. An exception is thrown if an
-    ///     error occurs with the encoding of the information.
-    /// </remarks>
-    /// <param name="buffer">The buffer to write the encoded information.</param>
-    public override void encode(MutableByte buffer)
-    {
-        var tmpBuffer = new MutableByte();
-
-        switch (_requestId.Value)
-        {
-            // if request id is 0, get a random value
-            case 0:
-                _requestId.SetRandom();
-                break;
-        }
-
-        _requestId.encode(tmpBuffer);
-        _errorStatus.encode(tmpBuffer);
-        _errorIndex.encode(tmpBuffer);
-
-        // if V2TRAP PDU type, add sysUpTime and trapObjectID OIDs before encoding VarBind
-        EnsureTrapAndInforms();
-
-        // encode variable bindings
-        _vbs.encode(tmpBuffer);
-
-        // Now encode the header for the PDU
-        BuildHeader(buffer, (byte)Type, tmpBuffer.Length);
-        buffer.Append(tmpBuffer);
-    }
-
-    /// <summary>
-    ///     Decode BER encoded Pdu
-    /// </summary>
-    /// <remarks>
-    ///     Decodes the protocol data unit from the passed buffer. If an error
-    ///     occurs during the decoding sequence then an AsnDecodingException is
-    ///     thrown by the method. The value is decoded using the AsnEncoder
-    ///     passed to the object.
-    /// </remarks>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">The offset byte to begin decoding</param>
-    /// <returns>Buffer position after the decoded value</returns>
-    /// <exception cref="OverflowException">Thrown when header points to more data then is available.</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         switch (_requestId.Value)
         {
@@ -671,12 +617,12 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         var slice = BuildHeader(buffer, (byte)Type, MemberByteLength());
         Span<byte> tmpBuffer = buffer[slice..];
 
-        written += _requestId.encode(tmpBuffer[written..]);
-        written += _errorStatus.encode(tmpBuffer[written..]);
-        written += _errorIndex.encode(tmpBuffer[written..]);
+        written += _requestId.Encode(tmpBuffer[written..]);
+        written += _errorStatus.Encode(tmpBuffer[written..]);
+        written += _errorIndex.Encode(tmpBuffer[written..]);
 
         // encode variable bindings
-        written += _vbs.encode(tmpBuffer[written..]);
+        written += _vbs.Encode(tmpBuffer[written..]);
 
         return written + slice;
     }
@@ -730,7 +676,7 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
     }
 
 
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (offset + headerLength > buffer.Length)
@@ -739,19 +685,19 @@ public class Pdu : AsnType, ICloneable, IEnumerable<Vb>
         _asnType = asnType;
 
         // request id
-        offset = _requestId.decode(buffer, offset);
+        offset = _requestId.Decode(buffer, offset);
 
         // error status
-        offset = _errorStatus.decode(buffer, offset);
+        offset = _errorStatus.Decode(buffer, offset);
 
         // error index
-        offset = _errorIndex.decode(buffer, offset);
+        offset = _errorIndex.Decode(buffer, offset);
 
         // clean out the current variables
         _vbs.Clear();
 
         // decode the Variable binding collection
-        offset = _vbs.decode(buffer, offset);
+        offset = _vbs.Decode(buffer, offset);
 
         switch (Type)
         {
