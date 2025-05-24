@@ -51,12 +51,12 @@ public static class Authentication
     public static IAuthenticationDigest? GetInstance(AuthenticationDigests authProtocol) =>
         authProtocol switch
         {
-            AuthenticationDigests.MD5 => new AuthenticationMD5(),
-            AuthenticationDigests.SHA1 => new AuthenticationSHA1(),
-            AuthenticationDigests.SHA224 => new AuthenticationSHA224(),
-            AuthenticationDigests.SHA256 => new AuthenticationSHA256(),
-            AuthenticationDigests.SHA384 => new AuthenticationSHA384(),
-            AuthenticationDigests.SHA512 => new AuthenticationSHA512(),
+            AuthenticationDigests.MD5 => AuthenticationMD5.Instance,
+            AuthenticationDigests.SHA1 => AuthenticationSHA1.Instance,
+            AuthenticationDigests.SHA224 => AuthenticationSHA224.Instance,
+            AuthenticationDigests.SHA256 => AuthenticationSHA256.Instance,
+            AuthenticationDigests.SHA384 => AuthenticationSHA384.Instance,
+            AuthenticationDigests.SHA512 => AuthenticationSHA512.Instance,
             _ => null
         };
 }

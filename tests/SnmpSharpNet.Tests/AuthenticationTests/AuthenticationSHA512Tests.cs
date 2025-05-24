@@ -13,7 +13,7 @@ public class AuthenticationSHA512Tests
             250, 52, 115, 17, 185, 223, 179, 209, 33, 178, 95, 254, 231, 97, 4, 162, 188, 128, 173, 35, 41, 170, 168,
             84, 207, 17, 165, 108, 75, 132, 191, 202, 20, 136, 223, 157, 41, 146, 175, 150
         ];
-        var auth = new AuthenticationSHA512();
+        var auth = AuthenticationSHA512.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var key = auth.PasswordToKey(password, engineId);
@@ -39,7 +39,7 @@ public class AuthenticationSHA512Tests
     [Arguments(2048)]
     public async Task AnAuthenticatedBufferIsVerifiedByAuthenticateIncomingMessage(int packetLength)
     {
-        var auth = new AuthenticationSHA512();
+        var auth = AuthenticationSHA512.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
@@ -65,7 +65,7 @@ public class AuthenticationSHA512Tests
     public async Task AnAuthenticatedBufferWithTheWrongPasswordIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationSHA512();
+        var auth = AuthenticationSHA512.Instance;
         var password = "password"u8.ToArray();
         var password2 = "password2"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
@@ -92,7 +92,7 @@ public class AuthenticationSHA512Tests
     public async Task AnAuthenticatedBufferWithTheWrongEngineIdIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationSHA512();
+        var auth = AuthenticationSHA512.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var engineId2 = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x02 };

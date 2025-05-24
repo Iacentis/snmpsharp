@@ -28,10 +28,12 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     private const int authenticationLength = 21;
     private const int digestLength = 28;
 
+    public static AuthenticationSHA224 Instance { get; } = new();
+
     /// <summary>
     ///     Standard constructor.
     /// </summary>
-    public AuthenticationSHA224()
+    private AuthenticationSHA224()
     {
     }
 

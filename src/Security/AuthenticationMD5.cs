@@ -27,11 +27,12 @@ public class AuthenticationMD5 : IAuthenticationDigest
 {
     private const int authenticationLength = 12;
     private const int digestLength = 16;
+    public static AuthenticationMD5 Instance { get; } = new();
 
     /// <summary>
     ///     Standard constructor
     /// </summary>
-    public AuthenticationMD5()
+    private AuthenticationMD5()
     {
     }
 
