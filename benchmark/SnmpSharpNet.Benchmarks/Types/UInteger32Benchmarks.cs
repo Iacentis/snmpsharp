@@ -19,21 +19,12 @@ public class UInteger32Benchmarks
         @new = new UInteger32();
     }
 
-    [Benchmark(Baseline = true)]
-    public UInteger32 EncodedToDecodeMutable()
-    {
-        var buffer = new MutableByte();
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
-        return @new;
-    }
-
     [Benchmark]
     public UInteger32 EncodedToDecode()
     {
         Span<byte> buffer = stackalloc byte[Integer32.MaxEncodedSize];
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
+        initial.Encode(buffer);
+        @new.Decode(buffer, 0);
         return @new;
     }
 }

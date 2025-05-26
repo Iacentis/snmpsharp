@@ -196,8 +196,8 @@ public class UdpTarget : UdpTransport
                 secparams.InitializePacket(packet);
                 outPacket = secparams.HasCachedKeys switch
                 {
-                    true => packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey),
-                    _ => packet.encode()
+                    true => packet.Encode(secparams.AuthenticationKey, secparams.PrivacyKey),
+                    _ => packet.Encode()
                 };
                 break;
             }
@@ -210,7 +210,7 @@ public class UdpTarget : UdpTransport
                 var packet = new SnmpV1Packet();
                 packet.Pdu.Set(pdu);
                 packet.Community.Set(param.Community);
-                outPacket = packet.encode();
+                outPacket = packet.Encode();
                 _noSourceCheck = param.DisableReplySourceCheck;
                 break;
             }
@@ -224,7 +224,7 @@ public class UdpTarget : UdpTransport
                 packet.Pdu.Set(pdu);
                 packet.Community.Set(param.Community);
                 _noSourceCheck = param.DisableReplySourceCheck;
-                outPacket = packet.encode();
+                outPacket = packet.Encode();
                 break;
             }
             default:
@@ -242,7 +242,7 @@ public class UdpTarget : UdpTransport
             {
                 var packet = new SnmpV1Packet();
                 var param = (AgentParameters)agentParameters;
-                packet.decode(inBuffer, inBuffer.Length);
+                packet.Decode(inBuffer);
                 if (packet.Community != param.Community)
                     // invalid community name received. Ignore the rest of the packet
                     throw new SnmpAuthenticationException("Invalid community name in reply.");
@@ -255,7 +255,7 @@ public class UdpTarget : UdpTransport
             {
                 var packet = new SnmpV2Packet();
                 var param = (AgentParameters)agentParameters;
-                packet.decode(inBuffer, inBuffer.Length);
+                packet.Decode(inBuffer);
                 if (packet.Community != param.Community)
                     // invalid community name received. Ignore the rest of the packet
                     throw new SnmpAuthenticationException("Invalid community name in reply.");
@@ -272,10 +272,10 @@ public class UdpTarget : UdpTransport
                 switch (secparams.HasCachedKeys)
                 {
                     case true:
-                        packet.decode(inBuffer, inBuffer.Length, secparams.AuthenticationKey, secparams.PrivacyKey);
+                        packet.Decode(inBuffer, secparams.AuthenticationKey, secparams.PrivacyKey);
                         break;
                     default:
-                        packet.decode(inBuffer, inBuffer.Length);
+                        packet.Decode(inBuffer);
                         break;
                 }
 
@@ -349,8 +349,8 @@ public class UdpTarget : UdpTransport
                 {
                     outPacket = secparams.HasCachedKeys switch
                     {
-                        true => packet.encode(secparams.AuthenticationKey, secparams.PrivacyKey),
-                        _ => packet.encode()
+                        true => packet.Encode(secparams.AuthenticationKey, secparams.PrivacyKey),
+                        _ => packet.Encode()
                     };
                 }
                 catch (Exception)
@@ -370,7 +370,7 @@ public class UdpTarget : UdpTransport
                 packet.Community.Set(param.Community);
                 try
                 {
-                    outPacket = packet.encode();
+                    outPacket = packet.Encode();
                 }
                 catch (Exception)
                 {
@@ -389,7 +389,7 @@ public class UdpTarget : UdpTransport
                 packet.Community.Set(param.Community);
                 try
                 {
-                    outPacket = packet.encode();
+                    outPacket = packet.Encode();
                 }
                 catch (Exception)
                 {
@@ -462,7 +462,7 @@ public class UdpTarget : UdpTransport
                     var packet = new SnmpV1Packet();
                     try
                     {
-                        packet.decode(buffer, buflen);
+                        packet.Decode(buffer);
                     }
                     catch (Exception)
                     {
@@ -478,7 +478,7 @@ public class UdpTarget : UdpTransport
                     var packet = new SnmpV2Packet();
                     try
                     {
-                        packet.decode(buffer, buflen);
+                        packet.Decode(buffer);
                     }
                     catch (Exception)
                     {
@@ -499,10 +499,10 @@ public class UdpTarget : UdpTransport
                         switch (secparams.HasCachedKeys)
                         {
                             case true:
-                                packet.decode(buffer, buflen, secparams.AuthenticationKey, secparams.PrivacyKey);
+                                packet.Decode(buffer, secparams.AuthenticationKey, secparams.PrivacyKey);
                                 break;
                             default:
-                                packet.decode(buffer, buflen);
+                                packet.Decode(buffer);
                                 break;
                         }
                     }

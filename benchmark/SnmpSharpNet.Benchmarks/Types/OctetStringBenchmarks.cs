@@ -20,21 +20,12 @@ public class OctetStringBenchmarks
         @new = new OctetString();
     }
 
-    [Benchmark(Baseline = true)]
-    public OctetString EncodedToDecodeMutable()
-    {
-        var buffer = new MutableByte();
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
-        return @new;
-    }
-
     [Benchmark]
     public OctetString EncodedToDecode()
     {
         Span<byte> buffer = stackalloc byte[Value + 10];
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
+        initial.Encode(buffer);
+        @new.Decode(buffer, 0);
         return @new;
     }
 }

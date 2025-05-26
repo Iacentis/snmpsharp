@@ -142,57 +142,22 @@ public class Vb : AsnType, ICloneable
     ///     BER encode the variable binding
     /// </summary>
     /// <param name="buffer">
-    ///     <see cref="MutableByte" /> class to the end of which encoded variable
+    ///     <see cref="byte[]" /> class to the end of which encoded variable
     ///     binding values will be added.
     /// </param>
-    public override void encode(MutableByte buffer)
-    {
-        // encode oid to the temporary buffer
-        var oidbuf = new MutableByte();
-        _oid?.encode(oidbuf);
-        // encode value to a temporary buffer
-        var valbuf = new MutableByte();
-        _value?.encode(valbuf);
-
-        // calculate data content length of the vb
-        var vblen = oidbuf.Length + valbuf.Length;
-        // encode vb header at the end of the result
-        BuildHeader(buffer, Type, vblen);
-        // add values to the encoded arrays to the end of the result
-        buffer.Append(oidbuf);
-        buffer.Append(valbuf);
-    }
-
-    /// <summary>
-    ///     Decode BER encoded variable binding.
-    /// </summary>
-    /// <param name="buffer">
-    ///     BER encoded buffer
-    /// </param>
-    /// <param name="offset">
-    ///     Offset in the data buffer from where to start decoding. Offset is
-    ///     passed by reference and will contain the offset of the byte immediately after the parsed
-    ///     variable binding.
-    /// </param>
-    /// <returns>Buffer position after the decoded value</returns>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var written = BuildHeader(buffer, Type, MemberByteLength());
         // encode oid to the temporary buffer
         if (_oid is not null)
         {
-            written += _oid.encode(buffer[written..]);
+            written += _oid.Encode(buffer[written..]);
         }
 
         // encode value to a temporary buffer
         if (_value is not null)
         {
-            written += _value.encode(buffer[written..]);
+            written += _value.Encode(buffer[written..]);
         }
 
         // calculate data content length of the vb
@@ -211,7 +176,19 @@ public class Vb : AsnType, ICloneable
 
     private int MemberByteLength() => (_oid?.ByteLength ?? 0) + (_value?.ByteLength ?? 0);
 
-    public override int decode(Span<byte> buffer, int offset)
+    /// <summary>
+    ///     Decode BER encoded variable binding.
+    /// </summary>
+    /// <param name="buffer">
+    ///     BER encoded buffer
+    /// </param>
+    /// <param name="offset">
+    ///     Offset in the data buffer from where to start decoding. Offset is
+    ///     passed by reference and will contain the offset of the byte immediately after the parsed
+    ///     variable binding.
+    /// </param>
+    /// <returns>Buffer position after the decoded value</returns>
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 
@@ -223,7 +200,7 @@ public class Vb : AsnType, ICloneable
             throw new OverflowException("Buffer underflow error");
 
         _oid = new Oid();
-        offset = _oid.decode(buffer, offset);
+        offset = _oid.Decode(buffer, offset);
         var saveOffset = offset;
         // Look ahead in the header to see the data type we need to parse
         asnType = ParseHeader(buffer, ref saveOffset, out headerLength);
@@ -234,7 +211,7 @@ public class Vb : AsnType, ICloneable
                 throw new SnmpDecodingException(
                     $"Invalid ASN.1 type encountered 0x{asnType:x2}. Unable to continue decoding.");
             default:
-                offset = _value.decode(buffer, offset);
+                offset = _value.Decode(buffer, offset);
                 return offset;
         }
     }

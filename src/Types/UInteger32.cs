@@ -293,32 +293,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
 
     /// <summary>BER encode class value.</summary>
     /// <param name="buffer">Target buffer. Value is appended to the end of it.</param>
-    public override void encode(MutableByte buffer)
-    {
-        var tmp = new MutableByte();
-        var b = BitConverter.GetBytes(_value);
-
-        for (var i = 3; i >= 0; i--)
-            if (b[i] != 0 || tmp.Length > 0)
-                tmp.Append(b[i]);
-        switch (tmp.Length)
-        {
-            // if (tmp.Length > 1 && tmp[0] == 0xff && (tmp[1] & 0x80) != 0)
-            case > 0 when (tmp[0] & 0x80) != 0:
-                tmp.Prepend(0);
-                break;
-            case 0:
-                tmp.Append(0);
-                break;
-        }
-
-        BuildHeader(buffer, Type, tmp.Length);
-        buffer.Append(tmp);
-    }
-
-    /// <summary>BER encode class value.</summary>
-    /// <param name="buffer">Target buffer. Value is appended to the end of it.</param>
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var slice = BuildHeader(buffer, Type, MemberByteLength());
         return EncodeValue(buffer[slice..]) + slice;
@@ -389,24 +364,7 @@ public class UInteger32 : AsnType, IComparable<UInteger32>, IComparable<uint>
     ///     immediately after the value we decoded.
     /// </param>
     /// <returns>Buffer position after the decoded value</returns>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    /// <summary>Decode BER encoded value</summary>
-    /// <remarks>
-    ///     Used to decode the integer value from the ASN.1 buffer.
-    ///     The passed encoder is used to decode the ASN.1 information
-    ///     and the integer value is stored in the internal object.
-    /// </remarks>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">
-    ///     The offset of the first byte of data to decode. This variable will hold the offset of the first byte
-    ///     immediately after the value we decoded.
-    /// </param>
-    /// <returns>Buffer position after the decoded value</returns>
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         //
         // parse the header first

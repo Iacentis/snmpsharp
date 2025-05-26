@@ -359,14 +359,9 @@ public sealed class IpAddress : OctetString, IComparable
     /// <returns>Buffer position after the decoded value.</returns>
     /// <exception cref="OverflowException">Parsed data length is not 4 bytes long</exception>
     /// <exception cref="SnmpException">Parsed data is not in IpAddress format</exception>
-    public override int decode(byte[] buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int decode(Span<byte> buffer, int offset)
-    {
-        offset = base.decode(buffer, offset);
+        offset = base.Decode(buffer, offset);
         if (_data.Length == 4) return offset;
         _data = [];
         throw new OverflowException("ASN.1 decoding error. Invalid data length.");

@@ -19,21 +19,12 @@ public class Counter64Benchmarks
         @new = new Counter64();
     }
 
-    [Benchmark(Baseline = true)]
-    public Counter64 EncodedToDecodeMutable()
-    {
-        var buffer = new MutableByte();
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
-        return @new;
-    }
-
     [Benchmark]
     public Counter64 EncodedToDecode()
     {
         Span<byte> buffer = stackalloc byte[Integer32.MaxEncodedSize];
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
+        initial.Encode(buffer);
+        @new.Decode(buffer, 0);
         return @new;
     }
 }

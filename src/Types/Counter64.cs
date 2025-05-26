@@ -320,33 +320,12 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
 
     #region Encode & Decode methods
 
+    /// <summary
     /// <summary>BER encode class value</summary>
     /// <param name="buffer">
-    ///     MutableByte to append BER encoded value to.
+    ///     byte[] to append BER encoded value to.
     /// </param>
-    public override void encode(MutableByte buffer)
-    {
-        var b = BitConverter.GetBytes(_value);
-        var tmp = new MutableByte();
-        for (var i = b.Length - 1; i >= 0; i--)
-            if (b[i] != 0 || tmp.Length > 0)
-                tmp.Append(b[i]);
-        switch (tmp.Length)
-        {
-            case 0:
-                tmp.Append(0); // value is 0. can't have an empty encoding
-                break;
-        }
-
-        BuildHeader(buffer, Type, tmp.Length);
-        buffer.Append(tmp);
-    }
-
-    /// <summary>BER encode class value</summary>
-    /// <param name="buffer">
-    ///     MutableByte to append BER encoded value to.
-    /// </param>
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var slice = BuildHeader(buffer, Type, MemberByteLength());
         var length = EncodeValue(buffer[slice..]);
@@ -373,18 +352,7 @@ public class Counter64 : AsnType, IComparable<ulong>, IComparable<Counter64>, IC
     /// <param name="buffer">The encoded ASN.1 data</param>
     /// <param name="offset">Offset to start value decoding from.</param>
     /// <returns>Offset after the parsed value.</returns>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    /// <summary>
-    ///     Decode BER encoded Counter64 value
-    /// </summary>
-    /// <param name="buffer">The encoded ASN.1 data</param>
-    /// <param name="offset">Offset to start value decoding from.</param>
-    /// <returns>Offset after the parsed value.</returns>
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         //
         // parse the header first

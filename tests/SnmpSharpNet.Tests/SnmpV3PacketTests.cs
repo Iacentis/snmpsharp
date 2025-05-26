@@ -33,12 +33,12 @@ public class SnmpV3PacketTests
         packet.Pdu.RequestId = 123;
         packet.Pdu.ErrorIndex = 567;
         packet.Pdu.ErrorStatus = 6879;
-        var bytes = packet.encode();
+        var bytes = packet.Encode();
         var newPacket = new SnmpV3Packet();
         SetAuth(@private, auth, newPacket, digests, protocols);
 
 
-        newPacket.decode(bytes, bytes.Length);
+        newPacket.Decode(bytes);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 
@@ -65,12 +65,10 @@ public class SnmpV3PacketTests
         ];
         var pdu = new Pdu(vbs, PduType.GetBulk, 123);
         var outPdu = new ScopedPdu(pdu);
-        var packet = new SnmpV3Packet(outPdu);
-        parameters.InitializePacket(packet);
-        var bytes = packet.encode();
-        var newPacket = new SnmpV3Packet();
-        parameters.InitializePacket(newPacket);
-        newPacket.decode(bytes, bytes.Length);
+        var packet = new SnmpV3Packet(outPdu, parameters);
+        Span<byte> bytes = stackalloc byte[packet.ByteLength];
+        var count = packet.Encode(bytes);
+        var newPacket = new SnmpV3Packet(bytes[..count], parameters);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 
@@ -82,7 +80,7 @@ public class SnmpV3PacketTests
         var username = "admin"u8.ToArray();
         var authenticationPassword = "someFakePassword"u8.ToArray();
         var privacyPassword = "someFakePassword"u8.ToArray();
-        var engineID = "TheEngineID"u8.ToArray();
+        var engineId = "TheEngineID"u8.ToArray();
 
         switch (auth)
         {
@@ -100,7 +98,7 @@ public class SnmpV3PacketTests
 
         packet.IsReportable = true;
         packet.SetEngineTime(123, 234);
-        packet.SetEngineId(engineID);
+        packet.SetEngineId(engineId);
     }
 
     private void SetAuth(bool @private, bool auth, SecureAgentParameters parameters, AuthenticationDigests digests,
@@ -108,10 +106,10 @@ public class SnmpV3PacketTests
     {
         @private &= protocols != PrivacyProtocols.None;
         auth &= digests != AuthenticationDigests.None;
-        var username = "admin";
-        var authenticationPassword = "someFakePassword";
-        var privacyPassword = "someFakePassword";
-        var engineID = "TheEngineID";
+        const string username = "admin";
+        const string authenticationPassword = "someFakePassword";
+        const string privacyPassword = "someFakePassword";
+        const string engineId = "TheEngineID";
 
         switch (auth)
         {
@@ -126,7 +124,7 @@ public class SnmpV3PacketTests
                 break;
         }
 
-        parameters.EngineId.Set(engineID);
+        parameters.EngineId.Set(engineId);
         parameters.EngineTime.Set("123");
         parameters.EngineBoots.Set("234");
     }

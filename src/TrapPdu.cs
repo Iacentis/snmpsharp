@@ -117,61 +117,25 @@ public class TrapPdu : AsnType, ICloneable
             throw new ArgumentException("Invalid argument type.", nameof(second));
         }
     }
-
     /// <summary>ASN.1 encode SNMP version 1 trap</summary>
-    /// <param name="buffer"><see cref="MutableByte" /> buffer to the end of which encoded values are appended.</param>
-    public override void encode(MutableByte buffer)
+    /// <param name="buffer"><see cref="byte[]" /> buffer to the end of which encoded values are appended.</param>
+    public override int Encode(Span<byte> buffer)
     {
-        var trapBuffer = new MutableByte();
+        var mbl = MemberByteLength();
+        var written = BuildHeader(buffer, (byte)PduType.Trap, mbl);
         // encode the enterprise id & address
-        _enterprise.encode(trapBuffer);
+        written += _enterprise.Encode(buffer[written..]);
 
-        _agentAddr.encode(trapBuffer);
+        written += _agentAddr.Encode(buffer[written..]);
 
-        _generic.encode(trapBuffer);
+        written += _generic.Encode(buffer[written..]);
 
-        _specific.encode(trapBuffer);
+        written += _specific.Encode(buffer[written..]);
 
-        _timeStamp.encode(trapBuffer);
+        written += _timeStamp.Encode(buffer[written..]);
 
-        _variables.encode(trapBuffer);
-        var tmpBuffer = new MutableByte();
-
-        BuildHeader(tmpBuffer, (byte)PduType.Trap, trapBuffer.Length);
-        trapBuffer.Prepend(tmpBuffer);
-        buffer.Append(trapBuffer);
-    }
-
-    /// <summary>Decode BER encoded SNMP version 1 trap packet</summary>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">Offset in the packet to start decoding from</param>
-    /// <returns>Buffer position after the decoded value.</returns>
-    /// <exception cref="SnmpException">Invalid SNMP Pdu type received. Not an SNMP version 1 Trap PDU.</exception>
-    /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int encode(Span<byte> buffer)
-    {
-        Span<byte> trapBuffer = stackalloc byte[MemberByteLength()];
-        // encode the enterprise id & address
-        var written = _enterprise.encode(trapBuffer);
-
-        written += _agentAddr.encode(trapBuffer);
-
-        written += _generic.encode(trapBuffer);
-
-        written += _specific.encode(trapBuffer);
-
-        written += _timeStamp.encode(trapBuffer);
-
-        written += _variables.encode(trapBuffer);
-
-        var slice = BuildHeader(buffer, (byte)PduType.Trap, written);
-        trapBuffer[..written].CopyTo(buffer[slice..]);
-        return written + slice;
+        written += _variables.Encode(buffer[written..]);
+        return written;
     }
 
     public override int ByteLength
@@ -186,11 +150,18 @@ public class TrapPdu : AsnType, ICloneable
 
     private int MemberByteLength()
     {
-        return _enterprise.ByteLength + _agentAddr.ByteLength + _generic.ByteLength + _specific.ByteLength +
+        return _enterprise.ByteLength +
+        _agentAddr.ByteLength + _generic.ByteLength + _specific.ByteLength +
                _timeStamp.ByteLength + _variables.ByteLength;
     }
 
-    public override int decode(Span<byte> buffer, int offset)
+    /// <summary>Decode BER encoded SNMP version 1 trap packet</summary>
+    /// <param name="buffer">BER encoded buffer</param>
+    /// <param name="offset">Offset in the packet to start decoding from</param>
+    /// <returns>Buffer position after the decoded value.</returns>
+    /// <exception cref="SnmpException">Invalid SNMP Pdu type received. Not an SNMP version 1 Trap PDU.</exception>
+    /// <exception cref="SnmpException">Invalid Variable Binding list encoding.</exception>
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
         if (asnType != (byte)PduType.Trap)
@@ -199,19 +170,19 @@ public class TrapPdu : AsnType, ICloneable
         if (headerLength > buffer.Length - offset)
             throw new OverflowException("Packet is too short.");
 
-        offset = _enterprise.decode(buffer, offset);
-        offset = _agentAddr.decode(buffer, offset);
+        offset = _enterprise.Decode(buffer, offset);
+        offset = _agentAddr.Decode(buffer, offset);
 
-        offset = _generic.decode(buffer, offset);
+        offset = _generic.Decode(buffer, offset);
 
-        offset = _specific.decode(buffer, offset);
+        offset = _specific.Decode(buffer, offset);
 
-        offset = _timeStamp.decode(buffer, offset);
+        offset = _timeStamp.Decode(buffer, offset);
 
         // clean out the current variables
         _variables.Clear();
 
-        offset = _variables.decode(buffer, offset);
+        offset = _variables.Decode(buffer, offset);
 
         return offset;
     }
