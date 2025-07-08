@@ -25,7 +25,7 @@ namespace SnmpSharpNet;
 /// <summary>
 ///     User security model implementation class.
 /// </summary>
-public class UserSecurityModel : AsnType, ICloneable
+public class UserSecurityModel : AsnType, ICloneable, IEquatable<UserSecurityModel>
 {
     public override string ToString()
     {
@@ -458,5 +458,42 @@ public class UserSecurityModel : AsnType, ICloneable
         _privacySecret = [];
         _privacy = PrivacyProtocols.None;
         _privacyParameters = new OctetString();
+    }
+
+    public bool Equals(UserSecurityModel? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _authenticationSecret.Equals(other._authenticationSecret) && _engineBoots.Equals(other._engineBoots) &&
+               _engineTime.Equals(other._engineTime) && _privacy == other._privacy &&
+               _privacyParameters.Equals(other._privacyParameters) && _privacySecret.Equals(other._privacySecret) &&
+               _securityName.Equals(other._securityName) && EngineId.Equals(other.EngineId) &&
+               AuthenticationParameters.Equals(other.AuthenticationParameters) &&
+               Authentication == other.Authentication && AuthParamRange.Equals(other.AuthParamRange);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((UserSecurityModel)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        var hashCode = new HashCode();
+        hashCode.Add(_authenticationSecret);
+        hashCode.Add(_engineBoots);
+        hashCode.Add(_engineTime);
+        hashCode.Add((int)_privacy);
+        hashCode.Add(_privacyParameters);
+        hashCode.Add(_privacySecret);
+        hashCode.Add(_securityName);
+        hashCode.Add(EngineId);
+        hashCode.Add(AuthenticationParameters);
+        hashCode.Add((int)Authentication);
+        hashCode.Add(AuthParamRange);
+        return hashCode.ToHashCode();
     }
 }

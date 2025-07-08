@@ -97,7 +97,7 @@ namespace SnmpSharpNet;
 ///     protocol used. Without these parameters packet class will not be able to verify the incoming packet and
 ///     responses will be discarded even if they are valid.
 /// </remarks>
-public class SnmpV3Packet : SnmpPacket
+public class SnmpV3Packet : SnmpPacket, IEquatable<SnmpV3Packet>
 {
     /// <summary>
     ///     Maximum message size. In the discovery packet, set it to the maximum acceptable size = 64KB. The Agent will
@@ -981,4 +981,26 @@ public class SnmpV3Packet : SnmpPacket
     }
 
     #endregion
+
+    public bool Equals(SnmpV3Packet? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _maxMessageSize.Equals(other._maxMessageSize) && _messageId.Equals(other._messageId) &&
+               _securityModel.Equals(other._securityModel) && MsgFlags.Equals(other.MsgFlags) &&
+               USM.Equals(other.USM) && ScopedPdu.Equals(other.ScopedPdu);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((SnmpV3Packet)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_maxMessageSize, _messageId, _securityModel, MsgFlags, USM, ScopedPdu);
+    }
 }

@@ -74,6 +74,76 @@ public class SnmpV3PacketTests
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
     }
 
+    [Test]
+    [MatrixDataSource]
+    public async Task FromOld(
+        [Matrix(true, false)] bool @private,
+        [Matrix(true, false)] bool auth,
+        [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
+            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
+        AuthenticationDigests digests,
+        [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
+            PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
+        PrivacyProtocols protocols)
+    {
+        var dir = Directory.GetCurrentDirectory();
+        if (dir is null) throw new Exception("Could not get current directory");
+        var testsFolder = dir.IndexOf("tests", StringComparison.Ordinal);
+        if (testsFolder == -1) throw new Exception("Could not find tests folder");
+        var path = dir[..testsFolder];
+        var file = Path.Combine(path, "tests", "resources", "old", "parameters", "private_" + @private, "auth_" + auth,
+            "digest_" + digests, "protocol" + protocols, "packet");
+        Console.WriteLine($"reading from {file}");
+        var bytes = await File.ReadAllBytesAsync(file);
+        var newPacket = new SnmpV3Packet();
+        SetAuth(@private, auth, newPacket, digests, protocols);
+        newPacket.Decode(bytes);
+    }
+
+    [Test]
+    [MatrixDataSource]
+    public async Task WriteNew(
+        [Matrix(true, false)] bool @private,
+        [Matrix(true, false)] bool auth,
+        [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
+            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
+        AuthenticationDigests digests,
+        [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
+            PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
+        PrivacyProtocols protocols)
+    {
+        var pdu = new ScopedPdu(PduType.GetNext, 123);
+        var parameters = new SecureAgentParameters();
+        parameters.EngineId.Set($"{123}");
+        parameters.EngineTime.Set($"{234}");
+        parameters.EngineBoots.Set($"{457}");
+
+        var packet = new SnmpV3Packet(parameters, pdu);
+        VbCollection vbs =
+        [
+            new Vb(new Oid("1.3.2"), new Integer32(123)),
+            new Vb(new Oid("1.3.3"), new Integer32(234)),
+            new Vb(new Oid("1.3.4"), new Integer32(345))
+        ];
+        SetAuth(@private, auth, packet, digests, protocols);
+
+        packet.Pdu.SetVbList(vbs);
+        packet.Pdu.RequestId = 123;
+        packet.Pdu.ErrorIndex = 567;
+        packet.Pdu.ErrorStatus = 6879;
+        var bytes = packet.Encode();
+        var dir = Directory.GetCurrentDirectory();
+        if (dir is null) throw new Exception("Could not get current directory");
+        var testsFolder = dir.IndexOf("tests", StringComparison.Ordinal);
+        if (testsFolder == -1) throw new Exception("Could not find tests folder");
+        var path = dir[..testsFolder];
+        var file = Path.Combine(path, "tests", "resources", "new", "parameters", "private_" + @private, "auth_" + auth,
+            "digest_" + digests, "protocol" + protocols, "packet");
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        Console.WriteLine($"writing to {file}");
+        await File.WriteAllBytesAsync(file, bytes);
+    }
+
     private void SetAuth(bool @private, bool auth, SnmpV3Packet packet, AuthenticationDigests digests,
         PrivacyProtocols protocols)
     {
