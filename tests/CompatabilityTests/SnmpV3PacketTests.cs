@@ -1,5 +1,5 @@
-﻿using System.Text;
-using SnmpSharpNet;
+﻿using SnmpSharpNet;
+using Oid = SnmpSharpNet.Oid;
 
 namespace CompatabilityTests;
 
@@ -8,15 +8,16 @@ public class SnmpV3PacketTests
     [Test]
     [MatrixDataSource]
     public async Task EncodedBytesDecodeToSamePacket(
-        [Matrix(true, false)] bool @private,
-        [Matrix(true, false)] bool auth,
         [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
-            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
+            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5,
+            AuthenticationDigests.None)]
         AuthenticationDigests digests,
         [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
             PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
         PrivacyProtocols protocols)
     {
+        var @private = protocols != PrivacyProtocols.None;
+        var auth = digests != AuthenticationDigests.None;
         var pdu = new ScopedPdu(PduType.GetNext, 123);
         var parameters = new SecureAgentParameters();
         parameters.EngineId.Set($"{123}");
@@ -46,87 +47,54 @@ public class SnmpV3PacketTests
     [Test]
     [MatrixDataSource]
     public async Task FromNew(
-        [Matrix(true, false)] bool @private,
-        [Matrix(true, false)] bool auth,
         [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
-            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
+            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5,
+            AuthenticationDigests.None)]
         AuthenticationDigests digests,
         [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
             PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
         PrivacyProtocols protocols)
     {
+        var @private = protocols != PrivacyProtocols.None;
+        var auth = digests != AuthenticationDigests.None;
         var dir = Directory.GetCurrentDirectory();
         if (dir is null) throw new Exception("Could not get current directory");
         var testsFolder = dir.IndexOf("tests", StringComparison.Ordinal);
         if (testsFolder == -1) throw new Exception("Could not find tests folder");
         var path = dir[..testsFolder];
-        var file = Path.Combine(path, "tests", "resources", "new", "parameters", "private_" + @private, "auth_" + auth,
-            "digest_" + digests, "protocol" + protocols, "packet");
-        Console.WriteLine($"reading from {file}");
+        var file = FileFormat(digests, protocols, path, "new");
         var bytes = await File.ReadAllBytesAsync(file);
         var newPacket = new SnmpV3Packet();
         SetAuth(@private, auth, newPacket, digests, protocols);
         newPacket.decode(bytes, bytes.Length);
     }
 
-    [Test]
-    [MatrixDataSource]
-    public async Task WriteOld(
-        [Matrix(true, false)] bool @private,
-        [Matrix(true, false)] bool auth,
-        [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
-            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
-        AuthenticationDigests digests,
-        [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
-            PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
-        PrivacyProtocols protocols)
+
+    private static string FileFormat(AuthenticationDigests digests, PrivacyProtocols protocols, string path,
+        string subfolder)
     {
-        var pdu = new ScopedPdu(PduType.GetNext, 123);
-        var parameters = new SecureAgentParameters();
-        parameters.EngineId.Set($"{123}");
-        parameters.EngineTime.Set($"{234}");
-        parameters.EngineBoots.Set($"{457}");
-
-        var packet = new SnmpV3Packet(parameters, pdu);
-        VbCollection vbs =
-        [
-            new Vb(new Oid("1.3.2"), new Integer32(123)),
-            new Vb(new Oid("1.3.3"), new Integer32(234)),
-            new Vb(new Oid("1.3.4"), new Integer32(345))
-        ];
-        SetAuth(@private, auth, packet, digests, protocols);
-
-        packet.Pdu.SetVbList(vbs);
-        packet.Pdu.RequestId = 123;
-        packet.Pdu.ErrorIndex = 567;
-        packet.Pdu.ErrorStatus = 6879;
-        var bytes = packet.encode();
-        var dir = Directory.GetCurrentDirectory();
-        if (dir is null) throw new Exception("Could not get current directory");
-        var testsFolder = dir.IndexOf("tests", StringComparison.Ordinal);
-        if (testsFolder == -1) throw new Exception("Could not find tests folder");
-        var path = dir[..testsFolder];
-        var file = Path.Combine(path, "tests", "resources", "old", "parameters", "private_" + @private, "auth_" + auth,
-            "digest_" + digests, "protocol" + protocols, "packet");
-        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        Console.WriteLine($"writing to {file}");
-        await File.WriteAllBytesAsync(file, bytes);
+        var file = Path.Combine(path, "tests", "resources",
+            subfolder,
+            "digest_" + digests,
+            "protocol" + protocols,
+            "packet");
+        return file;
     }
 
     [Test]
     [MatrixDataSource]
     public async Task CanEncodeFromAgentParameters(
-        [Matrix(true, false)] bool @private,
-        [Matrix(true, false)] bool auth,
         [Matrix(AuthenticationDigests.SHA1, AuthenticationDigests.SHA256,
-            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5)]
+            AuthenticationDigests.SHA384, AuthenticationDigests.SHA512, AuthenticationDigests.MD5,
+            AuthenticationDigests.None)]
         AuthenticationDigests digests,
         [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
             PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
         PrivacyProtocols protocols,
         [Matrix(true, false)] bool cache)
-
     {
+        var @private = protocols != PrivacyProtocols.None;
+        var auth = digests != AuthenticationDigests.None;
         var parameters = new SecureAgentParameters();
         SetAuth(@private, auth, parameters, digests, protocols, cache);
         VbCollection vbs =

@@ -29,6 +29,7 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     private const int digestLength = 20;
 
     public static AuthenticationSHA1 Instance { get; } = new();
+
     /// <summary>
     ///     Standard constructor.
     /// </summary>
@@ -106,46 +107,11 @@ public class AuthenticationSHA1 : IAuthenticationDigest
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
     public byte[] PasswordToKey(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineID)
     {
-        const int bufferSize = 8192;
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
         using var sha = SHA1.Create();
-
-        var count = 0;
-
-        var buf = ArrayPool<byte>.Shared.Rent(bufferSize);
-        /* Use while loop until we've done 1 Megabyte */
-        var remnant = 0;
-        Span<byte> offsetUserPassword = stackalloc byte[userPassword.Length];
-        userPassword.CopyTo(offsetUserPassword);
-        Span<byte> tmp = stackalloc byte[userPassword.Length];
-        while (count < 1048576)
-        {
-            if (remnant > 0)
-            {
-                offsetUserPassword[remnant..].CopyTo(tmp);
-                offsetUserPassword[..remnant].CopyTo(tmp[(userPassword.Length - remnant)..]);
-                tmp.CopyTo(offsetUserPassword);
-            }
-
-            for (int i = 0; i < bufferSize; i += userPassword.Length)
-            {
-                var remaining = Math.Min(offsetUserPassword.Length, bufferSize - i);
-                // Take the next octet of the password, wrapping
-                // to the beginning of the password as necessary.
-                offsetUserPassword[..remaining].CopyTo(buf.AsSpan(i));
-                remnant = offsetUserPassword.Length - remaining;
-            }
-
-            sha.TransformBlock(buf, 0, bufferSize, null, 0);
-            count += bufferSize;
-        }
-
-        sha.TransformFinalBlock(buf, 0, 0);
-        Array.Clear(buf, 0, bufferSize);
-        ArrayPool<byte>.Shared.Return(buf);
-
+        sha.HashMegabyte(userPassword);
         var digest = sha.Hash.AsSpan();
         Span<byte> source = stackalloc byte[digest.Length + engineID.Length + digest.Length];
         digest.CopyTo(source);
@@ -153,8 +119,6 @@ public class AuthenticationSHA1 : IAuthenticationDigest
         digest.CopyTo(source[(digest.Length + engineID.Length)..]);
         var result = SHA1.HashData(source);
         source.Clear();
-        offsetUserPassword.Clear();
-        tmp.Clear();
         return result;
     }
 

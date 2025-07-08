@@ -602,7 +602,8 @@ public class SnmpV3Packet : SnmpPacket, IEquatable<SnmpV3Packet>
                 0,
                 encryptedScopedPdu.Length,
                 privacyKey,
-                USM.EngineBoots, USM.EngineTime,
+                USM.EngineBoots,
+                USM.EngineTime,
                 USM.PrivacyParameters.GetData());
             var tempOffset = 0;
             offset = ScopedPdu.Decode(decryptedScopedPdu, tempOffset);
