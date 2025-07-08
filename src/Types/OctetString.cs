@@ -522,24 +522,8 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     #region Encode and decode methods
 
     /// <summary>BER encode OctetString variable.</summary>
-    /// <param name="buffer"><see cref="MutableByte" /> encoding destination.</param>
-    public override void encode(MutableByte buffer)
-    {
-        if (_data.Length == 0)
-        {
-            BuildHeader(buffer, Type, 0);
-        }
-        else
-        {
-            BuildHeader(buffer, Type, _data.Length);
-            buffer.Append(_data);
-        }
-    }
-
-
-    /// <summary>BER encode OctetString variable.</summary>
-    /// <param name="buffer"><see cref="MutableByte" /> encoding destination.</param>
-    public override int encode(Span<byte> buffer)
+    /// <param name="buffer"><see cref="byte[]" /> encoding destination.</param>
+    public override int Encode(Span<byte> buffer)
     {
         if (_data.Length == 0)
         {
@@ -555,22 +539,10 @@ public class OctetString : AsnType, ICloneable, IComparable<byte[]>, IComparable
     ///     Decode OctetString from the BER format.
     /// </summary>
     /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">Offset in the <see cref="MutableByte" /> to start the decoding from</param>
+    /// <param name="offset">Offset in the <see cref="byte[]" /> to start the decoding from</param>
     /// <returns>Buffer position after the decoded value</returns>
     /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    /// <summary>
-    ///     Decode OctetString from the BER format.
-    /// </summary>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">Offset in the <see cref="MutableByte" /> to start the decoding from</param>
-    /// <returns>Buffer position after the decoded value</returns>
-    /// <exception cref="SnmpException">Thrown if parsed data type is invalid.</exception>
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         var asnType = ParseHeader(buffer, ref offset, out var headerLength);
 

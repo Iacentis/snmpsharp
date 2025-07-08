@@ -175,7 +175,7 @@ public sealed class SHA224 : HashAlgorithm
 
         // The number of bytes in the final output hash 
 
-        hash[..NumberOfBytes].CopyTo(targetBuffer);
+        hash[..HashSizeInBytes].CopyTo(targetBuffer);
         hash.Clear();
     }
 
@@ -224,8 +224,6 @@ public sealed class SHA224 : HashAlgorithm
         state[6] += g;
         state[7] += h;
     }
-
-    private const int NumberOfBytes = 224 / 8;
 
     public override void Initialize()
     {
@@ -286,10 +284,18 @@ public sealed class SHA224 : HashAlgorithm
 
     public static byte[] HashData(ReadOnlySpan<byte> data)
     {
-        var array = new byte[224 / 8];
+        var array = new byte[HashSizeInBytes];
         Sha224Algorithm(data, _initialHashValues, stackalloc uint[_initialHashValues.Length], array);
         return array;
     }
+
+    public static int HashData(ReadOnlySpan<byte> data, Span<byte> target)
+    {
+        Sha224Algorithm(data, _initialHashValues, stackalloc uint[_initialHashValues.Length], target);
+        return HashSizeInBytes;
+    }
+
+    public const int HashSizeInBytes = 28;
 
     public new static SHA224 Create() => new();
 }

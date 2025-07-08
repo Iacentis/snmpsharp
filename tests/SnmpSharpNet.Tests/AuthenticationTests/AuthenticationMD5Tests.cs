@@ -7,17 +7,19 @@ public class AuthenticationMD5Tests
     [Test]
     public async Task PasswordToKeyIsConsistent()
     {
-        byte[] knownValue = [240, 215, 156, 98, 95, 151, 52, 129, 108, 91, 220, 215, 186, 232, 71, 162];
-        var auth = new AuthenticationMD5();
+        byte[] knownValue = [249, 116, 116, 144, 203, 27, 252, 8, 52, 109, 51, 246, 15, 131, 23, 20];
+        var auth = AuthenticationMD5.Instance;
         var password = "passwordu"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var key = auth.PasswordToKey(password, engineId);
         await Assert.That(key.Length).IsEqualTo(knownValue.Length);
+        Console.WriteLine(string.Join(" ", key));
         for (int i = 0; i < knownValue.Length; i++)
         {
             await Assert.That(key[i]).IsEqualTo(knownValue[i]);
         }
     }
+
     [Test]
     [Arguments(1)]
     [Arguments(2)]
@@ -33,13 +35,13 @@ public class AuthenticationMD5Tests
     [Arguments(2048)]
     public async Task AnAuthenticatedBufferIsVerifiedByAuthenticateIncomingMessage(int packetLength)
     {
-        var auth = new AuthenticationMD5();
+        var auth = AuthenticationMD5.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId, authenticate, packet);
         await Assert.That(result).IsTrue();
     }
 
@@ -59,14 +61,14 @@ public class AuthenticationMD5Tests
     public async Task AnAuthenticatedBufferWithTheWrongPasswordIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationMD5();
+        var auth = AuthenticationMD5.Instance;
         var password = "password"u8.ToArray();
         var password2 = "password2"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password2, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password2, engineId, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 
@@ -86,14 +88,14 @@ public class AuthenticationMD5Tests
     public async Task AnAuthenticatedBufferWithTheWrongEngineIdIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationMD5();
+        var auth = AuthenticationMD5.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var engineId2 = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x02 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId2, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId2, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 }

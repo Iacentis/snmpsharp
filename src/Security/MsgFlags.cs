@@ -119,50 +119,7 @@ public class MsgFlags : AsnType, ICloneable
         return new MsgFlags(_authenticationFlag, _privacyFlag, _reportableFlag);
     }
 
-    /// <summary>
-    ///     Encode SNMP v3 message flag field
-    /// </summary>
-    /// <param name="buffer">Buffer to append encoded value to</param>
-    public override void encode(MutableByte buffer)
-    {
-        byte flag = 0x00;
-        switch (_authenticationFlag)
-        {
-            case true:
-                flag |= FLAG_AUTH;
-                break;
-        }
-
-        switch (_privacyFlag)
-        {
-            case true:
-                flag |= FLAG_PRIV;
-                break;
-        }
-
-        switch (_reportableFlag)
-        {
-            case true:
-                flag |= FLAG_REPORTABLE;
-                break;
-        }
-
-        var flagObject = new OctetString(flag);
-        flagObject.encode(buffer);
-    }
-
-    /// <summary>
-    ///     Decode message flags from the BER encoded buffer starting at specified offset.
-    /// </summary>
-    /// <param name="buffer">BER encoded buffer</param>
-    /// <param name="offset">Offset within the buffer to start decoding process</param>
-    /// <returns>Buffer position after the decoded value</returns>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         byte flag = 0x00;
         switch (_authenticationFlag)
@@ -193,14 +150,14 @@ public class MsgFlags : AsnType, ICloneable
 
     public override int ByteLength => base.ByteLength + 1;
 
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         // reset class values
         _authenticationFlag = false;
         _privacyFlag = false;
         _reportableFlag = false;
         var flagObject = new OctetString();
-        offset = flagObject.decode(buffer, offset);
+        offset = flagObject.Decode(buffer, offset);
         switch (flagObject.Length)
         {
             case > 0:

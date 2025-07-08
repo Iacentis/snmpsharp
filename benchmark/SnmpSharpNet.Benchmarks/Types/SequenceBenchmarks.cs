@@ -20,21 +20,12 @@ public class SequenceBenchmarks
         @new = new Sequence();
     }
 
-    [Benchmark(Baseline = true)]
-    public Sequence EncodedToDecodeMutable()
-    {
-        var buffer = new MutableByte();
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
-        return @new;
-    }
-
     [Benchmark]
     public Sequence EncodedToDecode()
     {
         Span<byte> buffer = stackalloc byte[Value + 10];
-        initial.encode(buffer);
-        @new.decode(buffer, 0);
+        initial.Encode(buffer);
+        @new.Decode(buffer, 0);
         return @new;
     }
 }

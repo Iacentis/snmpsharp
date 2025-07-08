@@ -28,10 +28,12 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     private const int authenticationLength = 21;
     private const int digestLength = 28;
 
+    public static AuthenticationSHA224 Instance { get; } = new();
+
     /// <summary>
     ///     Standard constructor.
     /// </summary>
-    public AuthenticationSHA224()
+    private AuthenticationSHA224()
     {
     }
 
@@ -42,11 +44,11 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     /// <param name="engineId">SNMP agent authoritative engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(ReadOnlySpan<byte> authenticationSecret, ReadOnlySpan<byte> engineId,
+    public byte[] Authenticate(ReadOnlySpan<byte> authenticationSecret, ReadOnlySpan<byte> engineId,
         ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(authenticationSecret, engineId);
-        return authenticate(authKey, wholeMessage);
+        return Authenticate(authKey, wholeMessage);
     }
 
     /// <summary>
@@ -55,7 +57,7 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     /// <param name="authKey">Authentication key (not password)</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters value</returns>
-    public byte[] authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage)
+    public byte[] Authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage)
     {
         var result = new byte[authenticationLength];
         using var sha = new HMACSHA224(authKey.ToArray());
@@ -74,11 +76,11 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     /// <param name="authenticationParameters">Extracted USM authentication parameters</param>
     /// <param name="wholeMessage">Whole message with authentication parameters zeroed (0x00) out</param>
     /// <returns>True if message authentication has passed the check, otherwise false</returns>
-    public bool authenticateIncomingMsg(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId,
+    public bool AuthenticateIncomingMsg(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId,
         ReadOnlySpan<byte> authenticationParameters, ReadOnlySpan<byte> wholeMessage)
     {
         var authKey = PasswordToKey(userPassword, engineId);
-        return authenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
+        return AuthenticateIncomingMsg(authKey, authenticationParameters, wholeMessage);
     }
 
     /// <summary>
@@ -88,7 +90,7 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters extracted from the packet being authenticated</param>
     /// <param name="wholeMessage">Entire packet being authenticated</param>
     /// <returns>True on authentication success, otherwise false</returns>
-    public bool authenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
+    public bool AuthenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
         ReadOnlySpan<byte> wholeMessage)
     {
         using var sha = new HMACSHA224(authKey.ToArray());
@@ -104,46 +106,11 @@ public class AuthenticationSHA224 : IAuthenticationDigest
     /// <exception cref="SnmpAuthenticationException">Thrown when key length is less then 8 bytes</exception>
     public byte[] PasswordToKey(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineID)
     {
-        const int bufferSize = 8192;
         // key length has to be at least 8 bytes long (RFC3414)
         if (userPassword.Length < 8)
             throw new SnmpAuthenticationException("Secret key is too short.");
         using var sha = SHA224.Create();
-
-        var count = 0;
-
-        var buf = ArrayPool<byte>.Shared.Rent(bufferSize);
-        /* Use while loop until we've done 1 Megabyte */
-        var remnant = 0;
-        Span<byte> offsetUserPassword = stackalloc byte[userPassword.Length];
-        userPassword.CopyTo(offsetUserPassword);
-        Span<byte> tmp = stackalloc byte[userPassword.Length];
-        while (count < 1048576)
-        {
-            if (remnant > 0)
-            {
-                offsetUserPassword[remnant..].CopyTo(tmp);
-                offsetUserPassword[..remnant].CopyTo(tmp[(userPassword.Length - remnant)..]);
-                tmp.CopyTo(offsetUserPassword);
-            }
-
-            for (int i = 0; i < bufferSize; i += userPassword.Length)
-            {
-                var remaining = Math.Min(offsetUserPassword.Length, bufferSize - i);
-                // Take the next octet of the password, wrapping
-                // to the beginning of the password as necessary.
-                offsetUserPassword[..remaining].CopyTo(buf.AsSpan(i));
-                remnant = offsetUserPassword.Length - remaining;
-            }
-
-            sha.TransformBlock(buf, 0, bufferSize, null, 0);
-            count += bufferSize;
-        }
-
-        sha.TransformFinalBlock(buf, 0, 0);
-        Array.Clear(buf, 0, bufferSize);
-        ArrayPool<byte>.Shared.Return(buf);
-
+        sha.HashMegabyte(userPassword);
         var digest = sha.Hash.AsSpan();
         Span<byte> source = stackalloc byte[digest.Length + engineID.Length + digest.Length];
         digest.CopyTo(source);
@@ -151,8 +118,6 @@ public class AuthenticationSHA224 : IAuthenticationDigest
         digest.CopyTo(source[(digest.Length + engineID.Length)..]);
         var result = SHA224.HashData(source);
         source.Clear();
-        offsetUserPassword.Clear();
-        tmp.Clear();
         return result;
     }
 

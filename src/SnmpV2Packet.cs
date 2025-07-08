@@ -67,7 +67,7 @@ namespace SnmpSharpNet;
 /// packetv2.decode(inbuffer,inlen);
 /// </code>
 /// </remarks>
-public class SnmpV2Packet : SnmpPacket
+public class SnmpV2Packet : SnmpPacket, IEquatable<SnmpV2Packet>
 {
     /// <summary>
     ///     SNMP Protocol Data Unit
@@ -98,6 +98,11 @@ public class SnmpV2Packet : SnmpPacket
         : this()
     {
         _snmpCommunity.Set(snmpCommunity);
+    }
+
+    public SnmpV2Packet(ReadOnlySpan<byte> encodedForm) : this()
+    {
+        Decode(encodedForm);
     }
 
     /// <summary>
@@ -132,21 +137,19 @@ public class SnmpV2Packet : SnmpPacket
     /// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
     /// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
     /// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
-    public override int decode(byte[] buffer, int length)
+    public sealed override int Decode(ReadOnlySpan<byte> buffer)
     {
-        var buf = new MutableByte(buffer, length);
-
-        var offset = base.decode(buffer, buffer.Length);
+        var offset = base.Decode(buffer);
 
         if (Version != SnmpVersion.Ver2)
             throw new SnmpInvalidVersionException("Invalid protocol version");
 
-        offset = _snmpCommunity.decode(buf, offset);
+        offset = _snmpCommunity.Decode(buffer, offset);
         var tmpOffset = offset;
-        var asnType = AsnType.ParseHeader(buf.Value, ref tmpOffset, out var headerLength);
+        var asnType = AsnType.ParseHeader(buffer, ref tmpOffset, out var headerLength);
 
         // Check packet length
-        if (headerLength + offset > buf.Length)
+        if (headerLength + offset > buffer.Length)
             throw new OverflowException("Insufficient data in packet");
 
 
@@ -157,17 +160,39 @@ public class SnmpV2Packet : SnmpPacket
                                                   $"0x{asnType:x2}");
 
         // Now process the Protocol Data Unit
-        Pdu.decode(buf, offset);
-        return length;
+        offset = Pdu.Decode(buffer, offset);
+        return offset;
     }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var childLength = ChildLength;
+            return childLength + AsnType.HeaderSize(childLength);
+        }
+    }
+
+    public int ChildLength => _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
 
     /// <summary>
     ///     Encode SNMP packet for sending.
     /// </summary>
     /// <returns>BER encoded SNMP packet.</returns>
-    public override byte[] encode()
+    public override byte[] Encode()
     {
-     
+        var result = new byte[ByteLength];
+        Encode(result);
+        return result;
+    }
+
+
+    /// <summary>
+    ///     Encode SNMP packet for sending.
+    /// </summary>
+    /// <returns>BER encoded SNMP packet.</returns>
+    public override int Encode(Span<byte> target)
+    {
         if (Pdu.Type != PduType.Get && Pdu.Type != PduType.GetNext &&
             Pdu.Type != PduType.Set && Pdu.Type != PduType.V2Trap &&
             Pdu.Type != PduType.Response && Pdu.Type != PduType.GetBulk &&
@@ -175,24 +200,20 @@ public class SnmpV2Packet : SnmpPacket
             throw new SnmpInvalidPduTypeException("Invalid SNMP PDU type while attempting to encode PDU: " +
                                                   $"0x{Pdu.Type:x2}");
 
-        var length = _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
-        var header = AsnType.HeaderSize(length);
-        Span<byte> buf = stackalloc byte[length + header];
+        var header = AsnType.HeaderSize(ChildLength);
         // snmp version
-        var written = 0;
-        written += _protocolVersion.encode(buf[written..]);
+        var written = header;
+        written += _protocolVersion.Encode(target[written..]);
 
         // community string
-        written += _snmpCommunity.encode(buf[written..]);
+        written += _snmpCommunity.Encode(target[written..]);
 
         // pdu
-        written += Pdu.encode(buf[written..]);
+        written += Pdu.Encode(target[written..]);
 
         // wrap the packet into a sequence
-        // wrap the packet into a sequence
-        buf[..written].CopyTo(buf[header..]);
-        written += AsnType.BuildHeader(buf, SnmpConstants.SMI_SEQUENCE, written);
-        return buf[..written].ToArray();
+        written += AsnType.BuildHeader(target[..header], SnmpConstants.SMI_SEQUENCE, written - header);
+        return written;
     }
 
     #endregion
@@ -244,4 +265,24 @@ public class SnmpV2Packet : SnmpPacket
     }
 
     #endregion
+
+    public bool Equals(SnmpV2Packet? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _pdu.Equals(other._pdu) && _snmpCommunity.Equals(other._snmpCommunity);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((SnmpV2Packet)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_pdu, _snmpCommunity);
+    }
 }

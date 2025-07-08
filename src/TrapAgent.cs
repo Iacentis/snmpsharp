@@ -69,7 +69,7 @@ public class TrapAgent
     /// <param name="port">Manager (receiver) UDP port number</param>
     public void SendV1Trap(SnmpV1TrapPacket packet, IpAddress peer, int port)
     {
-        var outBuffer = packet.encode();
+        var outBuffer = packet.Encode();
         _sock.SendTo(outBuffer, new IPEndPoint((IPAddress)peer, port));
     }
 
@@ -114,7 +114,7 @@ public class TrapAgent
     {
         if (packet.Pdu.Type != PduType.V2Trap)
             throw new SnmpInvalidPduTypeException("Invalid Pdu type.");
-        var outBuffer = packet.encode();
+        var outBuffer = packet.Encode();
         _sock.SendTo(outBuffer, new IPEndPoint((IPAddress)peer, port));
     }
 
@@ -156,7 +156,7 @@ public class TrapAgent
     {
         if (packet.Pdu.Type != PduType.V2Trap)
             throw new SnmpInvalidPduTypeException("Invalid Pdu type.");
-        var outBuffer = packet.encode();
+        var outBuffer = packet.Encode();
         _sock.SendTo(outBuffer, new IPEndPoint((IPAddress)peer, port));
     }
 
@@ -220,7 +220,7 @@ public class TrapAgent
                 Type = PduType.V2Trap
             }
         };
-        packet.authNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
+        packet.AuthNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);
@@ -263,7 +263,7 @@ public class TrapAgent
                 Type = PduType.V2Trap
             }
         };
-        packet.authPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
+        packet.AuthPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);

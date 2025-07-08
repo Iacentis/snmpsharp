@@ -36,8 +36,7 @@ public class PrivacyDES : IPrivacyProtocol
 {
     /// <summary>
     ///     Internal salt value. As per RFC standard, salt value is initialized in the constructor and incremented by 1 for
-    ///     each
-    ///     subsequent packet.
+    ///     each subsequent packet.
     /// </summary>
     protected int _salt;
 
@@ -265,15 +264,10 @@ public class PrivacyDES : IPrivacyProtocol
     /// <returns>32-bit integer salt value in network byte order (big endian)</returns>
     protected int NextSalt()
     {
-        switch (_salt)
-        {
-            case int.MaxValue:
-                _salt = 1;
-                break;
-            default:
-                _salt += 1;
-                break;
-        }
+        if (_salt == int.MaxValue)
+            _salt = 1;
+        else
+            _salt += 1;
 
         return _salt;
     }

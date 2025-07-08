@@ -172,27 +172,19 @@ public class UdpTransport : IDisposable
             }
             catch (SocketException ex)
             {
-                switch (ex.ErrorCode)
+                recv = ex.ErrorCode switch
                 {
-                    case 10040:
-                        recv = 0; // Packet too large
-                        break;
-                    case 10050:
-                        throw new SnmpNetworkException(ex, "Network error: Destination network is down.");
-                    case 10051:
-                        throw new SnmpNetworkException(ex, "Network error: destination network is unreachable.");
-                    case 10054:
-                        throw new SnmpNetworkException(ex, "Network error: connection reset by peer.");
-                    case 10064:
-                        throw new SnmpNetworkException(ex, "Network error: remote host is down.");
-                    case 10065:
-                        throw new SnmpNetworkException(ex, "Network error: remote host is unreachable.");
-                    case 10061:
-                        throw new SnmpNetworkException(ex, "Network error: connection refused.");
-                    case 10060:
-                        recv = 0; // Connection attempt timed out. Fall through to retry
-                        break;
-                }
+                    10040 => 0, // Packet too large
+                    10050 => throw new SnmpNetworkException(ex, "Network error: Destination network is down."),
+                    10051 => throw new SnmpNetworkException(ex, "Network error: destination network is unreachable."),
+                    10054 => throw new SnmpNetworkException(ex, "Network error: connection reset by peer."),
+                    10064 => throw new SnmpNetworkException(ex, "Network error: remote host is down."),
+                    10065 => throw new SnmpNetworkException(ex, "Network error: remote host is unreachable."),
+                    10061 => throw new SnmpNetworkException(ex, "Network error: connection refused."),
+                    10060 => 0 // Connection attempt timed out. Fall through to retry
+                    ,
+                    _ => recv
+                };
                 // Assume it is a timeout
             }
 
@@ -215,8 +207,11 @@ public class UdpTransport : IDisposable
                     }
                     else
                     {
-                        var buf = new MutableByte(inbuffer, recv);
-                        return buf;
+                        if (recv <= inbuffer.Length)
+                        {
+                            var buf = inbuffer[..recv];
+                            return buf;
+                        }
                     }
 
                     break;

@@ -4,24 +4,6 @@ namespace SnmpSharpNet.Tests;
 
 public class Integer32Tests
 {
-    [Test]
-    [Arguments(0)]
-    [Arguments(1)]
-    [Arguments(30000000)]
-    [Arguments(int.MaxValue)]
-    [Arguments(-2)]
-    [Arguments(-1)]
-    [Arguments(-22)]
-    [Arguments(int.MinValue)]
-    public async Task EncodedToDecodeMutable(int a)
-    {
-        var buffer = new MutableByte();
-        var initial = new Integer32(a);
-        initial.encode(buffer);
-        var @new = new Integer32();
-        @new.decode(buffer, 0);
-        await Assert.That(@new).IsEqualTo(initial);
-    }
 
     [Test]
     [Arguments(0)]
@@ -36,9 +18,9 @@ public class Integer32Tests
     {
         var initial = new Integer32(a);
         Span<byte> buffer = stackalloc byte[initial.ByteLength];
-        initial.encode(buffer);
+        initial.Encode(buffer);
         var @new = new Integer32();
-        @new.decode(buffer, 0);
+        @new.Decode(buffer, 0);
         await Assert.That(@new).IsEqualTo(initial);
     }
 
@@ -59,7 +41,7 @@ public class Integer32Tests
     {
         Span<byte> stack = stackalloc byte[Integer32.MaxEncodedSize];
         var integer = new Integer32(value);
-        var result = integer.encode(stack);
+        var result = integer.Encode(stack);
         await Assert.That(result).IsEqualTo(integer.ByteLength);
     }
 }

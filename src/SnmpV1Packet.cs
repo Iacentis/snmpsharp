@@ -100,6 +100,11 @@ public class SnmpV1Packet : SnmpPacket
         _snmpCommunity.Set(snmpCommunity);
     }
 
+    public SnmpV1Packet(ReadOnlySpan<byte> encodedForm) : this()
+    {
+        Decode(encodedForm);
+    }
+
     /// <summary>
     ///     Get SNMP community value used by SNMP version 1 and version 2 protocols.
     /// </summary>
@@ -120,14 +125,14 @@ public class SnmpV1Packet : SnmpPacket
     /// <exception cref="OverflowException">Thrown when parsed header points to more data then is available in the packet</exception>
     /// <exception cref="SnmpInvalidVersionException">Thrown when parsed packet is not SNMP version 1</exception>
     /// <exception cref="SnmpInvalidPduTypeException">Thrown when received PDU is of a type not supported by SNMP version 1</exception>
-    public override int decode(Span<byte> buffer, int length)
+    public sealed override int Decode(ReadOnlySpan<byte> buffer)
     {
-        var offset = base.decode(buffer, buffer.Length);
+        var offset = base.Decode(buffer);
 
         if (_protocolVersion.Value != (int)SnmpVersion.Ver1)
             throw new SnmpInvalidVersionException("Invalid protocol version");
 
-        offset = _snmpCommunity.decode(buffer, offset);
+        offset = _snmpCommunity.Decode(buffer, offset);
         var tmpOffset = offset;
         var asnType = AsnType.ParseHeader(buffer, ref tmpOffset, out var headerLength);
 
@@ -141,8 +146,35 @@ public class SnmpV1Packet : SnmpPacket
             throw new SnmpInvalidPduTypeException("Invalid SNMP operation received: " +
                                                   $"0x{asnType:x2}");
         // Now process the Protocol Data Unit
-        Pdu.decode(buffer, offset);
-        return length;
+        offset = Pdu.Decode(buffer, offset);
+        return offset;
+    }
+
+    public override int ByteLength
+    {
+        get
+        {
+            var childLength = ChildLength;
+            var headerLength = AsnType.HeaderSize(childLength);
+            return childLength + headerLength;
+        }
+    }
+
+    private int ChildLength => _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
+
+    /// <summary>
+    ///     Encode SNMP packet for sending.
+    /// </summary>
+    /// <returns>BER encoded SNMP packet.</returns>
+    /// <exception cref="SnmpInvalidPduTypeException">
+    ///     Thrown when PDU being encoded is not a valid SNMP version 1 PDU. Acceptable
+    ///     protocol version 1 operations are GET, GET-NEXT, SET and RESPONSE.
+    /// </exception>
+    public override byte[] Encode()
+    {
+        var result = new byte[ByteLength];
+        Encode(result);
+        return result;
     }
 
     /// <summary>
@@ -153,7 +185,7 @@ public class SnmpV1Packet : SnmpPacket
     ///     Thrown when PDU being encoded is not a valid SNMP version 1 PDU. Acceptable
     ///     protocol version 1 operations are GET, GET-NEXT, SET and RESPONSE.
     /// </exception>
-    public override byte[] encode()
+    public override int Encode(Span<byte> target)
     {
         if (Pdu.Type != PduType.Get && Pdu.Type != PduType.GetNext &&
             Pdu.Type != PduType.Set && Pdu.Type != PduType.Response)
@@ -169,21 +201,19 @@ public class SnmpV1Packet : SnmpPacket
             }
         }
 
-        var length = _protocolVersion.ByteLength + _snmpCommunity.ByteLength + Pdu.ByteLength;
-        var header = AsnType.HeaderSize(length);
-        var result = new byte[length + AsnType.HeaderSize(length)];
-        var buf = result.AsSpan(header, length);
+        var header = AsnType.HeaderSize(ChildLength);
+        var buf = target[header..];
         // snmp version
-        var written = _protocolVersion.encode(buf);
+        var written = _protocolVersion.Encode(buf);
 
         // community string
-        written += _snmpCommunity.encode(buf[written..]);
+        written += _snmpCommunity.Encode(buf[written..]);
 
         // pdu
-        written += Pdu.encode(buf[written..]);
+        written += Pdu.Encode(buf[written..]);
         // wrap the packet into a sequence
-        AsnType.BuildHeader(result.AsSpan(0, header), SnmpConstants.SMI_SEQUENCE, written);
-        return result;
+        written += AsnType.BuildHeader(target[..header], SnmpConstants.SMI_SEQUENCE, written);
+        return written;
     }
 
     /// <summary>

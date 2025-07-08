@@ -108,12 +108,11 @@ public abstract class AsnType : ICloneable
     /// </summary>
     /// <returns>Duplicated current object cast as Object</returns>
     public abstract object Clone();
-
     /// <summary>
     ///     Encodes the data object in the specified buffer
     /// </summary>
     /// <param name="buffer">The buffer to write the encoded information</param>
-    public abstract void encode(MutableByte buffer);
+    public abstract int Encode(Span<byte> buffer);
 
     /// <summary>
     ///     Decodes the ASN.1 buffer and sets the values in the AsnType object.
@@ -123,159 +122,36 @@ public abstract class AsnType : ICloneable
     /// <returns>
     ///     New offset pointing to the byte after the last decoded position
     /// </returns>
-    public abstract int decode(byte[] buffer, int offset);
+    public abstract int Decode(ReadOnlySpan<byte> buffer, int offset);
 
     /// <summary>
-    ///     Encodes the data object in the specified buffer
-    /// </summary>
-    /// <param name="buffer">The buffer to write the encoded information</param>
-    public abstract int encode(Span<byte> buffer);
-
-    /// <summary>
-    ///     Decodes the ASN.1 buffer and sets the values in the AsnType object.
-    /// </summary>
-    /// <param name="buffer">The encoded data buffer</param>
-    /// <param name="offset">The offset of the first valid byte.</param>
-    /// <returns>
-    ///     New offset pointing to the byte after the last decoded position
-    /// </returns>
-    public abstract int decode(Span<byte> buffer, int offset);
-
-    /// <summary>
-    ///     Append BER encoded length to the <see cref="MutableByte" />
+    ///     Append BER encoded length to the <see cref="byte[]" />
     /// </summary>
     /// <param name="mb">MutableArray to append BER encoded length to</param>
     /// <param name="asnLength">Length value to encode.</param>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
     internal static int BuildLength(Span<byte> mb, int asnLength)
     {
-        switch (asnLength)
-        {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
-        }
-
-        Span<byte> len = stackalloc byte[sizeof(int)];
-        BitConverter.TryWriteBytes(len, asnLength);
-        Span<byte> buf = stackalloc byte[sizeof(int)];
-        var length = 0;
-        for (var i = 3; i >= 0; i--)
-            if (len[i] != 0 || length > 0)
-                buf[length++] = len[i];
-        var cut = buf[..length];
-        if (length == 0)
-        {
-            cut = buf[..1];
-            cut[0] = 0;
-            length = 1;
-        }
-
-        // check for short form encoding
-        if (length == 1 && (cut[0] & HIGH_BIT) == 0)
-        {
-            mb[0] = cut[0]; // done
-            return 1;
-        }
-
-        // long form encoding
-        var encHeader = (byte)length;
-        encHeader = (byte)(encHeader | HIGH_BIT);
-        mb[0] = encHeader;
-        cut.CopyTo(mb[1..]);
-        return cut.Length + 1;
+        return new SnmpLength(asnLength).CopyTo(mb);
     }
 
     /// <summary>
-    ///     Append BER encoded length to the <see cref="MutableByte" />
-    /// </summary>
-    /// <param name="mb">MutableArray to append BER encoded length to</param>
-    /// <param name="asnLength">Length value to encode.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when length value to encode is less then 0</exception>
-    internal static void BuildLength(MutableByte mb, int asnLength)
-    {
-        switch (asnLength)
-        {
-            case < 0:
-                throw new ArgumentOutOfRangeException(nameof(asnLength), "Length cannot be less then 0.");
-        }
-
-        var len = BitConverter.GetBytes(asnLength);
-        var buf = new MutableByte();
-        for (var i = 3; i >= 0; i--)
-            if (len[i] != 0 || buf.Length > 0)
-                buf.Append(len[i]);
-        // we are encoding a 0 value. Can't have a 0 byte length encoding
-        if (buf.Length == 0) buf.Append(0);
-
-        // check for short form encoding
-        if (buf.Length == 1 && (buf[0] & HIGH_BIT) == 0)
-        {
-            // done
-        }
-        else
-        {
-            // long form encoding
-            var encHeader = (byte)buf.Length;
-            encHeader = (byte)(encHeader | HIGH_BIT);
-            mb.Append(encHeader);
-        }
-
-        mb.Append(buf); // done
-    }
-
-    /// <summary>
-    ///     MutableByte version of ParseLength. Retrieve BER encoded length from a byte array at supplied offset
+    ///     byte[] version of ParseLength. Retrieve BER encoded length from a byte array at supplied offset
     /// </summary>
     /// <param name="mb">BER encoded data</param>
     /// <param name="offset">Offset to start parsing length from</param>
     /// <returns>Length value</returns>
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
-    internal static int ParseLength(Span<byte> mb, ref int offset)
+    internal static int ParseLength(ReadOnlySpan<byte> mb, ref int offset)
     {
-        if (offset == mb.Length)
-            throw new OverflowException("Buffer is too short.");
-        int dataLen;
-        if ((mb[offset] & HIGH_BIT) == 0)
-        {
-            // short form encoding
-            dataLen = mb[offset++];
-            return dataLen; // we are done
-        }
-
-        dataLen = mb[offset++] & ~HIGH_BIT; // store byte length of the encoded length value
-        var value = 0;
-        for (var i = 0; i < dataLen; i++)
-        {
-            value <<= 8;
-            value |= mb[offset++];
-            if (offset > mb.Length || (i < dataLen - 1 && offset == mb.Length))
-                throw new OverflowException("Buffer is too short.");
-        }
-
-        return value;
+        var span = mb[offset..];
+        var length = new SnmpLength(span);
+        offset += length.ByteLength;
+        return length;
     }
-
-    /// <summary>
-    ///     Build ASN.1 header in the MutableByte array.
-    /// </summary>
-    /// <remarks>
-    ///     Header is the TL part of the TLV (type, length, value) BER encoded data representation.
-    ///     Each value is encoded as a Type byte, length of the data field and the actual, encoded
-    ///     data. This method will encode the type and length fields.
-    /// </remarks>
-    /// <param name="mb">MurableByte array</param>
-    /// <param name="asnType">ASN.1 header type</param>
-    /// <param name="asnLength">Length of the data contained in the header</param>
-    internal static void BuildHeader(MutableByte mb, byte asnType, int asnLength)
-    {
-        mb.Append(asnType);
-        BuildLength(mb, asnLength);
-    }
-
     public static int BuildHeader(Span<byte> mb, byte asnType, int asnLength)
     {
-        mb[0] = asnType;
-        return BuildLength(mb[1..], asnLength) + 1;
+        return new SnmpHeader(asnType, asnLength).CopyTo(mb);
     }
 
     public const int MaxHeaderSize = 2 + sizeof(int);
@@ -304,20 +180,11 @@ public abstract class AsnType : ICloneable
     /// <returns>ASN.1 type of the header</returns>
     /// <exception cref="OverflowException">Thrown when buffer is too short</exception>
     /// <exception cref="SnmpException">Thrown when invalid type is encountered in the header</exception>
-    internal static byte ParseHeader(Span<byte> buffer, ref int offset, out int length)
+    internal static byte ParseHeader(ReadOnlySpan<byte> buffer, ref int offset, out int length)
     {
-        switch (buffer.Length - offset)
-        {
-            case < 1:
-                throw new OverflowException("Buffer is too short.");
-        }
-
-        // ASN.1 type
-        var asnType = buffer[offset++];
-        if ((asnType & EXTENSION_ID) == EXTENSION_ID) throw new SnmpException("Invalid SNMP header type");
-
-        // length
-        length = ParseLength(buffer, ref offset);
-        return asnType;
+        var header = new SnmpHeader(buffer[offset..]);
+        length = header.Length;
+        offset += header.ByteLength;
+        return header.AsnType;
     }
 }

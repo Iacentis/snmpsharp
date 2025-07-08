@@ -15,6 +15,8 @@
 // 
 
 using System;
+using System.Linq;
+using System.Text;
 
 namespace SnmpSharpNet;
 
@@ -55,9 +57,9 @@ public class SecureAgentParameters : IAgentParameters
         _engineTimeStamp = second.EngineTimeStamp();
         _maxMessageSize.Value = second.MaxMessageSize.Value;
         _privacyProtocol = second.Privacy;
-        _privacySecret.Set(second.PrivacySecret);
+        _privacySecret = second.PrivacySecret.ToArray();
         _authenticationProtocol = second.Authentication;
-        _authenticationSecret.Set(second.AuthenticationSecret);
+        _authenticationSecret = second.AuthenticationSecret.ToArray();
         _reportable = second.Reportable;
         _securityName.Set(second.SecurityName);
         if (second.AuthenticationKey != null)
@@ -97,22 +99,16 @@ public class SecureAgentParameters : IAgentParameters
     {
         get
         {
-            if (_authenticationProtocol != AuthenticationDigests.None)
+            if (_authenticationProtocol == AuthenticationDigests.None) return false;
+            if (_authenticationKey is not { Length: > 0 }) return false;
+            if (_privacyProtocol != PrivacyProtocols.None)
             {
-                if (_authenticationKey != null && _authenticationKey.Length > 0)
-                {
-                    if (_privacyProtocol != PrivacyProtocols.None)
-                    {
-                        if (_privacyKey != null && _privacyKey.Length > 0)
-                            return true;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                if (_privacyKey is { Length: > 0 })
+                    return true;
+            }
+            else
+            {
+                return true;
             }
 
             return false;
@@ -128,31 +124,23 @@ public class SecureAgentParameters : IAgentParameters
     /// </returns>
     public bool Valid()
     {
-        switch (SecurityName.Length)
-        {
-            // You have to supply security name when using security or privacy.
-            // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
-            case <= 0 when (_authenticationProtocol != AuthenticationDigests.None ||
-                            _privacyProtocol != PrivacyProtocols.None):
-                return false;
-        }
+        // You have to supply security name when using security or privacy.
+        // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
+        if (SecurityName.Length <= 0 && (_authenticationProtocol != AuthenticationDigests.None ||
+                                         _privacyProtocol != PrivacyProtocols.None))
+            return false;
 
-        switch (_authenticationProtocol)
-        {
-            case AuthenticationDigests.None when _privacyProtocol != PrivacyProtocols.None:
-                return false; // noAuthPriv mode is not valid in SNMP version 3 
-        }
+        if (_authenticationProtocol == AuthenticationDigests.None &&
+            _privacyProtocol != PrivacyProtocols.None) return false; // noAuthPriv mode is not valid in SNMP version 3 
 
         if (_authenticationProtocol != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // Authentication protocol requires authentication secret
         if (_privacyProtocol != PrivacyProtocols.None && _privacySecret.Length <= 0)
             return false; // Privacy protocol requires privacy secret
 
-        if (_engineTimeStamp != DateTime.MinValue)
-            if (!ValidateEngineTime())
-                return false; // engine time is outside the acceptable timeliness window
+        // engine time is outside the acceptable timeliness window
         // rest of the values can be empty during the discovery process so no point in checking
-        return true;
+        return _engineTimeStamp == DateTime.MinValue || ValidateEngineTime();
     }
 
     /// <summary>
@@ -162,55 +150,39 @@ public class SecureAgentParameters : IAgentParameters
     /// <exception cref="SnmpInvalidVersionException">Thrown when parameter packet is not SnmpV3Packet</exception>
     public void InitializePacket(SnmpPacket packet)
     {
-        switch (packet)
+        if (packet is SnmpV3Packet pkt)
         {
-            case SnmpV3Packet pkt:
+            var isAuth = _authenticationProtocol != AuthenticationDigests.None;
+            var isPriv = _privacyProtocol != PrivacyProtocols.None;
+            switch (isAuth)
             {
-                var isAuth = _authenticationProtocol == AuthenticationDigests.None ? false : true;
-                var isPriv = _privacyProtocol == PrivacyProtocols.None ? false : true;
-                switch (isAuth)
-                {
-                    case true when isPriv:
-                        pkt.authPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
-                            _privacyProtocol);
-                        break;
-                    case true when !isPriv:
-                        pkt.authNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
-                        break;
-                    default:
-                        pkt.NoAuthNoPriv(_securityName);
-                        break;
-                }
-
-                pkt.USM.EngineId.Set(_engineId);
-                pkt.USM.EngineBoots = _engineBoots.Value;
-                pkt.USM.EngineTime = GetCurrentEngineTime();
-                pkt.MaxMessageSize = _maxMessageSize.Value;
-                pkt.MsgFlags.Reportable = _reportable;
-                switch (_contextEngineId.Length)
-                {
-                    case > 0:
-                        pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
-                        break;
-                    default:
-                        pkt.ScopedPdu.ContextEngineId.Set(_engineId);
-                        break;
-                }
-
-                switch (_contextName.Length)
-                {
-                    case > 0:
-                        pkt.ScopedPdu.ContextName.Set(_contextName);
-                        break;
-                    default:
-                        pkt.ScopedPdu.ContextName.Reset();
-                        break;
-                }
-
-                break;
+                case true when isPriv:
+                    pkt.AuthPriv(_securityName, _authenticationSecret, _authenticationProtocol, _privacySecret,
+                        _privacyProtocol);
+                    break;
+                case true when !isPriv:
+                    pkt.AuthNoPriv(_securityName, _authenticationSecret, _authenticationProtocol);
+                    break;
+                default:
+                    pkt.NoAuthNoPriv(_securityName);
+                    break;
             }
-            default:
-                throw new SnmpInvalidVersionException("Invalid SNMP version.");
+
+            pkt.USM.EngineId.Set(_engineId);
+            pkt.USM.EngineBoots = _engineBoots.Value;
+            pkt.USM.EngineTime = GetCurrentEngineTime();
+            pkt.MaxMessageSize = _maxMessageSize.Value;
+            pkt.MsgFlags.Reportable = _reportable;
+            pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId.Length > 0 ? _contextEngineId : _engineId);
+
+            if (_contextName.Length > 0)
+                pkt.ScopedPdu.ContextName.Set(_contextName);
+            else
+                pkt.ScopedPdu.ContextName.Reset();
+        }
+        else
+        {
+            throw new SnmpInvalidVersionException("Invalid SNMP version.");
         }
     }
 
@@ -231,9 +203,9 @@ public class SecureAgentParameters : IAgentParameters
     {
         _securityName.Set(securityName);
         _authenticationProtocol = AuthenticationDigests.None;
-        _authenticationSecret.Clear();
+        _authenticationSecret = [];
         _privacyProtocol = PrivacyProtocols.None;
-        _privacySecret.Clear();
+        _privacySecret = [];
     }
 
     /// <summary>
@@ -246,9 +218,9 @@ public class SecureAgentParameters : IAgentParameters
     {
         _securityName.Set(securityName);
         _authenticationProtocol = authDigest;
-        _authenticationSecret.Set(authSecret);
+        _authenticationSecret = Encoding.UTF8.GetBytes(authSecret);
         _privacyProtocol = PrivacyProtocols.None;
-        _privacySecret.Clear();
+        _privacySecret = [];
     }
 
     /// <summary>
@@ -264,9 +236,9 @@ public class SecureAgentParameters : IAgentParameters
     {
         _securityName.Set(securityName);
         _authenticationProtocol = authDigest;
-        _authenticationSecret.Set(authSecret);
+        _authenticationSecret = Encoding.UTF8.GetBytes(authSecret);
         _privacyProtocol = privProtocol;
-        _privacySecret.Set(privSecret);
+        _privacySecret = Encoding.UTF8.GetBytes(privSecret);
     }
 
     /// <summary>
@@ -287,8 +259,8 @@ public class SecureAgentParameters : IAgentParameters
             {
                 _authenticationProtocol = pkt.USM.Authentication;
                 _privacyProtocol = pkt.USM.Privacy;
-                _authenticationSecret.Set(pkt.USM.AuthenticationSecret);
-                _privacySecret.Set(pkt.USM.PrivacySecret);
+                _authenticationSecret = pkt.USM.AuthenticationSecret;
+                _privacySecret = pkt.USM.PrivacySecret;
                 _securityName.Set(pkt.USM.SecurityName);
                 if (pkt.MaxMessageSize < _maxMessageSize.Value)
                     _maxMessageSize.Value = pkt.MaxMessageSize;
@@ -484,8 +456,8 @@ public class SecureAgentParameters : IAgentParameters
         _privacyProtocol = PrivacyProtocols.None;
         _authenticationProtocol = AuthenticationDigests.None;
 
-        _privacySecret = new MutableByte();
-        _authenticationSecret = new MutableByte();
+        _privacySecret = [];
+        _authenticationSecret = [];
 
         _contextEngineId = new OctetString();
         _contextName = new OctetString();
@@ -520,10 +492,10 @@ public class SecureAgentParameters : IAgentParameters
             return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(_authenticationProtocol);
         if (authProto is null) return;
-        _authenticationKey = authProto.PasswordToKey(_authenticationSecret.Value, _engineId.GetData());
+        _authenticationKey = authProto.PasswordToKey(_authenticationSecret, _engineId.GetData());
         if (_privacyProtocol == PrivacyProtocols.None || _privacySecret.Length <= 0) return;
         var privProto = PrivacyProtocol.GetInstance(_privacyProtocol);
-        _privacyKey = privProto?.PasswordToKey(_privacySecret.Value, _engineId.GetData(), authProto);
+        _privacyKey = privProto?.PasswordToKey(_privacySecret, _engineId.GetData(), authProto);
     }
 
     #region Variables
@@ -573,12 +545,12 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Privacy secret (or privacy password)
     /// </summary>
-    protected MutableByte _privacySecret = new();
+    protected byte[] _privacySecret = [];
 
     /// <summary>
     ///     Authentication secret (or authentication password)
     /// </summary>
-    protected MutableByte _authenticationSecret = new();
+    protected byte[] _authenticationSecret = [];
 
     /// <summary>
     ///     Context engine id. By default, this value is set to authoritative engine id value unless specifically
@@ -667,7 +639,7 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Privacy secret. Length of the secret is dependent on the selected privacy method.
     /// </summary>
-    public MutableByte PrivacySecret => _privacySecret;
+    public byte[] PrivacySecret => _privacySecret;
 
     /// <summary>
     ///     Authentication method. Acceptable values are members of <see cref="AuthenticationDigests" /> enum.
@@ -686,7 +658,7 @@ public class SecureAgentParameters : IAgentParameters
     /// <summary>
     ///     Authentication secret. Secret length depends on the hash algorithm selected.
     /// </summary>
-    public MutableByte AuthenticationSecret => _authenticationSecret;
+    public byte[] AuthenticationSecret => _authenticationSecret;
 
     /// <summary>
     ///     SNMP version. Only acceptable version is <see cref="SnmpVersion.Ver3" />

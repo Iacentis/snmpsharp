@@ -65,30 +65,12 @@ public class Sequence : AsnType, ICloneable
             _data = [];
         }
     }
-
+    
     /// <summary>
     ///     BER encode sequence
     /// </summary>
     /// <param name="buffer">Target buffer</param>
-    public override void encode(MutableByte buffer)
-    {
-        var dataLen = 0;
-        if (_data.Length > 0)
-            dataLen = _data.Length;
-        BuildHeader(buffer, Type, dataLen);
-        switch (dataLen)
-        {
-            case > 0:
-                buffer.Append(_data);
-                break;
-        }
-    }
-
-    /// <summary>
-    ///     BER encode sequence
-    /// </summary>
-    /// <param name="buffer">Target buffer</param>
-    public override int encode(Span<byte> buffer)
+    public override int Encode(Span<byte> buffer)
     {
         var slice = BuildHeader(buffer, Type, _data.Length);
         _data.CopyTo(buffer[slice..]);
@@ -101,18 +83,7 @@ public class Sequence : AsnType, ICloneable
     /// <param name="buffer">Source data buffer</param>
     /// <param name="offset">Offset within the buffer to start parsing from</param>
     /// <returns>Returns offset position after the sequence header</returns>
-    public override int decode(byte[] buffer, int offset)
-    {
-        return decode(buffer.AsSpan(), offset);
-    }
-
-    /// <summary>
-    ///     Decode sequence from the byte array. Returned offset value is advanced by the size of the sequence header.
-    /// </summary>
-    /// <param name="buffer">Source data buffer</param>
-    /// <param name="offset">Offset within the buffer to start parsing from</param>
-    /// <returns>Returns offset position after the sequence header</returns>
-    public override int decode(Span<byte> buffer, int offset)
+    public override int Decode(ReadOnlySpan<byte> buffer, int offset)
     {
         int asnType = ParseHeader(buffer, ref offset, out var dataLen);
         if (asnType != Type)
