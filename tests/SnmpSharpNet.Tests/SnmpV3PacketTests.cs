@@ -52,11 +52,12 @@ public class SnmpV3PacketTests
         AuthenticationDigests digests,
         [Matrix(PrivacyProtocols.None, PrivacyProtocols.AES128, PrivacyProtocols.AES192, PrivacyProtocols.AES256,
             PrivacyProtocols.TripleDES, PrivacyProtocols.DES)]
-        PrivacyProtocols protocols)
+        PrivacyProtocols protocols,
+        [Matrix(true, false)] bool cache)
 
     {
         var parameters = new SecureAgentParameters();
-        SetAuth(@private, auth, parameters, digests, protocols);
+        SetAuth(@private, auth, parameters, digests, protocols, cache);
         VbCollection vbs =
         [
             new Vb(new Oid("1.3.2"), new Integer32(123)),
@@ -67,6 +68,7 @@ public class SnmpV3PacketTests
         var outPdu = new ScopedPdu(pdu);
         var packet = new SnmpV3Packet(outPdu, parameters);
         Span<byte> bytes = stackalloc byte[packet.ByteLength];
+        packet.MessageId = 123;
         var count = packet.Encode(bytes);
         var newPacket = new SnmpV3Packet(bytes[..count], parameters);
         await Assert.That(newPacket.ToString()).IsEqualTo(packet.ToString());
@@ -102,7 +104,7 @@ public class SnmpV3PacketTests
     }
 
     private void SetAuth(bool @private, bool auth, SecureAgentParameters parameters, AuthenticationDigests digests,
-        PrivacyProtocols protocols)
+        PrivacyProtocols protocols, bool cache)
     {
         @private &= protocols != PrivacyProtocols.None;
         auth &= digests != AuthenticationDigests.None;
@@ -127,5 +129,6 @@ public class SnmpV3PacketTests
         parameters.EngineId.Set(engineId);
         parameters.EngineTime.Set("123");
         parameters.EngineBoots.Set("234");
+        if (cache) parameters.BuildCachedSecurityKeys();
     }
 }

@@ -99,22 +99,16 @@ public class SecureAgentParameters : IAgentParameters
     {
         get
         {
-            if (_authenticationProtocol != AuthenticationDigests.None)
+            if (_authenticationProtocol == AuthenticationDigests.None) return false;
+            if (_authenticationKey is not { Length: > 0 }) return false;
+            if (_privacyProtocol != PrivacyProtocols.None)
             {
-                if (_authenticationKey != null && _authenticationKey.Length > 0)
-                {
-                    if (_privacyProtocol != PrivacyProtocols.None)
-                    {
-                        if (_privacyKey != null && _privacyKey.Length > 0)
-                            return true;
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                if (_privacyKey is { Length: > 0 })
+                    return true;
+            }
+            else
+            {
+                return true;
             }
 
             return false;
@@ -130,31 +124,23 @@ public class SecureAgentParameters : IAgentParameters
     /// </returns>
     public bool Valid()
     {
-        switch (SecurityName.Length)
-        {
-            // You have to supply security name when using security or privacy.
-            // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
-            case <= 0 when (_authenticationProtocol != AuthenticationDigests.None ||
-                            _privacyProtocol != PrivacyProtocols.None):
-                return false;
-        }
+        // You have to supply security name when using security or privacy.
+        // in theory you can use blank security name during discovery process so this is not exactly prohibited by it is discouraged
+        if (SecurityName.Length <= 0 && (_authenticationProtocol != AuthenticationDigests.None ||
+                                         _privacyProtocol != PrivacyProtocols.None))
+            return false;
 
-        switch (_authenticationProtocol)
-        {
-            case AuthenticationDigests.None when _privacyProtocol != PrivacyProtocols.None:
-                return false; // noAuthPriv mode is not valid in SNMP version 3 
-        }
+        if (_authenticationProtocol == AuthenticationDigests.None &&
+            _privacyProtocol != PrivacyProtocols.None) return false; // noAuthPriv mode is not valid in SNMP version 3 
 
         if (_authenticationProtocol != AuthenticationDigests.None && _authenticationSecret.Length <= 0)
             return false; // Authentication protocol requires authentication secret
         if (_privacyProtocol != PrivacyProtocols.None && _privacySecret.Length <= 0)
             return false; // Privacy protocol requires privacy secret
 
-        if (_engineTimeStamp != DateTime.MinValue)
-            if (!ValidateEngineTime())
-                return false; // engine time is outside the acceptable timeliness window
+        // engine time is outside the acceptable timeliness window
         // rest of the values can be empty during the discovery process so no point in checking
-        return true;
+        return _engineTimeStamp == DateTime.MinValue || ValidateEngineTime();
     }
 
     /// <summary>
@@ -187,10 +173,7 @@ public class SecureAgentParameters : IAgentParameters
             pkt.USM.EngineTime = GetCurrentEngineTime();
             pkt.MaxMessageSize = _maxMessageSize.Value;
             pkt.MsgFlags.Reportable = _reportable;
-            if (_contextEngineId.Length > 0)
-                pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId);
-            else
-                pkt.ScopedPdu.ContextEngineId.Set(_engineId);
+            pkt.ScopedPdu.ContextEngineId.Set(_contextEngineId.Length > 0 ? _contextEngineId : _engineId);
 
             if (_contextName.Length > 0)
                 pkt.ScopedPdu.ContextName.Set(_contextName);

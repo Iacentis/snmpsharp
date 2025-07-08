@@ -192,7 +192,14 @@ public class SnmpV3Packet : SnmpPacket
     public SnmpV3Packet(ReadOnlySpan<byte> encodedForm, SecureAgentParameters parameters) : this()
     {
         parameters.InitializePacket(this);
-        Decode(encodedForm);
+        if (parameters.HasCachedKeys)
+        {
+            Decode(encodedForm, parameters.AuthenticationKey, parameters.PrivacyKey);
+        }
+        else
+        {
+            Decode(encodedForm);
+        }
     }
 
     /// <summary>
@@ -619,15 +626,15 @@ public class SnmpV3Packet : SnmpPacket
     /// <returns>Byte array BER encoded SNMP packet.</returns>
     public override byte[] Encode()
     {
-        var privacyKey = GetPrivateAndAuthenticationKeys(out var authenticationKey);
+        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
 
-        return Encode(authenticationKey ?? [], privacyKey ?? []);
+        return Encode(akey ?? [], pkey ?? []);
     }
 
     public override int Encode(Span<byte> target)
     {
-        var pkey = GetPrivateAndAuthenticationKeys(out var authenticationKey);
-        return Encode(target, authenticationKey ?? [], pkey ?? []);
+        var pkey = GetPrivateAndAuthenticationKeys(out var akey);
+        return Encode(target, akey ?? [], pkey ?? []);
     }
 
     public override int ByteLength => HeaderLength + ScopedPduLength + UsmLength +

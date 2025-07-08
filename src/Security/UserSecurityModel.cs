@@ -27,6 +27,22 @@ namespace SnmpSharpNet;
 /// </summary>
 public class UserSecurityModel : AsnType, ICloneable
 {
+    public override string ToString()
+    {
+        return $"""
+                User Security Model
+                Engine ID: {EngineId}
+                Engine Boots: {EngineBoots}
+                Engine Time: {EngineTime}
+                Security Name: {SecurityName}
+                Authentication Parameters: {AuthenticationParameters}
+                Privacy Parameters: {PrivacyParameters}
+                Authentication: {Authentication}
+                Privacy: {Privacy}
+
+                """;
+    }
+
     /// <summary>
     ///     Authentication secret
     /// </summary>

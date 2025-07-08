@@ -1,19 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <PublishAot>true</PublishAot>
-  </PropertyGroup>
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="TUnit" Version="0.22.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="TUnit" Version="0.25.21"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\SnmpSharpNet.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\SnmpSharpNet.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA512\TripleDES\True\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA512_protocols=TripleDES_cache=True.received.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA224\TripleDES\False\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA224_protocols=TripleDES_cache=False.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA224\AES256\False\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA224_protocols=AES256_cache=False.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA224\AES192\False\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA224_protocols=AES192_cache=False.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA224\AES128\False\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA224_protocols=AES128_cache=False.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\SHA1\DES\True\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=SHA1_protocols=DES_cache=True.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\MD5\DES\True\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=MD5_protocols=DES_cache=True.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\MD5\DES\False\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=MD5_protocols=DES_cache=False.verified.txt" />
+      <None Remove="Results\SnmpV3PacketTests\CanEncodeFromAgentParameters\True\True\MD5\AES256\True\SnmpV3PacketTests.CanEncodeFromAgentParameters_private=True_auth=True_digests=MD5_protocols=AES256_cache=True.verified.txt" />
+    </ItemGroup>
 
 </Project>
