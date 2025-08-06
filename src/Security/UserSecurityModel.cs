@@ -25,8 +25,24 @@ namespace SnmpSharpNet;
 /// <summary>
 ///     User security model implementation class.
 /// </summary>
-public class UserSecurityModel : AsnType, ICloneable
+public class UserSecurityModel : AsnType, ICloneable, IEquatable<UserSecurityModel>
 {
+    public override string ToString()
+    {
+        return $"""
+                User Security Model
+                Engine ID: {EngineId}
+                Engine Boots: {EngineBoots}
+                Engine Time: {EngineTime}
+                Security Name: {SecurityName}
+                Authentication Parameters: {AuthenticationParameters}
+                Privacy Parameters: {PrivacyParameters}
+                Authentication: {Authentication}
+                Privacy: {Privacy}
+
+                """;
+    }
+
     /// <summary>
     ///     Authentication secret
     /// </summary>
@@ -205,7 +221,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         if (Authentication == AuthenticationDigests.None) return;
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication)!;
-        var authParam = authProto.authenticate(AuthenticationSecret, EngineId.GetData(), wholePacket);
+        var authParam = authProto.Authenticate(AuthenticationSecret, EngineId.GetData(), wholePacket);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -221,7 +237,7 @@ public class UserSecurityModel : AsnType, ICloneable
     {
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto == null) return;
-        var authParam = authProto.authenticate(authKey, wholePacket);
+        var authParam = authProto.Authenticate(authKey, wholePacket);
         AuthenticationParameters = new OctetString(authParam);
     }
 
@@ -236,7 +252,7 @@ public class UserSecurityModel : AsnType, ICloneable
 
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         if (authProto != null)
-            return authProto.authenticateIncomingMsg(AuthenticationSecret, EngineId.GetData(),
+            return authProto.AuthenticateIncomingMsg(AuthenticationSecret, EngineId.GetData(),
                 AuthenticationParameters.GetData(),
                 wholePacket);
 
@@ -254,7 +270,7 @@ public class UserSecurityModel : AsnType, ICloneable
         if (Authentication == AuthenticationDigests.None) return false; // Nothing to authenticate
         var authProto = SnmpSharpNet.Authentication.GetInstance(Authentication);
         return authProto != null &&
-               authProto.authenticateIncomingMsg(authKey, AuthenticationParameters.GetData(), wholePacket);
+               authProto.AuthenticateIncomingMsg(authKey, AuthenticationParameters.GetData(), wholePacket);
         // Nothing to authenticate
     }
 
@@ -442,5 +458,42 @@ public class UserSecurityModel : AsnType, ICloneable
         _privacySecret = [];
         _privacy = PrivacyProtocols.None;
         _privacyParameters = new OctetString();
+    }
+
+    public bool Equals(UserSecurityModel? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _authenticationSecret.Equals(other._authenticationSecret) && _engineBoots.Equals(other._engineBoots) &&
+               _engineTime.Equals(other._engineTime) && _privacy == other._privacy &&
+               _privacyParameters.Equals(other._privacyParameters) && _privacySecret.Equals(other._privacySecret) &&
+               _securityName.Equals(other._securityName) && EngineId.Equals(other.EngineId) &&
+               AuthenticationParameters.Equals(other.AuthenticationParameters) &&
+               Authentication == other.Authentication && AuthParamRange.Equals(other.AuthParamRange);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((UserSecurityModel)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        var hashCode = new HashCode();
+        hashCode.Add(_authenticationSecret);
+        hashCode.Add(_engineBoots);
+        hashCode.Add(_engineTime);
+        hashCode.Add((int)_privacy);
+        hashCode.Add(_privacyParameters);
+        hashCode.Add(_privacySecret);
+        hashCode.Add(_securityName);
+        hashCode.Add(EngineId);
+        hashCode.Add(AuthenticationParameters);
+        hashCode.Add((int)Authentication);
+        hashCode.Add(AuthParamRange);
+        return hashCode.ToHashCode();
     }
 }

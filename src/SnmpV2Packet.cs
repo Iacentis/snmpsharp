@@ -67,7 +67,7 @@ namespace SnmpSharpNet;
 /// packetv2.decode(inbuffer,inlen);
 /// </code>
 /// </remarks>
-public class SnmpV2Packet : SnmpPacket
+public class SnmpV2Packet : SnmpPacket, IEquatable<SnmpV2Packet>
 {
     /// <summary>
     ///     SNMP Protocol Data Unit
@@ -265,4 +265,24 @@ public class SnmpV2Packet : SnmpPacket
     }
 
     #endregion
+
+    public bool Equals(SnmpV2Packet? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return _pdu.Equals(other._pdu) && _snmpCommunity.Equals(other._snmpCommunity);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((SnmpV2Packet)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_pdu, _snmpCommunity);
+    }
 }

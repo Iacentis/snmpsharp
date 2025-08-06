@@ -13,12 +13,17 @@ public class SnmpPacketBenchmarks
     private byte[] _3Bytes = [];
     private SecureAgentParameters _parameters = null!;
 
-    private bool Private => Protocol != PrivacyProtocols.None;
+    private bool Private => Auth && Protocol != PrivacyProtocols.None;
     private bool Auth => Digest != AuthenticationDigests.None;
+    [Params(true, false)] public bool Cached { get; set; }
 
-    [Params(AuthenticationDigests.None)] public AuthenticationDigests Digest { get; set; }
+    [Params(AuthenticationDigests.None, AuthenticationDigests.MD5, AuthenticationDigests.SHA1,
+        AuthenticationDigests.SHA224, AuthenticationDigests.SHA256, AuthenticationDigests.SHA384,
+        AuthenticationDigests.SHA512)]
+    public AuthenticationDigests Digest { get; set; }
 
-    [Params(PrivacyProtocols.None)] public PrivacyProtocols Protocol { get; set; }
+    [Params(PrivacyProtocols.None, PrivacyProtocols.AES192)]
+    public PrivacyProtocols Protocol { get; set; }
 
     [GlobalSetup]
     public void Setup()
@@ -115,33 +120,34 @@ public class SnmpPacketBenchmarks
         parameters.EngineId.Set(engineId);
         parameters.EngineTime.Set("123");
         parameters.EngineBoots.Set("234");
+        if (Cached) parameters.BuildCachedSecurityKeys();
     }
 
-    [Benchmark]
-    public int EncodeV1()
-    {
-        Span<byte> bytes = stackalloc byte[_1Initial.ByteLength];
-        return _1Initial.Encode(bytes);
-    }
-
-    [Benchmark]
-    public SnmpV1Packet DecodeV1()
-    {
-        return new SnmpV1Packet(_1Bytes);
-    }
-
-    [Benchmark]
-    public int EncodeV2()
-    {
-        Span<byte> bytes = stackalloc byte[_2Initial.ByteLength];
-        return _2Initial.Encode(bytes);
-    }
-
-    [Benchmark]
-    public SnmpV2Packet DecodeV2()
-    {
-        return new SnmpV2Packet(_2Bytes);
-    }
+    // [Benchmark]
+    // public int EncodeV1()
+    // {
+    //     Span<byte> bytes = stackalloc byte[_1Initial.ByteLength];
+    //     return _1Initial.Encode(bytes);
+    // }
+    //
+    // [Benchmark]
+    // public SnmpV1Packet DecodeV1()
+    // {
+    //     return new SnmpV1Packet(_1Bytes);
+    // }
+    //
+    // [Benchmark]
+    // public int EncodeV2()
+    // {
+    //     Span<byte> bytes = stackalloc byte[_2Initial.ByteLength];
+    //     return _2Initial.Encode(bytes);
+    // }
+    //
+    // [Benchmark]
+    // public SnmpV2Packet DecodeV2()
+    // {
+    //     return new SnmpV2Packet(_2Bytes);
+    // }
 
     [Benchmark]
     public int EncodeV3()

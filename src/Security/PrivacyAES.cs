@@ -237,35 +237,7 @@ public class PrivacyAES : IPrivacyProtocol
     /// <returns>Extended key value</returns>
     public byte[] ExtendShortKey(ReadOnlySpan<byte> shortKey, ReadOnlySpan<byte> password,
         ReadOnlySpan<byte> engineID,
-        IAuthenticationDigest authProtocol)
-    {
-        var extKey = new byte[MinimumKeyLength];
-        var lastKeyBuf = new byte[shortKey.Length];
-
-        shortKey.CopyTo(lastKeyBuf);
-        var keyLen = shortKey.Length > MinimumKeyLength ? MinimumKeyLength : shortKey.Length;
-        shortKey[..keyLen].CopyTo(extKey);
-        while (keyLen < MinimumKeyLength)
-        {
-            var tmpBuf = authProtocol.PasswordToKey(lastKeyBuf, engineID);
-
-            if (tmpBuf.Length <= MinimumKeyLength - keyLen)
-            {
-                Array.Copy(tmpBuf, 0, extKey, keyLen, tmpBuf.Length);
-                keyLen += tmpBuf.Length;
-            }
-            else
-            {
-                Array.Copy(tmpBuf, 0, extKey, keyLen, MinimumKeyLength - keyLen);
-                keyLen += MinimumKeyLength - keyLen;
-            }
-
-            lastKeyBuf = new byte[tmpBuf.Length];
-            Array.Copy(tmpBuf, lastKeyBuf, tmpBuf.Length);
-        }
-
-        return extKey;
-    }
+        IAuthenticationDigest authProtocol) => authProtocol.ExtendShortKey(shortKey, engineID, MinimumKeyLength);
 
     /// <summary>
     ///     Privacy protocol name. Returns string "AES"

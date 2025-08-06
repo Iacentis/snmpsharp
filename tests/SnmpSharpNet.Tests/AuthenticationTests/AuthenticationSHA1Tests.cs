@@ -8,7 +8,7 @@ public class AuthenticationSHA1Tests
     public async Task PasswordToKeyIsConsistent()
     {
         byte[] knownValue = [244, 32, 233, 153, 218, 11, 16, 149, 144, 15, 37, 54, 199, 4, 195, 123, 70, 5, 174, 226];
-        var auth = new AuthenticationSHA1();
+        var auth = AuthenticationSHA1.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var key = auth.PasswordToKey(password, engineId);
@@ -33,13 +33,13 @@ public class AuthenticationSHA1Tests
     [Arguments(2048)]
     public async Task AnAuthenticatedBufferIsVerifiedByAuthenticateIncomingMessage(int packetLength)
     {
-        var auth = new AuthenticationSHA1();
+        var auth = AuthenticationSHA1.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId, authenticate, packet);
         await Assert.That(result).IsTrue();
     }
 
@@ -59,14 +59,14 @@ public class AuthenticationSHA1Tests
     public async Task AnAuthenticatedBufferWithTheWrongPasswordIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationSHA1();
+        var auth = AuthenticationSHA1.Instance;
         var password = "password"u8.ToArray();
         var password2 = "password2"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password2, engineId, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password2, engineId, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 
@@ -86,14 +86,14 @@ public class AuthenticationSHA1Tests
     public async Task AnAuthenticatedBufferWithTheWrongEngineIdIsNotVerifiedByAuthenticateIncomingMessage(
         int packetLength)
     {
-        var auth = new AuthenticationSHA1();
+        var auth = AuthenticationSHA1.Instance;
         var password = "password"u8.ToArray();
         var engineId = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x01 };
         var engineId2 = new byte[] { 0x80, 0x00, 0x13, 0x70, 0x02, 0x02 };
         var packet = new byte[packetLength];
         Random.Shared.NextBytes(packet);
-        var authenticate = auth.authenticate(password, engineId, packet);
-        var result = auth.authenticateIncomingMsg(password, engineId2, authenticate, packet);
+        var authenticate = auth.Authenticate(password, engineId, packet);
+        var result = auth.AuthenticateIncomingMsg(password, engineId2, authenticate, packet);
         await Assert.That(result).IsFalse();
     }
 }

@@ -20,12 +20,12 @@ public class AuthenticationBenchmarks
     [GlobalSetup]
     public void PasswordToKeyIsConsistent()
     {
-        _md5 = new AuthenticationMD5();
-        _sha1 = new AuthenticationSHA1();
-        _sha256 = new AuthenticationSHA256();
-        _sha224 = new AuthenticationSHA224();
-        _sha384 = new AuthenticationSHA384();
-        _sha512 = new AuthenticationSHA512();
+        _md5 = AuthenticationMD5.Instance;
+        _sha1 = AuthenticationSHA1.Instance;
+        _sha256 = AuthenticationSHA256.Instance;
+        _sha224 = AuthenticationSHA224.Instance;
+        _sha384 = AuthenticationSHA384.Instance;
+        _sha512 = AuthenticationSHA512.Instance;
 
         _password = new byte[passwordSize];
         Random.Shared.NextBytes(_password);

@@ -220,7 +220,7 @@ public class TrapAgent
                 Type = PduType.V2Trap
             }
         };
-        packet.authNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
+        packet.AuthNoPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);
@@ -263,7 +263,7 @@ public class TrapAgent
                 Type = PduType.V2Trap
             }
         };
-        packet.authPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
+        packet.AuthPriv(Encoding.UTF8.GetBytes(senderUserName), authSecret, authDigest, privSecret, privProtocol);
         packet.SetEngineId(engineId);
         packet.SetEngineTime(senderEngineBoots, senderEngineTime);
         packet.ScopedPdu.TrapObjectID.Set(trapObjectID);

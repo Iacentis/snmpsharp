@@ -48,7 +48,7 @@ public interface IAuthenticationDigest
     /// <param name="engineId">SNMP version 3 agent engine id</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters</returns>
-    byte[] authenticate(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId, ReadOnlySpan<byte> wholeMessage);
+    byte[] Authenticate(ReadOnlySpan<byte> userPassword, ReadOnlySpan<byte> engineId, ReadOnlySpan<byte> wholeMessage);
 
     /// <summary>
     ///     Authentication outgoing message
@@ -56,7 +56,7 @@ public interface IAuthenticationDigest
     /// <param name="authKey">Authentication key</param>
     /// <param name="wholeMessage">Message to authenticate</param>
     /// <returns>Authentication parameters</returns>
-    byte[] authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage);
+    byte[] Authenticate(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> wholeMessage);
 
     /// <summary>
     ///     Authenticate incoming messages
@@ -66,7 +66,7 @@ public interface IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters from the incoming packet</param>
     /// <param name="wholeMessage">Entire message with authentication parameters field zeroed out</param>
     /// <returns>True if packet is authenticated, otherwise false.</returns>
-    bool authenticateIncomingMsg(ReadOnlySpan<byte> authentiationSecret, ReadOnlySpan<byte> engineId,
+    bool AuthenticateIncomingMsg(ReadOnlySpan<byte> authentiationSecret, ReadOnlySpan<byte> engineId,
         ReadOnlySpan<byte> authenticationParameters,
         ReadOnlySpan<byte> wholeMessage);
 
@@ -77,16 +77,16 @@ public interface IAuthenticationDigest
     /// <param name="authenticationParameters">Authentication parameters from the incoming packet</param>
     /// <param name="wholeMessage">Entire message with authentication parameters field zeroed out</param>
     /// <returns>True if packet is authenticated, otherwise false.</returns>
-    bool authenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
+    bool AuthenticateIncomingMsg(ReadOnlySpan<byte> authKey, ReadOnlySpan<byte> authenticationParameters,
         ReadOnlySpan<byte> wholeMessage);
 
     /// <summary>
     ///     Convert password to a key
     /// </summary>
     /// <param name="passwordString">Authentication key</param>
-    /// <param name="engineID">Authoritative engine id</param>
+    /// <param name="engineId">Authoritative engine id</param>
     /// <returns>Key value</returns>
-    byte[] PasswordToKey(ReadOnlySpan<byte> passwordString, ReadOnlySpan<byte> engineID);
+    byte[] PasswordToKey(ReadOnlySpan<byte> passwordString, ReadOnlySpan<byte> engineId);
 
     /// <summary>
     ///     Compute hash using authentication protocol.
