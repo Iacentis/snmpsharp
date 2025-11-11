@@ -32,21 +32,21 @@ public class AuthenticationBenchmarks
         _engineId = [0x80, 0x00, 0x13, 0x70, 0x02, 0x01];
     }
 
-    // [Benchmark(Baseline = true)]
-    // public byte[] MD5() => _md5!.PasswordToKey(_password, _engineId);
-    //
-    // [Benchmark]
-    // public byte[] SHA1() => _sha1.PasswordToKey(_password, _engineId);
+    [Benchmark(Baseline = true)]
+    public byte[] MD5() => _md5!.PasswordToKey(_password, _engineId);
+
+    [Benchmark]
+    public byte[] SHA1() => _sha1.PasswordToKey(_password, _engineId);
 
     [Benchmark]
     public byte[] SHA224() => _sha224!.PasswordToKey(_password!, _engineId!);
-    //
-    // [Benchmark]
-    // public byte[] SHA256() => _sha256.PasswordToKey(_password, _engineId);
-    //
-    // [Benchmark]
-    // public byte[] SHA384() => _sha384.PasswordToKey(_password, _engineId);
-    //
-    // [Benchmark]
-    // public byte[] SHA512() => _sha512.PasswordToKey(_password, _engineId);
+
+    [Benchmark]
+    public byte[] SHA256() => _sha256.PasswordToKey(_password, _engineId);
+
+    [Benchmark]
+    public byte[] SHA384() => _sha384.PasswordToKey(_password, _engineId);
+
+    [Benchmark]
+    public byte[] SHA512() => _sha512.PasswordToKey(_password, _engineId);
 }
